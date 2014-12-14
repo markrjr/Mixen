@@ -2,18 +2,25 @@
 <items version="2" >
 
     <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/co.arcs.groove/thresher/1.2.1/af837afcfb42152d533bbd5bdb31c2801827876/thresher-1.2.1.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="0af837afcfb42152d533bbd5bdb31c2801827876">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/thresher-1.2.1-f776c8540e662f422b50bc10ef0e60657af7a0bc.jar" />
-    </item>
-    <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.2.2/285cb9c666f0f0f3dd8a1be04e1f457eb7b15113/jackson-annotations-2.2.2.jar"
         jumboMode="false"
         revision="21.0.0"
         sha1="285cb9c666f0f0f3dd8a1be04e1f457eb7b15113">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-annotations-2.2.2-f631022c945c1a8a20425b4d222541cabff01055.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.belladati/httpclientandroidlib/4.3.0/52878ed99f29c70437333f6d847c2dc555e147b9/httpclientandroidlib-4.3.0.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="52878ed99f29c70437333f6d847c2dc555e147b9">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/httpclientandroidlib-4.3.0-f3f9a0ed8b987eaa4fd72f37bb3429b883d5cbf9.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/co.arcs.groove/thresher/1.2.1/af837afcfb42152d533bbd5bdb31c2801827876/thresher-1.2.1.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="0af837afcfb42152d533bbd5bdb31c2801827876">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/thresher-1.2.1-f776c8540e662f422b50bc10ef0e60657af7a0bc.jar" />
     </item>
     <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.2.2/3c8f6018eaa72d43b261181e801e6f8676c16ef6/jackson-databind-2.2.2.jar"
@@ -42,13 +49,6 @@
         revision="21.0.0"
         sha1="516c03b21d50a644d538de0f0369c620989cd8f0">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jsr305-2.0.2-326a201dfacd77a1d03dd1054c0d06390f5b37d6.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.belladati/httpclientandroidlib/4.3.0/52878ed99f29c70437333f6d847c2dc555e147b9/httpclientandroidlib-4.3.0.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="52878ed99f29c70437333f6d847c2dc555e147b9">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/httpclientandroidlib-4.3.0-f3f9a0ed8b987eaa4fd72f37bb3429b883d5cbf9.jar" />
     </item>
 
 </items>
