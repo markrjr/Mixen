@@ -173,7 +173,7 @@ public class SearchSongs extends Activity {
 
                 // Show Alert
                 Toast.makeText(getApplicationContext(),
-                        "Adding " + userSelection + " to song queue.", Toast.LENGTH_LONG)
+                        "Adding " + userSelection + " to song queue.", Toast.LENGTH_SHORT)
                         .show();
 
                 Log.i(Mixen.TAG, "User selected: " + userSelection);
@@ -212,13 +212,8 @@ public class SearchSongs extends Activity {
             Mixen.currentSongAsInt = 0;
             Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
             MixenPlayer.preparePlayback();
+            MixenPlayer.postHandlePlayback();
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    MixenPlayer.beginPlayback();
-                }
-            }, 2000);
         }
 
         Log.i(Mixen.TAG, "Queue contains " + Mixen.queuedSongs.size() + " songs.");

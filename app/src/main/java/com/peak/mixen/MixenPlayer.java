@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.io.IOException;
@@ -36,6 +39,7 @@ public class MixenPlayer extends Activity {
     private static getStreamURLAsync retrieveURLsAsync;
     private static getAlbumArtAsync retrieveArtAsync;
 
+    private boolean pressedBefore = false;
     private String username; //TODO: This should be a global defined in Mixen.java.
     private TextView titleTV;
     private TextView artistTV;
@@ -59,7 +63,7 @@ public class MixenPlayer extends Activity {
         grooveSharkSession = new Client();
         //grooveSharkSession.setDebugLoggingEnabled(true);
         mixenStreamer = new MediaPlayer();
-
+        mixenStreamer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mixenStreamer.setLooping(false);
 
         username = startingIntent.getStringExtra("userName");
@@ -124,7 +128,7 @@ public class MixenPlayer extends Activity {
                bufferPB.setVisibility(View.VISIBLE);
 
                preparePlayback();
-               beginPlayback();
+               postHandlePlayback();
             }
         });
 
@@ -174,14 +178,36 @@ public class MixenPlayer extends Activity {
             @Override
             public void onSeekComplete(MediaPlayer mediaPlayer) {
                 //If the user fast forwards on rewinds, after the required seeking operating completes, restart the media player at
-                //the seeked to position.
-                mediaPlayer.start();
+                //the seek-ed to position.
+
+                if(playPauseButton.getBackground() == getDrawable(R.drawable.play))
+                {
+                    //TODO Probably shouldn't use the equals operator above.
+                    //If the player is paused, then change the icon.
+                    playPauseButton.setBackgroundResource(R.drawable.pause);
+                }
+
+                mixenStreamer.start();
+                restoreUIControls();
+
             }
         });
 
 
 
     }
+
+    public static void postHandlePlayback()
+    {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                MixenPlayer.beginPlayback();
+            }
+        }, 2000);
+    }
+
 
     public boolean playerHasTrack()
     {
@@ -207,6 +233,9 @@ public class MixenPlayer extends Activity {
         }
         catch (IndexOutOfBoundsException e)
         {
+            playPauseButton.setBackgroundResource(R.drawable.play);
+            titleTV.setText("");
+            artistTV.setText("");
             Log.i(Mixen.TAG, "No song was found after the current one in the queue.");
         }
 
@@ -326,11 +355,18 @@ public class MixenPlayer extends Activity {
 
             case R.id.fastForwardIB:
             {
-                if (mixenStreamer.isPlaying())
+                if (mixenStreamer.isPlaying() || playerHasTrack())
                 {
                     Mixen.currentSongProgress = mixenStreamer.getCurrentPosition();
 
+                    if(Mixen.currentSongProgress + 30000 > mixenStreamer.getDuration())
+                    {
+                        Log.d(Mixen.TAG, "User tried to seek past track length, with no track after.");
+                        return;
+                    }
+
                     mixenStreamer.pause();
+                    playPauseButton.setBackgroundResource(R.drawable.play);
                     mixenStreamer.seekTo(Mixen.currentSongProgress + 30000); //Fast forward 30 seconds.
                     Log.i(Mixen.TAG, "Seeking forward 30 seconds.");
                 }
@@ -339,11 +375,11 @@ public class MixenPlayer extends Activity {
 
             case R.id.rewindIB:
             {
-                if (mixenStreamer.isPlaying())
+                if (mixenStreamer.isPlaying() || playerHasTrack())
                 {
                     Mixen.currentSongProgress = mixenStreamer.getCurrentPosition();
-
                     mixenStreamer.pause();
+                    playPauseButton.setBackgroundResource(R.drawable.play);
                     mixenStreamer.seekTo(Mixen.currentSongProgress - 30000);
                     Log.i(Mixen.TAG, "Seeking backwards 30 seconds.");
                 }
@@ -379,6 +415,29 @@ public class MixenPlayer extends Activity {
     {
         super.onDestroy();
         StartScreen.restoreControls();
+    }
+
+    public void onBackPressed() {
+
+        if (pressedBefore)
+        {
+            //If the user has pressed the back button twice at this point kill the player.
+            if(mixenStreamer.isPlaying())
+            {
+                mixenStreamer.stop();
+                mixenStreamer.release();
+            }
+            this.finish();
+            return; //Sometimes the app doesn't finish before the end of this function. Gosh is Android weird.
+        }
+
+        Toast.makeText(getApplicationContext(),
+                "Press again to close the player.", Toast.LENGTH_SHORT)
+                .show();
+
+        pressedBefore = true;
+        return;
+
     }
 
 

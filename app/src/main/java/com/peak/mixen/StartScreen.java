@@ -12,7 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import android.widget.Toast;
 
 
 public class StartScreen extends Activity {
@@ -20,6 +20,7 @@ public class StartScreen extends Activity {
     public ProgressBar indeterminateProgress;
     public checkNetworkConnection check;
 
+    private boolean pressedBefore = false;
     private TextView AppNameTV;
     private TextView DescriptTV;
 
@@ -137,6 +138,26 @@ public class StartScreen extends Activity {
         }
 
 
+
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if (pressedBefore)
+        {
+            //If the user has pressed the back button twice at this point kill the app.
+            this.finish();
+            System.exit(0);
+            
+        }
+
+        Toast.makeText(getApplicationContext(),
+                "Press again to close the app.", Toast.LENGTH_SHORT)
+                .show();
+
+        pressedBefore = true;
+        return;
 
     }
 }
