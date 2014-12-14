@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.peak.mixen.MixenPlayer" >
+    <!--<item android:id="@+id/exit_app"-->
+        <!--android:title="@string/exit_app_string"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:showAsAction="never" />-->
+
+    <item android:id="@+id/currentMusicBtn"
+        android:icon="@drawable/music"
+        android:title=""
+        android:showAsAction="always"/>
+    <item android:id="@+id/viewUsersBtn"
+        android:icon="@drawable/people"
+        android:title="View current users"
+        android:showAsAction="always"
+        />
+</menu>

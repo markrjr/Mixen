@@ -1,0 +1,79 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".MainScreen"
+    android:background="@color/Ocean_Green">
+
+    <TextView
+        android:text="@string/app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/appNameTV"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="88dp"
+        android:textSize="64sp"
+        android:textColor="#ffffffff"
+        android:background="@color/Ocean_Green" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create"
+        android:id="@+id/startCreateService"
+        android:textColor="@color/Snow_White"
+        android:background="@color/Ocean_Green"
+        android:textStyle="bold"
+        android:layout_toEndOf="@+id/appNameTV"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/appNameTV"
+        android:onClick="onBtnClicked" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/createDescript"
+        android:id="@+id/moreInfoTV"
+        android:textColor="@color/Snow_White"
+        android:textSize="24sp"
+        android:textIsSelectable="true"
+        android:textAlignment="center"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:gravity="center"
+        android:onClick="onBtnClicked"
+        android:background="@color/Ocean_Green" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/alertTV"
+        android:textColor="@color/Snow_White"
+        android:background="@color/Ocean_Green"
+        android:gravity="center"
+        android:layout_below="@+id/userNameET"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="23dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/userNameET"
+        android:layout_marginTop="39dp"
+        android:layout_below="@+id/moreInfoTV"
+        android:layout_centerHorizontal="true"
+        android:hint="@string/username_hint"
+        android:textColorHint="@color/Silver_Sand"
+        android:textColor="@color/Snow_White"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+
+</RelativeLayout>

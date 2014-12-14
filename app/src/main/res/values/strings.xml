@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Mixen</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="exit_app_string">Quit</string>
+    <string name="app_description">Mixen lets you create a playlist and share it with friends.</string>
+    <string name="title_activity_create_mixen">CreateMixen</string>
+    <string name="title_activity_mixen_stage">MixenStage</string>
+    <string name="title_activity_more_info">MoreInfo</string>
+    <string name="createDescript">First, choose a username to identify your Mixen.</string>
+    <string name="username_hint">bobscandycanes</string>
+    <string name="textValidationError">Your username should contain no spaces or symbols, and be fairly short. Please try again.</string>
+    <string name="currently_playing">Currently Playing </string>
+    <string name="now_playing_string">Now Playing</string>
+    <string name="proposed_string">Suggested</string>
+    <string name="title_activity_search_songs">SearchSongs</string>
+    <string name="action_settings">Settings</string>
+    <string name="add_song">Add a song</string>
+    <string name="request_song">Request a song.</string>
+    <string name="progressBarInfo">Checking for an internet connection...</string>
+    <string name="no_internet_connection">Creating a mixen requires an internet connection to stream music, finding one however, does not.</string>
+    <string name="generic_network_error">We had a problem connecting to Grooveshark, please check your network connection and try again later.</string>
+    <string name="frowny_face">:(</string>
+    <string name="happy_face">:)</string>
+    <string name="song_not_found">We couldn\'t find the song you were looking for. Sorry about that.</string>
+    <string name="generic_streaming_error">An error occurred while trying to stream down your music. Sorry about that.</string>
+
+
+
+
+</resources>
