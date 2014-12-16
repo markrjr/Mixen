@@ -1,14 +1,20 @@
 package com.peak.mixen;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.TextView;
+import android.widget.ImageView;
+
+import com.omertron.fanarttvapi.FanartTvException;
+import com.omertron.fanarttvapi.enumeration.FTArtworkType;
+import com.omertron.fanarttvapi.model.FTMusicArtist;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -16,6 +22,8 @@ import java.util.List;
 
 import co.arcs.groove.thresher.GroovesharkException;
 import co.arcs.groove.thresher.Song;
+
+
 
 /**
  * Created by markrjr on 11/24/14.
@@ -30,11 +38,17 @@ public class Mixen {
     public static final int HELP = 5;
     public static final int ABOUT = 6;
 
+    public static final String FANART_APIKEY = "b67819547031d5947ca6d2a8e6ba936f";
+
+    public static final String LASTFM_APIKEY = "d7a859d1c3f4a8a96af54e3da1e226cd";
+
     public static int currentSongProgress;
 
     public static int currentSongAsInt;
 
-    public static Uri currentSongAlbumArt;
+    public static int bufferTimes = 0;
+
+    public static String currentSongAlbumArt;
 
     public static final String TAG = "Mixen";
 
@@ -48,6 +62,38 @@ public class Mixen {
 
     public static ArrayList<Song> proposedSongs;
 
+}
+
+class asyncArtworkClient extends AsyncTask<String, Void, Void>
+{
+    String artworkURL;
+
+
+    @Override
+    protected Void doInBackground(String... params) {
+
+        try {
+
+
+            FTMusicArtist artistArtwork = MixenPlayer.artworkClient.getMusicArtist("Bob");
+            artworkURL = artistArtwork.getArtwork(FTArtworkType.ALBUMCOVER).get(0).getUrl(); //TODO Get rid of this variable.
+            Mixen.currentSongAlbumArt = artworkURL;
+
+            Log.d(Mixen.TAG, "Album art from " + artworkURL);
+            //Look for errors because of possible caching.
+
+            return null;
+
+        } catch (FanartTvException e) {
+            Log.e(Mixen.TAG, "There was an error retrieving artwork, it will not be available for this selection.");
+            Log.e(Mixen.TAG, e.getResponse());
+        } catch (NullPointerException nullReturn)
+        {
+            Log.e(Mixen.TAG, "There was an unknown network error while attempting to retrieving the search results.");
+        }
+        return null;
+
+    }
 }
 
 
@@ -108,29 +154,30 @@ class querySongs extends AsyncTask<String, Void, Void>
 
 }
 
-class getAlbumArtAsync extends AsyncTask<Void, Void, String>
-{
-    //Try to get cover art asynchronously.
+class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+    ImageView bmImage;
 
-    @Override
-    protected String doInBackground(Void... params) {
-
-        try {
-            return Mixen.currentSong.getCoverArtFilename();
-
-        } catch (NullPointerException nullReturn)
-        {
-            Log.e(Mixen.TAG, "There was a network error while attempting to retrieving the data.");
-        }
-
-        return null;
-
+    public DownloadImageTask(ImageView bmImage) {
+        this.bmImage = bmImage;
     }
 
+    protected Bitmap doInBackground(String... urls) {
+        String urldisplay = urls[0];
+        Bitmap mIcon11 = null;
+        try {
+            InputStream in = new java.net.URL(urldisplay).openStream();
+            mIcon11 = BitmapFactory.decodeStream(in);
+        } catch (Exception e) {
+            Log.e("Error", e.getMessage());
+            e.printStackTrace();
+        }
+        return mIcon11;
+    }
 
+    protected void onPostExecute(Bitmap result) {
+        bmImage.setImageBitmap(result);
+    }
 }
-
-
 
 class getStreamURLAsync extends AsyncTask<Song, Void, URL>
 {

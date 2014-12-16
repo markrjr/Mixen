@@ -215,6 +215,11 @@ public class SearchSongs extends Activity {
             MixenPlayer.postHandlePlayback();
 
         }
+        else if(!MixenPlayer.mixenStreamer.isPlaying() && !MixenPlayer.queueHasNextTrack())
+        {
+            MixenPlayer.preparePlayback();
+            MixenPlayer.postHandlePlayback();
+        }
 
         Log.i(Mixen.TAG, "Queue contains " + Mixen.queuedSongs.size() + " songs.");
 

@@ -14,10 +14,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import com.omertron.fanarttvapi.FanartTvApi;
+import com.omertron.fanarttvapi.FanartTvException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,27 +28,28 @@ import java.util.concurrent.ExecutionException;
 
 import co.arcs.groove.thresher.*;
 
-
 public class MixenPlayer extends Activity {
 
     public static final int REQUEST_CODE = 5;
     public static Client grooveSharkSession;
     public static Intent addSong;
     public static MediaPlayer mixenStreamer;
+    public static FanartTvApi artworkClient;
 
 
     private static ToggleButton playPauseButton;
     private static ProgressBar bufferPB;
     private static getStreamURLAsync retrieveURLsAsync;
-    private static getAlbumArtAsync retrieveArtAsync;
+    private static asyncArtworkClient retrieveArtAsync;
 
     private boolean pressedBefore = false;
     private String username; //TODO: This should be a global defined in Mixen.java.
-    private TextView titleTV;
-    private TextView artistTV;
+    private static TextView titleTV;
+    private static TextView artistTV;
     private ImageView albumArtIV;
     private TextView songDuration;
     private TextView songProgress;
+    private RelativeLayout baseLayout;
 
 
 
@@ -61,8 +65,23 @@ public class MixenPlayer extends Activity {
         //Setup the GrooveShark session and media player.
 
         grooveSharkSession = new Client();
+
+
+
+
+        try
+        {
+            artworkClient = new FanartTvApi(Mixen.FANART_APIKEY);
+            artworkClient.setTimeout(2000, 2000);
+        }
+        catch (FanartTvException e)
+        {
+            Log.e(Mixen.TAG, "Could not resolve FanArt.TV, artwork will not be available for this session.");
+        }
+
         //grooveSharkSession.setDebugLoggingEnabled(true);
         mixenStreamer = new MediaPlayer();
+
         mixenStreamer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         mixenStreamer.setLooping(false);
 
@@ -75,8 +94,7 @@ public class MixenPlayer extends Activity {
         bufferPB = (ProgressBar) findViewById(R.id.bufferingPB);
         artistTV = (TextView) findViewById(R.id.artistTV);
         albumArtIV = (ImageView) findViewById(R.id.albumArtIV);
-
-
+        baseLayout = (RelativeLayout) findViewById(R.id.baseLayout);
 
         actionbar.setTitle(username + "'s " + "Mixen");
 
@@ -97,8 +115,8 @@ public class MixenPlayer extends Activity {
 
                 titleTV.setText(Mixen.currentSong.getName());
                 artistTV.setText(Mixen.currentSong.getArtistName());
-                albumArtIV.setImageURI(Mixen.currentSongAlbumArt);
-                Log.i(Mixen.TAG, Mixen.currentSongAlbumArt.toString());
+                //new DownloadImageTask((ImageView) findViewById(R.id.albumArtIV)).execute(Mixen.currentSongAlbumArt);
+                //Log.i(Mixen.TAG, Mixen.currentSongAlbumArt.toString());
 
 
                 restoreUIControls();
@@ -160,10 +178,20 @@ public class MixenPlayer extends Activity {
 
             public boolean onInfo(MediaPlayer mediaPlayer, int action, int extra) {
 
-                if(action == MediaPlayer.MEDIA_INFO_BUFFERING_START && !MixenPlayer.mixenStreamer.isPlaying())
+                if(action == MediaPlayer.MEDIA_INFO_BUFFERING_START)
                 {
+                    Mixen.bufferTimes++;
+                    //If the player has buffered more than 3 times recently.
+
+                    if(Mixen.bufferTimes >= 3)
+                    {
+                        mixenStreamer.pause();
+                        Mixen.bufferTimes = 0;
+                        Log.d(Mixen.TAG, "Max buffer times exceeded.");
+                    }
+
                     hideUIControls();
-                    Log.i(Mixen.TAG, "Buffering of media has begin.");
+                    Log.i(Mixen.TAG, "Buffering of media has begun.");
                 }
                 else if(action == MediaPlayer.MEDIA_INFO_BUFFERING_END && MixenPlayer.mixenStreamer.isPlaying())
                 {
@@ -192,6 +220,7 @@ public class MixenPlayer extends Activity {
 
             }
         });
+
 
 
 
@@ -224,7 +253,7 @@ public class MixenPlayer extends Activity {
         return false;
     }
 
-    public boolean queueHasNextTrack()
+    public static boolean queueHasNextTrack()
     {
         try
         {
@@ -269,8 +298,9 @@ public class MixenPlayer extends Activity {
         hideUIControls();
         retrieveURLsAsync = new getStreamURLAsync();
         retrieveURLsAsync.execute(Mixen.currentSong);
-        retrieveArtAsync = new getAlbumArtAsync();
-        retrieveArtAsync.execute();
+        //retrieveArtAsync = new asyncArtworkClient();
+        //retrieveArtAsync.execute(Mixen.currentSong.getAlbumName());
+
 
         Log.i(Mixen.TAG, "Grabbing URL for next song and signaling playback, it should begin shortly.");
     }
@@ -287,8 +317,9 @@ public class MixenPlayer extends Activity {
         try
         {
             streamURI = Uri.parse(retrieveURLsAsync.get().toString());
-            Mixen.currentSongAlbumArt = Uri.parse(retrieveArtAsync.get());
+            //Album art should be set here.
             Log.i(Mixen.TAG, "Stream URL is " + streamURI.toString());
+            Log.i(Mixen.TAG, "Track ID is " + Mixen.currentSong.getId());
             mixenStreamer.setDataSource(Mixen.currentContext, streamURI);
         }
         catch (InterruptedException e)
