@@ -2,13 +2,6 @@
 <items version="2" >
 
     <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.9/9ce04e34240f674bc72680f8b843b1457383161a/commons-codec-1.9.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="9ce04e34240f674bc72680f8b843b1457383161a">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/commons-codec-1.9-c88692fc223b3dd1c4b75f84e1dd9c21074674b5.jar" />
-    </item>
-    <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.7.7/2b8019b6249bb05d81d3a3094e468753e2b21311/slf4j-api-1.7.7.jar"
         jumboMode="false"
         revision="21.0.0"
@@ -16,32 +9,11 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/slf4j-api-1.7.7-efaff37e5d9c36d659d39082c1138e359ea710cf.jar" />
     </item>
     <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/libs/GooSearch.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="8d50187f30b153de27fca3015143261378b1d5f3">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/GooSearch-3476c1ddc9053bb03af10a740fd5ff8a194248d5.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.4.2/8e31266a272ad25ac4c089734d93e8d811652c1f/jackson-databind-2.4.2.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="8e31266a272ad25ac4c089734d93e8d811652c1f">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-databind-2.4.2-814c0ff88d4da3921bf1d1489bb46f488b89c4fb.jar" />
-    </item>
-    <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/org.yamj/api-common/1.1/ae74854ceb4926b97e4d98d0e5537728eb6213af/api-common-1.1.jar"
         jumboMode="false"
         revision="21.0.0"
         sha1="ae74854ceb4926b97e4d98d0e5537728eb6213af">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/api-common-1.1-25abd9901218fb66db3fb73013ed07c88c7c9a23.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.belladati/httpclientandroidlib/4.3.0/52878ed99f29c70437333f6d847c2dc555e147b9/httpclientandroidlib-4.3.0.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="52878ed99f29c70437333f6d847c2dc555e147b9">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/httpclientandroidlib-4.3.0-f3f9a0ed8b987eaa4fd72f37bb3429b883d5cbf9.jar" />
     </item>
     <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/commons-pool/commons-pool/1.6/4572d589699f09d866a226a14b7f4323c6d8f040/commons-pool-1.6.jar"
@@ -56,6 +28,48 @@
         revision="21.0.0"
         sha1="480443800ec82e1797b59c23ea3b0989e52259ad">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/fanarttvapi-3.0-7deed07413f4a0a5ab4ae100e16c2969c6393385.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.4.2/6bb52af09372d5064206d47d7887d41671f00f7d/jackson-annotations-2.4.2.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="6bb52af09372d5064206d47d7887d41671f00f7d">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-annotations-2.4.2-570bb52aba214b12b6756d2c8336767d7a82c74f.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/15.0/ed727a8d9f247e2050281cb083f1c77b09dcb5cd/guava-15.0.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="ed727a8d9f247e2050281cb083f1c77b09dcb5cd">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/guava-15.0-2c1c0d56e37ba5830c6d239d28e8f4fe3f6451e6.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/2.0.2/516c03b21d50a644d538de0f0369c620989cd8f0/jsr305-2.0.2.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="516c03b21d50a644d538de0f0369c620989cd8f0">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jsr305-2.0.2-326a201dfacd77a1d03dd1054c0d06390f5b37d6.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.9/9ce04e34240f674bc72680f8b843b1457383161a/commons-codec-1.9.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="9ce04e34240f674bc72680f8b843b1457383161a">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/commons-codec-1.9-c88692fc223b3dd1c4b75f84e1dd9c21074674b5.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.4.2/8e31266a272ad25ac4c089734d93e8d811652c1f/jackson-databind-2.4.2.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="8e31266a272ad25ac4c089734d93e8d811652c1f">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-databind-2.4.2-814c0ff88d4da3921bf1d1489bb46f488b89c4fb.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.belladati/httpclientandroidlib/4.3.0/52878ed99f29c70437333f6d847c2dc555e147b9/httpclientandroidlib-4.3.0.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="52878ed99f29c70437333f6d847c2dc555e147b9">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/httpclientandroidlib-4.3.0-f3f9a0ed8b987eaa4fd72f37bb3429b883d5cbf9.jar" />
     </item>
     <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.4.2/ceb72830d95c512b4b300a38f29febc85bdf6e4b/jackson-core-2.4.2.jar"
@@ -79,32 +93,11 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/commons-lang3-3.3.2-ac9e9eba6366813499dc56847e20f301d889f538.jar" />
     </item>
     <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.4.2/6bb52af09372d5064206d47d7887d41671f00f7d/jackson-annotations-2.4.2.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="6bb52af09372d5064206d47d7887d41671f00f7d">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-annotations-2.4.2-570bb52aba214b12b6756d2c8336767d7a82c74f.jar" />
-    </item>
-    <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/commons-dbcp/commons-dbcp/1.4/30be73c965cc990b153a100aaaaafcf239f82d39/commons-dbcp-1.4.jar"
         jumboMode="false"
         revision="21.0.0"
         sha1="30be73c965cc990b153a100aaaaafcf239f82d39">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/commons-dbcp-1.4-9264c7668ae3934020798bbdfac27a7b06855ed3.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/15.0/ed727a8d9f247e2050281cb083f1c77b09dcb5cd/guava-15.0.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="ed727a8d9f247e2050281cb083f1c77b09dcb5cd">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/guava-15.0-2c1c0d56e37ba5830c6d239d28e8f4fe3f6451e6.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/2.0.2/516c03b21d50a644d538de0f0369c620989cd8f0/jsr305-2.0.2.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="516c03b21d50a644d538de0f0369c620989cd8f0">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jsr305-2.0.2-326a201dfacd77a1d03dd1054c0d06390f5b37d6.jar" />
     </item>
 
 </items>

@@ -9,10 +9,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.omertron.fanarttvapi.FanartTvException;
-import com.omertron.fanarttvapi.enumeration.FTArtworkType;
-import com.omertron.fanarttvapi.model.FTMusicArtist;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -38,10 +34,6 @@ public class Mixen {
     public static final int HELP = 5;
     public static final int ABOUT = 6;
 
-    public static final String FANART_APIKEY = "b67819547031d5947ca6d2a8e6ba936f";
-
-    public static final String LASTFM_APIKEY = "d7a859d1c3f4a8a96af54e3da1e226cd";
-
     public static int currentSongProgress;
 
     public static int currentSongAsInt;
@@ -64,37 +56,7 @@ public class Mixen {
 
 }
 
-class asyncArtworkClient extends AsyncTask<String, Void, Void>
-{
-    String artworkURL;
 
-
-    @Override
-    protected Void doInBackground(String... params) {
-
-        try {
-
-
-            FTMusicArtist artistArtwork = MixenPlayer.artworkClient.getMusicArtist("Bob");
-            artworkURL = artistArtwork.getArtwork(FTArtworkType.ALBUMCOVER).get(0).getUrl(); //TODO Get rid of this variable.
-            Mixen.currentSongAlbumArt = artworkURL;
-
-            Log.d(Mixen.TAG, "Album art from " + artworkURL);
-            //Look for errors because of possible caching.
-
-            return null;
-
-        } catch (FanartTvException e) {
-            Log.e(Mixen.TAG, "There was an error retrieving artwork, it will not be available for this selection.");
-            Log.e(Mixen.TAG, e.getResponse());
-        } catch (NullPointerException nullReturn)
-        {
-            Log.e(Mixen.TAG, "There was an unknown network error while attempting to retrieving the search results.");
-        }
-        return null;
-
-    }
-}
 
 
 class queryPopSongs extends AsyncTask<Void, Void, Void>

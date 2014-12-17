@@ -19,7 +19,7 @@
     <string name="add_song">Add a song</string>
     <string name="request_song">Request a song.</string>
     <string name="progressBarInfo">Checking for an internet connection...</string>
-    <string name="no_internet_connection">We couldn\'t connect to the internet. Creating a mixen requires an internet connection to stream music, finding one however, does not.</string>
+    <string name="no_internet_connection">Please double check your internet connection and try again later.</string>
     <string name="generic_network_error">We had a problem connecting to Grooveshark, please check your network connection and try again later.</string>
     <string name="frowny_face">:(</string>
     <string name="happy_face">:)</string>

@@ -19,12 +19,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.omertron.fanarttvapi.FanartTvApi;
-import com.omertron.fanarttvapi.FanartTvException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
+
 
 import co.arcs.groove.thresher.*;
 
@@ -34,13 +32,10 @@ public class MixenPlayer extends Activity {
     public static Client grooveSharkSession;
     public static Intent addSong;
     public static MediaPlayer mixenStreamer;
-    public static FanartTvApi artworkClient;
-
 
     private static ToggleButton playPauseButton;
     private static ProgressBar bufferPB;
     private static getStreamURLAsync retrieveURLsAsync;
-    private static asyncArtworkClient retrieveArtAsync;
 
     private boolean pressedBefore = false;
     private String username; //TODO: This should be a global defined in Mixen.java.
@@ -65,19 +60,6 @@ public class MixenPlayer extends Activity {
         //Setup the GrooveShark session and media player.
 
         grooveSharkSession = new Client();
-
-
-
-
-        try
-        {
-            artworkClient = new FanartTvApi(Mixen.FANART_APIKEY);
-            artworkClient.setTimeout(2000, 2000);
-        }
-        catch (FanartTvException e)
-        {
-            Log.e(Mixen.TAG, "Could not resolve FanArt.TV, artwork will not be available for this session.");
-        }
 
         //grooveSharkSession.setDebugLoggingEnabled(true);
         mixenStreamer = new MediaPlayer();
