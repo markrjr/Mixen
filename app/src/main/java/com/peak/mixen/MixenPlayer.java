@@ -87,8 +87,14 @@ public class MixenPlayer extends Activity {
 
         Mixen.currentContext = this.getApplicationContext();
 
-        //Setup all the necessary listeners for the mixenPlayer.
+        setupMediaPlayerListeners();
 
+
+
+    }
+
+    public void setupMediaPlayerListeners()
+    {
         mixenStreamer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
@@ -115,20 +121,20 @@ public class MixenPlayer extends Activity {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
 
-               if(!queueHasNextTrack())
-               {
-                   //If the queue does not have a track after this one, stop everything.
-                   return;
-               }
+                if(!queueHasNextTrack())
+                {
+                    //If the queue does not have a track after this one, stop everything.
+                    return;
+                }
 
-               Mixen.currentSongAsInt++;
-               mediaPlayer.reset();
-               titleTV.setText("");
-               artistTV.setText("");
-               bufferPB.setVisibility(View.VISIBLE);
+                Mixen.currentSongAsInt++;
+                mediaPlayer.reset();
+                titleTV.setText("");
+                artistTV.setText("");
+                bufferPB.setVisibility(View.VISIBLE);
 
-               preparePlayback();
-               postHandlePlayback();
+                preparePlayback();
+                postHandlePlayback();
             }
         });
 
@@ -202,8 +208,6 @@ public class MixenPlayer extends Activity {
 
             }
         });
-
-
 
 
     }

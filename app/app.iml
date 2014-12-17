@@ -83,20 +83,13 @@
     </content>
     <orderEntry type="jdk" jdkName="Android API 21 Platform (1)" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="jackson-core-2.2.2" level="project" />
+    <orderEntry type="library" exported="" name="jackson-databind-2.2.2" level="project" />
     <orderEntry type="library" exported="" name="guava-15.0" level="project" />
-    <orderEntry type="library" exported="" name="jackson-core-2.4.2" level="project" />
-    <orderEntry type="library" exported="" name="jackson-databind-2.4.2" level="project" />
+    <orderEntry type="library" exported="" name="jsr305-2.0.2" level="project" />
     <orderEntry type="library" exported="" name="thresher-1.2.1" level="project" />
     <orderEntry type="library" exported="" name="httpclientandroidlib-4.3.0" level="project" />
-    <orderEntry type="library" exported="" name="fanarttvapi-3.0" level="project" />
-    <orderEntry type="library" exported="" name="commons-pool-1.6" level="project" />
-    <orderEntry type="library" exported="" name="commons-lang3-3.3.2" level="project" />
-    <orderEntry type="library" exported="" name="slf4j-api-1.7.7" level="project" />
-    <orderEntry type="library" exported="" name="commons-dbcp-1.4" level="project" />
-    <orderEntry type="library" exported="" name="jsr305-2.0.2" level="project" />
-    <orderEntry type="library" exported="" name="commons-codec-1.9" level="project" />
-    <orderEntry type="library" exported="" name="jackson-annotations-2.4.2" level="project" />
-    <orderEntry type="library" exported="" name="api-common-1.1" level="project" />
+    <orderEntry type="library" exported="" name="jackson-annotations-2.2.2" level="project" />
   </component>
 </module>
 

@@ -34,6 +34,8 @@ public class Mixen {
     public static final int HELP = 5;
     public static final int ABOUT = 6;
 
+    public static final String SPOTIFY_API_KEY = "fb5c429de70a4aa184ea97dbaa5e8b98";
+
     public static int currentSongProgress;
 
     public static int currentSongAsInt;
