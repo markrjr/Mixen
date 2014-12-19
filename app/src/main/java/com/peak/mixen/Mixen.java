@@ -3,11 +3,13 @@ package com.peak.mixen;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +20,6 @@ import java.util.List;
 
 import co.arcs.groove.thresher.GroovesharkException;
 import co.arcs.groove.thresher.Song;
-
-
 
 /**
  * Created by markrjr on 11/24/14.
@@ -34,15 +34,15 @@ public class Mixen {
     public static final int HELP = 5;
     public static final int ABOUT = 6;
 
-    public static final String SPOTIFY_API_KEY = "fb5c429de70a4aa184ea97dbaa5e8b98";
-
     public static int currentSongProgress;
 
     public static int currentSongAsInt;
 
     public static int bufferTimes = 0;
 
-    public static String currentSongAlbumArt;
+    public static String currentAlbumArt;
+
+    public static String currentArtistArt;
 
     public static final String TAG = "Mixen";
 
@@ -118,30 +118,60 @@ class querySongs extends AsyncTask<String, Void, Void>
 
 }
 
-class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-    ImageView bmImage;
 
-    public DownloadImageTask(ImageView bmImage) {
-        this.bmImage = bmImage;
+class DownloadAlbumArt extends AsyncTask<String, Void, Bitmap> {
+    ImageView imageView;
+
+    public DownloadAlbumArt(ImageView imageView) {
+        this.imageView = imageView;
     }
 
     protected Bitmap doInBackground(String... urls) {
         String urldisplay = urls[0];
-        Bitmap mIcon11 = null;
+        Bitmap art = null;
         try {
             InputStream in = new java.net.URL(urldisplay).openStream();
-            mIcon11 = BitmapFactory.decodeStream(in);
+            art = BitmapFactory.decodeStream(in);
         } catch (Exception e) {
             Log.e("Error", e.getMessage());
             e.printStackTrace();
         }
-        return mIcon11;
+        return art;
     }
 
     protected void onPostExecute(Bitmap result) {
-        bmImage.setImageBitmap(result);
+        imageView.setImageBitmap(result);
     }
 }
+
+
+class DownloadArtistArt extends AsyncTask<String, Void, BitmapDrawable> {
+    RelativeLayout relativeLayout;
+
+    public DownloadArtistArt(RelativeLayout relativeLayout) {
+        this.relativeLayout = relativeLayout;
+    }
+
+    protected BitmapDrawable doInBackground(String... urls) {
+        String urldisplay = urls[0];
+        Bitmap art = null;
+        BitmapDrawable background = null;
+        try {
+            InputStream in = new java.net.URL(urldisplay).openStream();
+            art = BitmapFactory.decodeStream(in);
+            background = new BitmapDrawable(art);
+        } catch (Exception e) {
+            Log.e("Error", e.getMessage());
+            e.printStackTrace();
+        }
+        return background;
+    }
+
+    protected void onPostExecute(BitmapDrawable result) {
+        relativeLayout.setBackground(result);
+    }
+}
+
 
 class getStreamURLAsync extends AsyncTask<Song, Void, URL>
 {

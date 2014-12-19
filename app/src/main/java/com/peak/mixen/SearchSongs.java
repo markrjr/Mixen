@@ -16,8 +16,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -142,20 +144,27 @@ public class SearchSongs extends Activity {
 
     public void populateListView(ArrayList<Song> listOfSongs)
     {
-        String[] values = new String[listOfSongs.size()];
-        int count = 0;
+        String[] songNames = new String[listOfSongs.size()];
+        String[] songArtists = new String[listOfSongs.size()];
+        int names = 0;
+        int artists = 0;
 
         for(Song song : listOfSongs)
         {
 
-            values[count] = song.getName();
-            count++;
+            songNames[names] = song.getName();
+            songArtists[artists] = song.getArtistName();
+            names++;
+            artists++;
         }
 
 
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
+                android.R.layout.simple_list_item_1, android.R.id.text1, songNames);
+
+
+
 
 
         // Assign adapter to ListView
@@ -184,6 +193,8 @@ public class SearchSongs extends Activity {
             }
 
         });
+
+
     }
 
 

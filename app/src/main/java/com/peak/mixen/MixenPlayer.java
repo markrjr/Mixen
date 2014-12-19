@@ -19,12 +19,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 
 import co.arcs.groove.thresher.*;
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 public class MixenPlayer extends Activity {
 
@@ -36,11 +44,13 @@ public class MixenPlayer extends Activity {
     private static ToggleButton playPauseButton;
     private static ProgressBar bufferPB;
     private static getStreamURLAsync retrieveURLsAsync;
-
-    private boolean pressedBefore = false;
-    private String username; //TODO: This should be a global defined in Mixen.java.
     private static TextView titleTV;
     private static TextView artistTV;
+
+    private static SpotifyApi api;
+    private static SpotifyService spotify;
+    private boolean pressedBefore = false;
+    private String username; //TODO: This should be a global defined in Mixen.java.
     private ImageView albumArtIV;
     private TextView songDuration;
     private TextView songProgress;
@@ -57,11 +67,14 @@ public class MixenPlayer extends Activity {
         Intent startingIntent = getIntent();
         ActionBar actionbar = getActionBar();
 
-        //Setup the GrooveShark session and media player.
-
+        //Setup the GrooveShark and Spotify session as well as the media player.
         grooveSharkSession = new Client();
 
+        api = new SpotifyApi();
+        spotify = api.getService();
+
         //grooveSharkSession.setDebugLoggingEnabled(true);
+
         mixenStreamer = new MediaPlayer();
 
         mixenStreamer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
@@ -90,8 +103,38 @@ public class MixenPlayer extends Activity {
         setupMediaPlayerListeners();
 
 
+    }
+
+    public static void findAlbumArtFromSpotify()
+    {
+
+        spotify.searchArtists(Mixen.currentSong.getArtistName(), new Callback<ArtistsPager>()
+        {
+            @Override
+            public void success(ArtistsPager artistsPager, Response response) {
+
+                for(Artist artist: artistsPager.artists.items)
+                {
+                    if (artist.name.equals(Mixen.currentSong.getArtistName()))
+                    {
+                        Mixen.currentArtistArt = artist.images.get(0).url;
+                        Log.d(Mixen.TAG, "Found artist art for " + artist.name + " at " + Mixen.currentArtistArt);
+                        return;
+                    }
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.e(Mixen.TAG, "There was an issue retrieving the data from Spotify.");
+                //Log.e(Mixen.TAG, error.toString());
+            }
+
+        });
+
 
     }
+
 
     public void setupMediaPlayerListeners()
     {
@@ -103,8 +146,8 @@ public class MixenPlayer extends Activity {
 
                 titleTV.setText(Mixen.currentSong.getName());
                 artistTV.setText(Mixen.currentSong.getArtistName());
-                //new DownloadImageTask((ImageView) findViewById(R.id.albumArtIV)).execute(Mixen.currentSongAlbumArt);
-                //Log.i(Mixen.TAG, Mixen.currentSongAlbumArt.toString());
+                new DownloadArtistArt(baseLayout).execute(Mixen.currentArtistArt);
+                Log.i(Mixen.TAG, "Downloading artist art.");
 
 
                 restoreUIControls();
@@ -128,6 +171,7 @@ public class MixenPlayer extends Activity {
                 }
 
                 Mixen.currentSongAsInt++;
+                Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
                 mediaPlayer.reset();
                 titleTV.setText("");
                 artistTV.setText("");
@@ -173,9 +217,17 @@ public class MixenPlayer extends Activity {
 
                     if(Mixen.bufferTimes >= 3)
                     {
-                        mixenStreamer.pause();
+                        mediaPlayer.pause();
                         Mixen.bufferTimes = 0;
                         Log.d(Mixen.TAG, "Max buffer times exceeded.");
+
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                //Wait 5 seconds to buffer.
+                                 mixenStreamer.start();
+                            }
+                        }, 5000);
                     }
 
                     hideUIControls();
@@ -203,7 +255,7 @@ public class MixenPlayer extends Activity {
                     playPauseButton.setBackgroundResource(R.drawable.pause);
                 }
 
-                mixenStreamer.start();
+                mediaPlayer.start();
                 restoreUIControls();
 
             }
@@ -284,8 +336,7 @@ public class MixenPlayer extends Activity {
         hideUIControls();
         retrieveURLsAsync = new getStreamURLAsync();
         retrieveURLsAsync.execute(Mixen.currentSong);
-        //retrieveArtAsync = new asyncArtworkClient();
-        //retrieveArtAsync.execute(Mixen.currentSong.getAlbumName());
+        findAlbumArtFromSpotify();
 
 
         Log.i(Mixen.TAG, "Grabbing URL for next song and signaling playback, it should begin shortly.");
@@ -451,6 +502,14 @@ public class MixenPlayer extends Activity {
         Toast.makeText(getApplicationContext(),
                 "Press again to close the player.", Toast.LENGTH_SHORT)
                 .show();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                pressedBefore = false;
+            }
+        }, 5000);
 
         pressedBefore = true;
         return;

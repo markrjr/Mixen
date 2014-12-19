@@ -156,6 +156,15 @@ public class StartScreen extends Activity {
                 "Press again to close the app.", Toast.LENGTH_SHORT)
                 .show();
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                pressedBefore = false;
+            }
+        }, 5000);
+
+
         pressedBefore = true;
         return;
 
