@@ -1,5 +1,6 @@
 package com.peak.mixen;
 
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
@@ -24,18 +25,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 import co.arcs.groove.thresher.Song;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
+import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 
-public class SearchSongs extends Activity {
+public class SearchSongs extends Activity{
 
-    private queryPopSongs searchPopSongs;
     private querySongs searchSongs;
     private Handler queryHandler;
     private ProgressBar indeterminateProgress;
     private EditText searchTermsET;
-    private ActionBar actionbar;
     private ListView songsLV;
 
     public static ArrayList<Song> foundSongs;
@@ -46,30 +53,22 @@ public class SearchSongs extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_songs);
 
-        actionbar = getActionBar();
-        searchPopSongs = new queryPopSongs();
-        searchSongs = new querySongs();
-        queryHandler = new Handler();
-
-        actionbar.setTitle(R.string.add_song);
+        getActionBar().hide();
 
         // Get ListView object from xml
         songsLV = (ListView) findViewById(R.id.songsLV);
         indeterminateProgress = (ProgressBar)findViewById(R.id.progressBar);
         searchTermsET = (EditText)findViewById(R.id.searchTermsET);
 
-        searchPopSongs.execute();
+        //searchPopSongs.execute();
 
-        indeterminateProgress.setVisibility(View.VISIBLE);
+        //
 
         searchTermsET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent keyEvent) {
 
                 //This will handle tapping the "Done" or "Enter" button on the keyboard after entering text.
-
-
-                indeterminateProgress.setVisibility(View.VISIBLE);
                 songsLV.setVisibility(View.GONE);
 
                 boolean handled = false;
@@ -78,11 +77,24 @@ public class SearchSongs extends Activity {
                     InputMethodManager inputManager = (InputMethodManager) SearchSongs.this.getSystemService(Context.INPUT_METHOD_SERVICE); // All this ridiculousness to hide the keyboard so that the user can see if an error has occurred in text validation.
                     inputManager.hideSoftInputFromWindow(SearchSongs.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
-                    if(searchTermsET.getText().length() != 0 && searchTermsET.getText().toString().matches("^[a-zA-Z0-9 ]*$"))
+                    String searchTerms = searchTermsET.getText().toString();
+
+                    if(searchTermsET.getText().length() != 0 && searchTerms.matches("^[a-zA-Z0-9 ]*$"))
                     {
-                        searchSongs = new querySongs();
-                        searchSongs.execute(searchTermsET.getText().toString());
-                        postHandleSearchTask();
+                        indeterminateProgress.setVisibility(View.VISIBLE);
+
+                        GrooveSharkRequests.findSong(searchTermsET.getText().toString(), new SimpleCallback() {
+                            @Override
+                            public void call() {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        postHandleSearchTask();
+                                    }
+                                });
+                            }
+                        });
+
                     }
 
                     handled = true;
@@ -93,10 +105,7 @@ public class SearchSongs extends Activity {
             }
         });
 
-
-        postHandleSearchTask();
-
-
+        indeterminateProgress.setVisibility(View.GONE);
         return;
 
     }
@@ -104,41 +113,24 @@ public class SearchSongs extends Activity {
     public void postHandleSearchTask()
     {
 
-        queryHandler.postDelayed(new Runnable() {
+        indeterminateProgress.setVisibility(View.GONE);
 
-            public void run() {
-                if (foundSongs == null)
-                {
-                    //If searchPopSongs did not return a list of found songs, then some sort of error occurred.
-                    Intent provideErrorInfo = new Intent(SearchSongs.this, MoreInfo.class);
-                    provideErrorInfo.putExtra("START_REASON", Mixen.GENERIC_NETWORK_ERROR);
-                    SearchSongs.this.finish();
-                    startActivity(provideErrorInfo);
-                }
-                else
-                {
-                    if (foundSongs.size() != 0)
-                    {
-                        populateListView(foundSongs);
-                        songsLV.setVisibility(View.VISIBLE);
+        if (foundSongs.size() != 0)
+        {
+            populateListView(foundSongs);
+            songsLV.setVisibility(View.VISIBLE);
 
-                    }
-                    else
-                    {
-                        songsLV.setVisibility(View.GONE);
-                        Intent provideErrorInfo = new Intent(SearchSongs.this, MoreInfo.class); //Totally lazy, but really easy.
-                        provideErrorInfo.putExtra("START_REASON", Mixen.SONG_NOT_FOUND);
-                        startActivity(provideErrorInfo);
-                        Log.i(Mixen.TAG, "Nothing could be found for the provided query.");
-                    }
-
-                }
-
-                indeterminateProgress.setVisibility(View.GONE);
+        }
+        else
+        {
+            songsLV.setVisibility(View.GONE);
+            Intent provideErrorInfo = new Intent(SearchSongs.this, MoreInfo.class); //Totally lazy, but really easy.
+            provideErrorInfo.putExtra("START_REASON", Mixen.GENERIC_STREAMING_ERROR);
+            startActivity(provideErrorInfo);
+            Log.i(Mixen.TAG, "Nothing could be found for the provided query.");
+        }
 
 
-            }
-        }, 2500);
 
     }
 
@@ -256,4 +248,6 @@ public class SearchSongs extends Activity {
 //        }
         return super.onOptionsItemSelected(item);
     }
+
+
 }

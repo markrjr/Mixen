@@ -1,7 +1,6 @@
 package com.peak.mixen;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,6 +43,7 @@ public class StartScreen extends Activity {
         Mixen.currentContext = getApplicationContext();
 
 
+
     }
 
 
@@ -57,58 +57,59 @@ public class StartScreen extends Activity {
                 //In order to stream down songs, the user must obviously have a connection to the internet.
 
                 check = new checkNetworkConnection();
-                check.execute();
+                check.execute(new SimpleCallback() {
+                    @Override
+                    public void call() {
+
+                        validateNetwork();
+                    }
+                });
 
                 findMixen.setVisibility(View.INVISIBLE);
                 createMixen.setVisibility(View.INVISIBLE);
                 indeterminateProgress.setVisibility(View.VISIBLE);
                 progressBarInfoTV.setVisibility(View.VISIBLE);
 
-
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-
-                    public void run() {
-                        if (Mixen.networkisReachableAsync) {
-
-                            Log.i(Mixen.TAG, "An internet connection is available.");
-
-                            Intent createNewMixen = new Intent(StartScreen.this, CreateMixen.class);
-
-                            startActivity(createNewMixen);
-
-                            indeterminateProgress.setVisibility(View.GONE);
-                            progressBarInfoTV.setVisibility(View.GONE);
-
-
-                        } else {
-
-                            Log.e(Mixen.TAG, "There is no connection to the internet.");
-
-                            Intent provideMoreInfo = new Intent(StartScreen.this, MoreInfo.class);
-
-                            provideMoreInfo.putExtra("START_REASON", Mixen.NO_NETWORK);
-
-
-                            startActivity(provideMoreInfo);
-
-                            indeterminateProgress.setVisibility(View.GONE);
-                            progressBarInfoTV.setVisibility(View.GONE);
-
-                            findMixen.setVisibility(View.VISIBLE);
-                            createMixen.setVisibility(View.VISIBLE);
-
-                        }
-
-
-
-                    }
-                }, 2000);
-
-                return;
-
+            return;
         }
     }
+
+
+    public void validateNetwork()
+    {
+        if (Mixen.networkisReachableAsync) {
+
+            Log.i(Mixen.TAG, "An internet connection is available.");
+
+            Intent createNewMixen = new Intent(StartScreen.this, CreateMixen.class);
+
+            startActivity(createNewMixen);
+
+            indeterminateProgress.setVisibility(View.GONE);
+            progressBarInfoTV.setVisibility(View.GONE);
+
+
+        } else {
+
+            Log.e(Mixen.TAG, "There is no connection to the internet.");
+
+            Intent provideMoreInfo = new Intent(StartScreen.this, MoreInfo.class);
+
+            provideMoreInfo.putExtra("START_REASON", Mixen.NO_NETWORK);
+
+
+            startActivity(provideMoreInfo);
+
+            indeterminateProgress.setVisibility(View.GONE);
+            progressBarInfoTV.setVisibility(View.GONE);
+
+            findMixen.setVisibility(View.VISIBLE);
+            createMixen.setVisibility(View.VISIBLE);
+
+        }
+
+    }
+
 
     public static void restoreControls()
     {

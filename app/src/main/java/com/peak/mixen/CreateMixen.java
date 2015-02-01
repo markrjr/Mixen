@@ -71,7 +71,7 @@ public class CreateMixen extends Activity {
                     //Make sure the user's input is not null and does not contain spaces and symbols.
 
                     Log.i(Mixen.TAG, "Creating a Mixen service for: " + userNameET.getText().toString());
-                    Intent createNewMixen = new Intent(CreateMixen.this, MixenPlayer.class);
+                    Intent createNewMixen = new Intent(CreateMixen.this, SongQueue.class);
                     createNewMixen.putExtra("userName", userNameET.getText().toString());
                     this.finish();
                     startActivity(createNewMixen);

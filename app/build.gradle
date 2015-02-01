@@ -3,10 +3,9 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 21
     buildToolsVersion "21.0.0"
-
     defaultConfig {
         applicationId "com.peak.mixen"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -17,7 +16,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/NOTICE'
@@ -25,10 +23,13 @@ android {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
     }
+    productFlavors {
+    }
 }
 
 repositories {
     mavenCentral()
+    jcenter()
     flatDir {
         dirs 'libs'
     }
@@ -41,5 +42,9 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0'
     compile 'com.squareup.retrofit:retrofit:1.6.0'
     compile 'com.squareup.okhttp:okhttp:2.0.+'
+    compile 'com.melnykov:floatingactionbutton:1.1.0'
+    compile 'com.github.traex.rippleeffect:library:1.2.3'
+    compile 'it.neokree:MaterialTabs:0.11'
+
     compile files('libs/spotify-web-api-android-0.1.0.jar')
 }

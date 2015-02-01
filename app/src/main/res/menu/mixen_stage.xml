@@ -6,13 +6,5 @@
         <!--android:orderInCategory="100"-->
         <!--android:showAsAction="never" />-->
 
-    <item android:id="@+id/currentMusicBtn"
-        android:icon="@drawable/music"
-        android:title=""
-        android:showAsAction="always"/>
-    <item android:id="@+id/viewUsersBtn"
-        android:icon="@drawable/people"
-        android:title="View current users"
-        android:showAsAction="always"
-        />
+
 </menu>
