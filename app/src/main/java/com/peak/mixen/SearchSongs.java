@@ -55,19 +55,25 @@ public class SearchSongs extends Activity{
 
         getActionBar().hide();
 
-        // Get ListView object from xml
+        // Boilerplate.
         songsLV = (ListView) findViewById(R.id.songsLV);
         indeterminateProgress = (ProgressBar)findViewById(R.id.progressBar);
         searchTermsET = (EditText)findViewById(R.id.searchTermsET);
 
-        //searchPopSongs.execute();
 
-        //
+        setupListListener();
 
+        indeterminateProgress.setVisibility(View.GONE);
+        return;
+
+    }
+
+
+    public void setupListListener()
+    {
         searchTermsET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent keyEvent) {
-
                 //This will handle tapping the "Done" or "Enter" button on the keyboard after entering text.
                 songsLV.setVisibility(View.GONE);
 
@@ -97,17 +103,15 @@ public class SearchSongs extends Activity{
 
                     }
 
+                    //We handled the input event.
                     handled = true;
 
                 }
 
-                return handled;
+                //In the actual function body.
+                return handled; //TODO Why is this always true?
             }
         });
-
-        indeterminateProgress.setVisibility(View.GONE);
-        return;
-
     }
 
     public void postHandleSearchTask()
@@ -115,19 +119,22 @@ public class SearchSongs extends Activity{
 
         indeterminateProgress.setVisibility(View.GONE);
 
-        if (foundSongs.size() != 0)
-        {
-            populateListView(foundSongs);
-            songsLV.setVisibility(View.VISIBLE);
-
-        }
-        else
+        if (GrooveSharkRequests.searchResultCode != 99)
         {
             songsLV.setVisibility(View.GONE);
             Intent provideErrorInfo = new Intent(SearchSongs.this, MoreInfo.class); //Totally lazy, but really easy.
-            provideErrorInfo.putExtra("START_REASON", Mixen.GENERIC_STREAMING_ERROR);
+            provideErrorInfo.putExtra("START_REASON", GrooveSharkRequests.searchResultCode);
             startActivity(provideErrorInfo);
-            Log.i(Mixen.TAG, "Nothing could be found for the provided query.");
+        }
+        else
+        {
+            populateListView(foundSongs);
+            songsLV.setVisibility(View.VISIBLE);
+            if (MixenPlayer.queueHasNextTrack())
+            {
+                MixenPlayer.upNext.setText(Mixen.queuedSongs.get(Mixen.currentSongAsInt + 1).getName());
+            }
+
         }
 
 
@@ -172,12 +179,7 @@ public class SearchSongs extends Activity{
                 // ListView Clicked item value
                 String userSelection = (String) songsLV.getItemAtPosition(position);
 
-                // Show Alert
-                Toast.makeText(getApplicationContext(),
-                        "Adding " + userSelection + " to song queue.", Toast.LENGTH_SHORT)
-                        .show();
-
-                Log.i(Mixen.TAG, "User selected: " + userSelection);
+                Log.i(Mixen.TAG, "Adding " + userSelection + " to song queue.");
 
                 addSongToQueue(userSelection);
 
@@ -197,6 +199,7 @@ public class SearchSongs extends Activity{
         if(Mixen.queuedSongs.isEmpty())
         {
             firstSong = true;
+            Log.i(Mixen.TAG, "First song added to queue.");
         }
 
         for(Song song : foundSongs)
@@ -211,17 +214,14 @@ public class SearchSongs extends Activity{
 
         if(firstSong)
         {
-
             Mixen.currentSongAsInt = 0;
             Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
             MixenPlayer.preparePlayback();
-            MixenPlayer.postHandlePlayback();
 
         }
         else if(!MixenPlayer.mixenStreamer.isPlaying() && !MixenPlayer.queueHasNextTrack())
         {
             MixenPlayer.preparePlayback();
-            MixenPlayer.postHandlePlayback();
         }
 
         Log.i(Mixen.TAG, "Queue contains " + Mixen.queuedSongs.size() + " songs.");

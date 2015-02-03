@@ -23,5 +23,26 @@
     <color name="Picton_Blue">#22A7F0</color>
     <color name="Material_Blue">#1E88E5</color>
 
+    <integer-array name="appcolors">
+        <item>@color/Icon_Orange</item>
+        <item>@color/Rebecca_Purple</item>
+        <item>@color/Jacksons_Purple</item>
+        <item>@color/Alice_Blue</item>
+        <item>@color/Monza</item>
+        <item>@color/Jelly_Bean</item>
+        <item>@color/Madison</item>
+        <item>@color/Edward</item>
+        <item>@color/Niagara</item>
+        <item>@color/Ocean_Green</item>
+        <item>@color/San_Marino</item>
+        <item>@color/Valencia</item>
+        <item>@color/Sunset_Orange</item>
+        <item>@color/Radical_Red</item>
+        <item>@color/Picton_Blue</item>
+        <item>@color/Lynch</item>
+
+
+    </integer-array>
+
 
 </resources>

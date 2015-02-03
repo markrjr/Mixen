@@ -103,7 +103,7 @@ public class StartScreen extends Activity {
             indeterminateProgress.setVisibility(View.GONE);
             progressBarInfoTV.setVisibility(View.GONE);
 
-            findMixen.setVisibility(View.VISIBLE);
+            //findMixen.setVisibility(View.VISIBLE);
             createMixen.setVisibility(View.VISIBLE);
 
         }

@@ -22,12 +22,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/searchTermsET"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
         android:hint="Find a song..."
         android:maxLines="1"
         android:width="160dp"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp" />
 
     <ProgressBar
         android:layout_width="wrap_content"

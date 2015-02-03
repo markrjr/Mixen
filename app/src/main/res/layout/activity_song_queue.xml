@@ -9,15 +9,14 @@
     android:id="@+id/relativeLayout">
 
     <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="false"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:id="@+id/queueLV"
-        android:visibility="visible" />
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="visible"
+        android:layout_alignParentStart="false"
+        android:paddingTop="40dp" />
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/fab"
@@ -28,12 +27,14 @@
         fab:fab_colorNormal="@color/Material_Blue"
         fab:fab_colorPressed="@color/Jacksons_Purple"
         fab:fab_colorRipple="@color/Snow_White"
-        android:layout_marginBottom="23dp"
         android:visibility="visible"
         android:onClick="onBtnClicked"
         android:layout_alignBottom="@+id/queueLV"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="10dp"
+        android:scaleType="center" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -46,14 +47,9 @@
         android:textColor="@color/Silver_Sand"
         android:textSize="40dp"
         android:visibility="gone"
-        android:gravity="center"
-        android:textAlignment="gravity" /><![CDATA[
+        android:gravity="center" />
 
 
-
-    />
-
-
-
-]]>
 </RelativeLayout>
+
+

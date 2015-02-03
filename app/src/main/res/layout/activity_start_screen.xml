@@ -32,7 +32,8 @@
         android:background="@color/Niagara"
         android:textColor="@color/Snow_White"
         android:textStyle="bold"
-        android:onClick="onBtnClicked" />
+        android:onClick="onBtnClicked"
+        android:visibility="invisible" />
 
     <Button
         android:layout_width="wrap_content"

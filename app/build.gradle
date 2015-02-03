@@ -5,7 +5,7 @@ android {
     buildToolsVersion "21.0.0"
     defaultConfig {
         applicationId "com.peak.mixen"
-        minSdkVersion 19
+        minSdkVersion 16
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
@@ -43,8 +43,7 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.6.0'
     compile 'com.squareup.okhttp:okhttp:2.0.+'
     compile 'com.melnykov:floatingactionbutton:1.1.0'
-    compile 'com.github.traex.rippleeffect:library:1.2.3'
-    compile 'it.neokree:MaterialTabs:0.11'
+    compile 'com.android.support:palette-v7:21.0.+'
+    compile(group: 'com.albertcbraun.wifidlite', name: 'wifidlite-lib', version: '0.1.1', ext: 'aar')
 
-    compile files('libs/spotify-web-api-android-0.1.0.jar')
 }

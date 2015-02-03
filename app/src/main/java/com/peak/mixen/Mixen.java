@@ -1,6 +1,8 @@
 package com.peak.mixen;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -12,6 +14,8 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import co.arcs.groove.thresher.Song;
+
+import static android.support.v4.app.ActivityCompat.startActivity;
 
 /**
  * Created by markrjr on 11/24/14.
@@ -26,6 +30,8 @@ public class Mixen {
     public static final int HELP = 5;
     public static final int ABOUT = 6;
 
+    public static final String COVER_ART_URL = "http://images.gs-cdn.net/static/albums/";
+
     public static int currentSongProgress;
 
     public static int currentSongAsInt;
@@ -33,8 +39,6 @@ public class Mixen {
     public static int bufferTimes = 0;
 
     public static String currentAlbumArt;
-
-    public static String currentArtistArt;
 
     public static final String TAG = "Mixen";
 
@@ -50,6 +54,15 @@ public class Mixen {
 
     public static String username;
 
+    public static int[] appColors;
+
+
+    public static Intent prepareErrorHandlerActivity(Activity currentActivity)
+    {
+        Intent provideErrorInfo = new Intent(currentActivity, MoreInfo.class); //Totally lazy, but really easy.
+        provideErrorInfo.putExtra("START_REASON", Mixen.GENERIC_STREAMING_ERROR);
+        return (provideErrorInfo);
+    }
 
 
 }

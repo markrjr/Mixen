@@ -20,6 +20,7 @@ import com.melnykov.fab.FloatingActionButton;
 
 import java.util.ArrayList;
 
+import co.arcs.groove.thresher.Client;
 import co.arcs.groove.thresher.Song;
 
 
@@ -43,9 +44,14 @@ public class SongQueue extends Activity {
         infoTV = (TextView)findViewById(R.id.infoTV);
         relativeLayout = (RelativeLayout)findViewById(R.id.relativeLayout);
 
+        relativeLayout.setBackgroundColor(getResources().getColor(R.color.Jacksons_Purple));
+
         fab.attachToListView(queueLV);
 
-        checkForSongsInQueue();
+        MixenPlayer.grooveSharkSession = new Client();
+        //checkForSongsInQueue();
+
+
 
     }
 
@@ -78,21 +84,20 @@ public class SongQueue extends Activity {
 
     private void checkForSongsInQueue()
     {
-        if(Mixen.queuedSongs.size() == 0)
+        if(!MixenPlayer.playerHasTrack())
         {
-
-            queueLV.setVisibility(View.INVISIBLE);
-            fab.setVisibility(View.VISIBLE);
             infoTV.setVisibility(View.VISIBLE);
+            fab.setVisibility(View.VISIBLE);
         }
         else
         {
             populateListView(Mixen.queuedSongs);
-            queueLV.setVisibility(View.VISIBLE);
             infoTV.setVisibility(View.GONE);
+            queueLV.setVisibility(View.VISIBLE);
             relativeLayout.setBackgroundColor(getResources().getColor(R.color.San_Marino));
 
         }
+
     }
 
 
@@ -149,6 +154,16 @@ public class SongQueue extends Activity {
 
 
                 Log.i(Mixen.TAG, "User selected: " + selected.getName());
+
+                if (position > Mixen.currentSongAsInt)
+                {
+                    MixenPlayer.mixenStreamer.reset();
+                    Mixen.currentSong = selected;
+                    Mixen.currentSongAsInt = position;
+                    Mixen.currentAlbumArt = Mixen.COVER_ART_URL + selected.getCoverArtFilename();
+                    MixenPlayer.preparePlayback();
+                    Log.d(Mixen.TAG, "Switching songs to " + selected.getName());
+                }
 
                 //addSongToQueue(userSelection);
 

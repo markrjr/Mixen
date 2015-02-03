@@ -31,9 +31,7 @@ import co.arcs.groove.thresher.*;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+
 
 public class MixenPlayer extends Activity {
 
@@ -43,6 +41,8 @@ public class MixenPlayer extends Activity {
     public static MediaPlayer mixenStreamer;
     public static SpotifyService spotify;
     public static Artist currentArtist;
+    public static TextView upNext;
+
 
 
     private static ImageButton playPauseButton;
@@ -57,9 +57,7 @@ public class MixenPlayer extends Activity {
 
     private boolean pressedBefore = false;
     private ImageView albumArtIV;
-    private TextView songDuration;
     private TextView songProgress;
-    private RelativeLayout baseLayout;
 
 
 
@@ -73,10 +71,7 @@ public class MixenPlayer extends Activity {
         getActionBar().hide();
 
         //Setup the GrooveShark and Spotify session as well as the media player.
-        grooveSharkSession = new Client();
 
-        api = new SpotifyApi();
-        spotify = api.getService();
 
         //grooveSharkSession.setDebugLoggingEnabled(true);
 
@@ -87,16 +82,17 @@ public class MixenPlayer extends Activity {
 
         Mixen.username = startingIntent.getStringExtra("userName");
 
+        Mixen.appColors = getResources().getIntArray(R.array.appcolors);
+
         //Setup the UI buttons.
-
-
 
         titleTV = (TextView) findViewById(R.id.titleTV);
         playPauseButton = (ImageButton) findViewById(R.id.playPauseButton);
         bufferPB = (ProgressBar) findViewById(R.id.bufferingPB);
         artistTV = (TextView) findViewById(R.id.artistTV);
         albumArtIV = (ImageView) findViewById(R.id.albumArtIV);
-        baseLayout = (RelativeLayout) findViewById(R.id.baseLayout);
+        songProgress = (TextView) findViewById(R.id.songProgressTV);
+        upNext = (TextView) findViewById(R.id.upNextTV);
 
 
         //Create the required list of songs.
@@ -106,14 +102,10 @@ public class MixenPlayer extends Activity {
 
         Mixen.currentContext = this.getApplicationContext();
 
-        playPauseButton.setScaleX(1.5f);
-        playPauseButton.setScaleY(1.5f);
-
         setupMediaPlayerListeners();
 
         playDrawable = getResources().getDrawable(R.drawable.play);
         pauseDrawable = getResources().getDrawable(R.drawable.pause);
-
 
 
     }
@@ -129,8 +121,29 @@ public class MixenPlayer extends Activity {
 
                 titleTV.setText(Mixen.currentSong.getName());
                 artistTV.setText(Mixen.currentSong.getArtistName());
-                //new DownloadArtistArt(baseLayout).execute(Mixen.currentArtistArt);
-                Log.i(Mixen.TAG, "Downloading artist art.");
+
+                if (hasAlbumArt())
+                {
+                    //TODO Check for same album.
+                    new DownloadAlbumArt(albumArtIV).execute();
+                    //albumArtIV.setImageURI(Uri.parse(Mixen.currentAlbumArt));
+                    Log.i(Mixen.TAG, "Will download album art.");
+                }
+                else
+                {
+                    albumArtIV.setBackgroundColor(Mixen.appColors[new Random().nextInt(Mixen.appColors.length)]);
+                    //albumArtIV.setImageDrawable(getDrawable(R.drawable.music)); TODO Find generic drawable.
+                    Log.i(Mixen.TAG, "Will set random color.");
+
+                }
+
+                Log.d(Mixen.TAG, "Current Song Info: " + Mixen.currentSong.getName() + " : " + Mixen.currentSong.getArtistName());
+
+
+                if (queueHasNextTrack())
+                {
+                    upNext.setText("Up Next: " + Mixen.queuedSongs.get(Mixen.currentSongAsInt + 1).getName());
+                }
 
 
                 restoreUIControls();
@@ -161,7 +174,6 @@ public class MixenPlayer extends Activity {
                 bufferPB.setVisibility(View.VISIBLE);
 
                 preparePlayback();
-                postHandlePlayback();
             }
         });
 
@@ -178,6 +190,8 @@ public class MixenPlayer extends Activity {
                 Intent provideMoreInfo = new Intent(MixenPlayer.this, MoreInfo.class);
 
                 provideMoreInfo.putExtra("START_REASON", Mixen.GENERIC_STREAMING_ERROR);
+
+                playPauseButton.setImageDrawable(playDrawable);
 
 
                 startActivity(provideMoreInfo);
@@ -233,9 +247,8 @@ public class MixenPlayer extends Activity {
 
                 if(playPauseButton.getBackground() == getDrawable(R.drawable.play))
                 {
-                    //TODO Probably shouldn't use the equals operator above.
                     //If the player is paused, then change the icon.
-                    playPauseButton.setBackground(pauseDrawable);
+                    playPauseButton.setImageDrawable(pauseDrawable);
                 }
 
                 mediaPlayer.start();
@@ -247,19 +260,8 @@ public class MixenPlayer extends Activity {
 
     }
 
-    public static void postHandlePlayback()
-    {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
 
-                MixenPlayer.beginPlayback();
-            }
-        }, 2000);
-    }
-
-
-    public boolean playerHasTrack()
+    public static boolean playerHasTrack()
     {
         try
         {
@@ -270,12 +272,17 @@ public class MixenPlayer extends Activity {
         {
             Log.i(Mixen.TAG, "No song was found in the queue.");
         }
+        catch (NullPointerException e)
+        {
+            Log.i(Mixen.TAG, "Queue not yet initialized.");
+        }
 
         return false;
     }
 
     public static boolean queueHasNextTrack()
     {
+        //TODO Fix function in program flow.
         try
         {
             Mixen.queuedSongs.get(Mixen.currentSongAsInt + 1);
@@ -283,9 +290,8 @@ public class MixenPlayer extends Activity {
         }
         catch (IndexOutOfBoundsException e)
         {
-            playPauseButton.setBackground(playDrawable);
-            titleTV.setText("");
-            artistTV.setText("");
+            playPauseButton.setImageDrawable(playDrawable);
+            upNext.setText("");
             Log.i(Mixen.TAG, "No song was found after the current one in the queue.");
         }
 
@@ -299,7 +305,17 @@ public class MixenPlayer extends Activity {
 
         bufferPB.setVisibility(View.VISIBLE);
         playPauseButton.setVisibility(View.INVISIBLE);
-        playPauseButton.setBackground(playDrawable);
+        playPauseButton.setImageDrawable(playDrawable);
+    }
+
+    public boolean hasAlbumArt()
+    {
+        if(Mixen.currentSong.getCoverArtFilename() == "" || Mixen.currentSong.getCoverArtFilename() == null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public void restoreUIControls()
@@ -308,7 +324,7 @@ public class MixenPlayer extends Activity {
 
         bufferPB.setVisibility(View.GONE);
         playPauseButton.setVisibility(View.VISIBLE);
-        playPauseButton.setBackground(pauseDrawable);
+        playPauseButton.setImageDrawable(pauseDrawable);
     }
 
 
@@ -319,21 +335,6 @@ public class MixenPlayer extends Activity {
         hideUIControls();
         retrieveURLsAsync = new getStreamURLAsync();
         retrieveURLsAsync.execute(Mixen.currentSong);
-        spotify.getArtist(Mixen.currentSong.getArtistName(), new Callback<Artist>() {
-            @Override
-            public void success(Artist artist, Response response) {
-
-                Mixen.currentArtistArt = artist.images.get(new Random().nextInt(artist.images.size())).url;
-                Log.d(Mixen.TAG, "Found artist art at " + artist.images.get(0).url);
-
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-
-            }
-        });
-
 
 
 
@@ -342,10 +343,6 @@ public class MixenPlayer extends Activity {
 
     public static void beginPlayback()
     {
-        //Begin playback of the song.
-
-        //TODO Post delay this with a handler. Not everyone has Google Fiber.
-
         Uri streamURI;
 
 
@@ -398,7 +395,7 @@ public class MixenPlayer extends Activity {
                     Mixen.currentSongProgress = mixenStreamer.getCurrentPosition();
 
                     mixenStreamer.pause();
-                    playPauseButton.setBackground(playDrawable);
+                    playPauseButton.setImageDrawable(playDrawable);
                     Log.i(Mixen.TAG, "Music playback has been paused.");
 
                     return;
@@ -407,7 +404,7 @@ public class MixenPlayer extends Activity {
                 {
                     mixenStreamer.seekTo(Mixen.currentSongProgress);
                     mixenStreamer.start();
-                    playPauseButton.setBackground(pauseDrawable);
+                    playPauseButton.setImageDrawable(pauseDrawable);
                     Log.i(Mixen.TAG, "Music playback has resumed.");
 
                     return;
@@ -430,7 +427,7 @@ public class MixenPlayer extends Activity {
                     }
 
                     mixenStreamer.pause();
-                    playPauseButton.setBackground(pauseDrawable);
+                    playPauseButton.setImageDrawable(pauseDrawable);
                     mixenStreamer.seekTo(Mixen.currentSongProgress + 30000); //Fast forward 30 seconds.
                     Log.i(Mixen.TAG, "Seeking forward 30 seconds.");
                 }
@@ -443,7 +440,7 @@ public class MixenPlayer extends Activity {
                 {
                     Mixen.currentSongProgress = mixenStreamer.getCurrentPosition();
                     mixenStreamer.pause();
-                    playPauseButton.setBackground(playDrawable);
+                    playPauseButton.setImageDrawable(playDrawable);
                     mixenStreamer.seekTo(Mixen.currentSongProgress - 30000);
                     Log.i(Mixen.TAG, "Seeking backwards 30 seconds.");
                 }
