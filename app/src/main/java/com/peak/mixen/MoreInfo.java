@@ -29,6 +29,7 @@ public class MoreInfo extends Activity {
         startingIntent = getIntent();
 
         getActionBar().hide();
+
         emoticonTV = (TextView)findViewById(R.id.emoticonTV);
         moreInfoTV = (TextView)findViewById(R.id.moreInfoTV);
         backButton = (Button)findViewById(R.id.backButton);

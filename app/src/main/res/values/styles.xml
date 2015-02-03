@@ -3,10 +3,15 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.Holo.Light">
         <!-- Custom theme configuration here. -->
-        parent="@android:style/Theme.Holo.Light.NoActionBar">
-        <item name="android:windowTranslucentStatus">true</item>
+        parent="@android:style/Theme.Holo.Light.DarkActionBar">
+        <item name="android:actionBarStyle">@style/MixenStageActionBar</item>
     </style>
 
+    <!-- ActionBar styles -->
+    <style name="MixenStageActionBar"
+        parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/San_Marino</item>
+    </style>
 
 
 </resources>
