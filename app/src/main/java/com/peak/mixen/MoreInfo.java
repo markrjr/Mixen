@@ -1,9 +1,7 @@
 package com.peak.mixen;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,7 +30,7 @@ public class MoreInfo extends Activity {
 
         emoticonTV = (TextView)findViewById(R.id.emoticonTV);
         moreInfoTV = (TextView)findViewById(R.id.moreInfoTV);
-        backButton = (Button)findViewById(R.id.backButton);
+        backButton = (Button)findViewById(R.id.createMixenButton);
         baseLayout = (RelativeLayout) findViewById(R.id.baseLayout);
 
 

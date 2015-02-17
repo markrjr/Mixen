@@ -44,6 +44,6 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.0.+'
     compile 'com.melnykov:floatingactionbutton:1.1.0'
     compile 'com.android.support:palette-v7:21.0.+'
-    compile(group: 'com.albertcbraun.wifidlite', name: 'wifidlite-lib', version: '0.1.1', ext: 'aar')
+    compile project(':salut')
 
 }

@@ -109,7 +109,7 @@ public class SearchSongs extends Activity{
                 }
 
                 //In the actual function body.
-                return handled; //TODO Why is this always true?
+                return handled;
             }
         });
     }
@@ -130,10 +130,6 @@ public class SearchSongs extends Activity{
         {
             populateListView(foundSongs);
             songsLV.setVisibility(View.VISIBLE);
-            if (MixenPlayer.queueHasNextTrack())
-            {
-                MixenPlayer.upNext.setText(Mixen.queuedSongs.get(Mixen.currentSongAsInt + 1).getName());
-            }
 
         }
 
@@ -218,10 +214,6 @@ public class SearchSongs extends Activity{
             Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
             MixenPlayer.preparePlayback();
 
-        }
-        else if(!MixenPlayer.mixenStreamer.isPlaying() && !MixenPlayer.queueHasNextTrack())
-        {
-            MixenPlayer.preparePlayback();
         }
 
         Log.i(Mixen.TAG, "Queue contains " + Mixen.queuedSongs.size() + " songs.");

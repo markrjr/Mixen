@@ -60,7 +60,9 @@
         android:layout_below="@+id/userNameET"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="23dp" />
+        android:layout_marginTop="23dp"
+        android:visibility="invisible"
+        android:text="@string/textValidationError" />
 
     <EditText
         android:layout_width="wrap_content"

@@ -1,10 +1,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.peak.mixen.MixenPlayer" >
-    <!--<item android:id="@+id/exit_app"-->
-        <!--android:title="@string/exit_app_string"-->
-        <!--android:orderInCategory="100"-->
-        <!--android:showAsAction="never" />-->
-
 
 </menu>

@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Okay"
-        android:id="@+id/backButton"
+        android:id="@+id/createMixenButton"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="47dp"
         android:textColor="@color/Snow_White"
@@ -46,7 +46,7 @@
         android:gravity="center"
         android:background="@color/Lynch"
         android:visibility="visible"
-        android:layout_above="@+id/backButton"
+        android:layout_above="@+id/createMixenButton"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="82dp" />

@@ -2,6 +2,13 @@
 <items version="2" >
 
     <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.squareup.retrofit/retrofit/1.6.0/39a9e4b49ded46aa1b67d492fe287c4cebcd815c/retrofit-1.6.0.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="39a9e4b49ded46aa1b67d492fe287c4cebcd815c">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/retrofit-1.6.0-ebecab7fabfa33adc282da26da4935befd89cfb6.jar" />
+    </item>
+    <item
         jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.melnykov/floatingactionbutton/1.1.0/classes.jar"
         jumboMode="false"
         revision="21.0.0"
@@ -14,76 +21,6 @@
         revision="21.0.0"
         sha1="4c8d1536dba3812cc1592090dc20c47a4ed3c35e">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/okhttp-2.0.0-5d0a29bba978952d127ad864a6e3c66543114e9b.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/libs/spotify-web-api-android-0.1.0.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="addb57b66406293d02b04b88d0d5d99d312727f5">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/spotify-web-api-android-0.1.0-a8fd0e228bd24e6e59f102e3674fceb7c4eb7ae0.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/libs/internal_impl-21.0.3.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-a741a7297a1a4ade6cba8f2525fcfe9146e1695f.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.2.4/a60a5e993c98c864010053cb901b7eab25306568/gson-2.2.4.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="a60a5e993c98c864010053cb901b7eab25306568">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/gson-2.2.4-36197632b494684ab1f4d8ec860754128cc3ff4f.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/classes.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-1f83de80c61fb4e206d7db91f2e91f8529abbaf0.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/recyclerview-v7/21.0.0/classes.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="efeda77c808750cb670ee9c48d8a1835d89dbcb2">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-f07a9344cbe64d9ab6105896115b2902bbb66bc2.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/15.0/ed727a8d9f247e2050281cb083f1c77b09dcb5cd/guava-15.0.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="ed727a8d9f247e2050281cb083f1c77b09dcb5cd">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/guava-15.0-2c1c0d56e37ba5830c6d239d28e8f4fe3f6451e6.jar" />
-    </item>
-    <item
-        jar="/Applications/Android Studio.app/Contents/android-sdk/extras/android/m2repository/com/android/support/support-annotations/21.0.3/support-annotations-21.0.3.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-de8782ede1dbce5dcfe4a7642687545b3f955184.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/2.0.2/516c03b21d50a644d538de0f0369c620989cd8f0/jsr305-2.0.2.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="516c03b21d50a644d538de0f0369c620989cd8f0">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jsr305-2.0.2-326a201dfacd77a1d03dd1054c0d06390f5b37d6.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.albertcbraun.wifidlite/wifidlite-lib/0.1.1/classes.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="c2be1b0f920777eb38bde930ce878a080c6f30d5">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-b93f54e46a415537a836a07425a2934bb7d1a307.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.squareup.retrofit/retrofit/1.6.0/39a9e4b49ded46aa1b67d492fe287c4cebcd815c/retrofit-1.6.0.jar"
-        jumboMode="false"
-        revision="21.0.0"
-        sha1="39a9e4b49ded46aa1b67d492fe287c4cebcd815c">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/retrofit-1.6.0-ebecab7fabfa33adc282da26da4935befd89cfb6.jar" />
     </item>
     <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.2.2/285cb9c666f0f0f3dd8a1be04e1f457eb7b15113/jackson-annotations-2.2.2.jar"
@@ -114,11 +51,53 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/httpclientandroidlib-4.3.0-f3f9a0ed8b987eaa4fd72f37bb3429b883d5cbf9.jar" />
     </item>
     <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/libs/spotify-web-api-android-0.1.0.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="addb57b66406293d02b04b88d0d5d99d312727f5">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/spotify-web-api-android-0.1.0-a8fd0e228bd24e6e59f102e3674fceb7c4eb7ae0.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/libs/internal_impl-21.0.3.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-a741a7297a1a4ade6cba8f2525fcfe9146e1695f.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.2.4/a60a5e993c98c864010053cb901b7eab25306568/gson-2.2.4.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="a60a5e993c98c864010053cb901b7eab25306568">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/gson-2.2.4-36197632b494684ab1f4d8ec860754128cc3ff4f.jar" />
+    </item>
+    <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/co.arcs.groove/thresher/1.2.1/af837afcfb42152d533bbd5bdb31c2801827876/thresher-1.2.1.jar"
         jumboMode="false"
         revision="21.0.0"
         sha1="0af837afcfb42152d533bbd5bdb31c2801827876">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/thresher-1.2.1-f776c8540e662f422b50bc10ef0e60657af7a0bc.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/21.0.3/classes.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-4d84634b54514ec7a9a5611f09228985131accf7.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/classes.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-1f83de80c61fb4e206d7db91f2e91f8529abbaf0.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/recyclerview-v7/21.0.0/classes.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="efeda77c808750cb670ee9c48d8a1835d89dbcb2">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-f07a9344cbe64d9ab6105896115b2902bbb66bc2.jar" />
     </item>
     <item
         jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/palette-v7/21.0.3/classes.jar"
@@ -135,11 +114,39 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-databind-2.2.2-57e7338e2875c2ff1d33343794aae838b53531e9.jar" />
     </item>
     <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/Mixen/salut/unspecified/classes.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="446fa92a78cb5f100e76f459eaa0e0659a0fc5e2">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-a5049e63a76c9205ebfd4b5f81bb99cce41d3c11.jar" />
+    </item>
+    <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.2.2/d20be6a5ddd6f8cfd36ebf6dea329873a1c41f1b/jackson-core-2.2.2.jar"
         jumboMode="false"
         revision="21.0.0"
         sha1="d20be6a5ddd6f8cfd36ebf6dea329873a1c41f1b">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-core-2.2.2-7335422656d444660349e64baff95e7560dc1a99.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/15.0/ed727a8d9f247e2050281cb083f1c77b09dcb5cd/guava-15.0.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="ed727a8d9f247e2050281cb083f1c77b09dcb5cd">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/guava-15.0-2c1c0d56e37ba5830c6d239d28e8f4fe3f6451e6.jar" />
+    </item>
+    <item
+        jar="/Applications/Android Studio.app/Contents/android-sdk/extras/android/m2repository/com/android/support/support-annotations/21.0.3/support-annotations-21.0.3.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-de8782ede1dbce5dcfe4a7642687545b3f955184.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/2.0.2/516c03b21d50a644d538de0f0369c620989cd8f0/jsr305-2.0.2.jar"
+        jumboMode="false"
+        revision="21.0.0"
+        sha1="516c03b21d50a644d538de0f0369c620989cd8f0">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jsr305-2.0.2-326a201dfacd77a1d03dd1054c0d06390f5b37d6.jar" />
     </item>
     <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.nineoldandroids/library/2.4.0/e9b63380f3a242dbdbf103a2355ad7e43bad17cb/library-2.4.0.jar"

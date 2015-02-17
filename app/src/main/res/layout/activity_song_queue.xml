@@ -9,14 +9,14 @@
     android:id="@+id/relativeLayout">
 
     <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:id="@+id/queueLV"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:visibility="visible"
         android:layout_alignParentStart="false"
-        android:paddingTop="40dp" />
+        android:paddingBottom="80dp" />
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/fab"
@@ -32,9 +32,26 @@
         android:layout_alignBottom="@+id/queueLV"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginRight="20dp"
         android:layout_marginBottom="10dp"
         android:scaleType="center" />
+
+    <com.melnykov.fab.FloatingActionButton
+        android:id="@+id/musicPlayerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:src="@drawable/music"
+        fab:fab_colorNormal="@color/Material_Blue"
+        fab:fab_colorPressed="@color/Jacksons_Purple"
+        fab:fab_colorRipple="@color/Snow_White"
+        android:visibility="visible"
+        android:onClick="onBtnClicked"
+        android:scaleType="center"
+        android:layout_alignTop="@+id/fab"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+
 
     <TextView
         android:layout_width="wrap_content"

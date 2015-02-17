@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -14,6 +13,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.view.inputmethod.EditorInfo;
 import android.view.KeyEvent;
+
+import com.peak.salut.Salut;
 
 public class CreateMixen extends Activity {
 
@@ -71,6 +72,7 @@ public class CreateMixen extends Activity {
                     //Make sure the user's input is not null and does not contain spaces and symbols.
 
                     Log.i(Mixen.TAG, "Creating a Mixen service for: " + userNameET.getText().toString());
+                    Mixen.username = userNameET.getText().toString();
                     Intent createNewMixen = new Intent(CreateMixen.this, SongQueue.class);
                     createNewMixen.putExtra("userName", userNameET.getText().toString());
                     this.finish();
@@ -79,7 +81,7 @@ public class CreateMixen extends Activity {
                 }
                 else
                 {
-                    alertTV.setText(R.string.textValidationError);
+                    alertTV.setVisibility(View.VISIBLE);
                     return;
                 }
 
