@@ -1,10 +1,17 @@
 package com.peak.mixen;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,7 +68,7 @@ class querySongs extends AsyncTask<String, Void, Void> {
     protected Void doInBackground(String... params) {
 
         try {
-            List songs = MixenPlayer.grooveSharkSession.searchSongs(songName);
+            List songs = Mixen.grooveSharkSession.searchSongs(songName);
             SearchSongs.foundSongs = new ArrayList<Song>(10);
             SearchSongs.foundSongs.addAll(GrooveSharkRequests.removeDups(songs));
 
@@ -94,11 +101,13 @@ class querySongs extends AsyncTask<String, Void, Void> {
 }
 
 
-class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> {
+class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> implements Palette.PaletteAsyncListener{
     ImageView imageView;
+    View v;
 
-    public DownloadAlbumArt(ImageView imageView) {
+    public DownloadAlbumArt(ImageView imageView, View v) {
         this.imageView = imageView;
+        this.v = v;
     }
 
     protected Bitmap doInBackground(Void... params) {
@@ -111,14 +120,54 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> {
             InputStream in = new java.net.URL(coverArt).openStream();
             art = BitmapFactory.decodeStream(in);
         } catch (Exception e) {
-            Log.e(Mixen.TAG, e.getMessage());
-            e.printStackTrace();
+            Log.e(Mixen.TAG, "Failed to get album art. It will not be available for this song.");
+            //Log.e(Mixen.TAG, e.getMessage());
+            //e.printStackTrace();
         }
         return art;
     }
 
     protected void onPostExecute(Bitmap result) {
-        imageView.setImageBitmap(result);
+        if(result != null)
+        {
+            imageView.setImageBitmap(result);
+            //Palette.generate(result);
+        }
+
+    }
+
+    @Override
+    public void onGenerated(Palette palette) {
+
+        //TODO Clean this up for the love of God, please.
+        Log.d(Mixen.TAG, "Generated colors.");
+
+        int darkVibrant = palette.getDarkVibrantColor(R.color.Dark_Primary);
+        int vibrant = palette.getVibrantColor(R.color.Accent_Color);
+
+        TextView titleTV = (TextView) v.findViewById(R.id.titleTV);
+        TextView artistTV = (TextView) v.findViewById(R.id.artistTV);
+        TextView upNextTV = (TextView) v.findViewById(R.id.upNextTV);
+
+        ImageButton playPauseButton = (ImageButton) v.findViewById(R.id.playPauseButton);
+        ImageButton fastForwardIB = (ImageButton) v.findViewById(R.id.fastForwardIB);
+        ImageButton rewindIB = (ImageButton) v.findViewById(R.id.rewindIB);
+        ProgressBar bufferPB = (ProgressBar) v.findViewById(R.id.bufferingPB);
+
+        RelativeLayout playerControls = (RelativeLayout) v.findViewById(R.id.playerControls);
+
+        titleTV.setBackgroundColor(vibrant);
+        artistTV.setBackgroundColor(vibrant);
+        upNextTV.setBackgroundColor(vibrant);
+
+        playPauseButton.setBackgroundColor(darkVibrant);
+        fastForwardIB.setBackgroundColor(darkVibrant);
+        rewindIB.setBackgroundColor(darkVibrant);
+        bufferPB.setBackgroundColor(darkVibrant);
+        playerControls.setBackgroundColor(darkVibrant);
+
+
+
     }
 }
 
@@ -131,7 +180,7 @@ class getStreamURLAsync extends AsyncTask<Song, Void, URL>
     protected URL doInBackground(Song... params) {
 
         try {
-            URL streamURL = MixenPlayer.grooveSharkSession.getStreamUrl(params[0]);
+            URL streamURL = Mixen.grooveSharkSession.getStreamUrl(params[0]);
             return streamURL;
         } catch (IOException IOError) {
             Log.e(Mixen.TAG, "IOError");
@@ -147,10 +196,8 @@ class getStreamURLAsync extends AsyncTask<Song, Void, URL>
 
     @Override
     protected void onPostExecute(URL url) {
-
-        MixenPlayer.beginPlayback();
-
         super.onPostExecute(url);
+        MixenPlayerFrag.beginPlayback();
     }
 }
 

@@ -26,8 +26,6 @@ public class MoreInfo extends Activity {
 
         startingIntent = getIntent();
 
-        getActionBar().hide();
-
         emoticonTV = (TextView)findViewById(R.id.emoticonTV);
         moreInfoTV = (TextView)findViewById(R.id.moreInfoTV);
         backButton = (Button)findViewById(R.id.createMixenButton);
@@ -99,7 +97,7 @@ public class MoreInfo extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.mixen_stage, menu);
+        getMenuInflater().inflate(R.menu.menu_mixen_base, menu);
         return true;
     }
 

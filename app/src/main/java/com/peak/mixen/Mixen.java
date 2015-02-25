@@ -3,11 +3,14 @@ package com.peak.mixen;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
 
+import com.nispok.snackbar.SnackbarManager;
 import com.peak.salut.Salut;
 
 import java.io.IOException;
@@ -48,6 +51,10 @@ public class Mixen {
 
     //Song and current session related data.
 
+    public static MediaPlayer player;
+
+    public static Client grooveSharkSession;
+
     public static final String COVER_ART_URL = "http://images.gs-cdn.net/static/albums/";
 
     public static int currentSongProgress;
@@ -57,7 +64,6 @@ public class Mixen {
     public static int bufferTimes = 0;
 
     public static String currentAlbumArt;
-
 
     public static Song currentSong;
 

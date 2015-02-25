@@ -1,17 +1,19 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light">
-        <!-- Custom theme configuration here. -->
-        parent="@android:style/Theme.Holo.Light.DarkActionBar">
-        <item name="android:actionBarStyle">@style/MixenStageActionBar</item>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Custom theme configuration here. -->
+        <!--parent="@android:style/Theme.Holo.Light.DarkActionBar">-->
+        <!--<item name="android:actionBarStyle">@style/MixenStageActionBar</item>-->
     </style>
 
-    <!-- ActionBar styles -->
-    <style name="MixenStageActionBar"
-        parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
-        <item name="android:background">@color/Valencia</item>
-    </style>
+    <!--&lt;!&ndash; ActionBar styles &ndash;&gt;-->
+    <!--<style name="MixenStageActionBar"-->
+        <!--parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">-->
+        <!--<item name="android:background">@color/Valencia</item>-->
+    <!--</style>-->
+
+
 
 
 </resources>

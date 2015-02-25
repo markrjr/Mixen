@@ -33,8 +33,6 @@ public class CreateMixen extends Activity {
         userNameET = (EditText)findViewById(R.id.userNameET);
         alertTV = (TextView)findViewById(R.id.alertTV);
         createMixen = (Button)findViewById(R.id.startCreateService);
-        getActionBar().hide();
-
 
         userNameET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -73,7 +71,7 @@ public class CreateMixen extends Activity {
 
                     Log.i(Mixen.TAG, "Creating a Mixen service for: " + userNameET.getText().toString());
                     Mixen.username = userNameET.getText().toString();
-                    Intent createNewMixen = new Intent(CreateMixen.this, SongQueue.class);
+                    Intent createNewMixen = new Intent(CreateMixen.this, MixenBase.class);
                     createNewMixen.putExtra("userName", userNameET.getText().toString());
                     this.finish();
                     startActivity(createNewMixen);
@@ -94,7 +92,7 @@ public class CreateMixen extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.mixen_stage, menu);
+        getMenuInflater().inflate(R.menu.menu_mixen_base, menu);
         return true;
     }
 

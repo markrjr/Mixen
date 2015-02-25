@@ -21,7 +21,10 @@
     <color name="Valencia">#D64541</color>
     <color name="San_Marino">#446CB3</color>
     <color name="Picton_Blue">#22A7F0</color>
-    <color name="Material_Blue">#1E88E5</color>
+    <color name="Primary_Color">#2196F3</color>
+    <color name="Dark_Primary">#1976D2</color>
+    <color name="Accent_Color">#FF5252</color>
+    <color name="Dark_Secondary">#E51C23</color>
 
     <integer-array name="appcolors">
         <item>@color/Icon_Orange</item>

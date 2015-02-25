@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +25,7 @@ public class StartScreen extends Activity {
     public TextView progressBarInfoTV;
     public ProgressBar indeterminateProgress;
     public checkNetworkConnection check;
+
 
     private boolean pressedBefore = false;
     private TextView AppNameTV;
@@ -47,7 +49,6 @@ public class StartScreen extends Activity {
 
         Mixen.appColors = getResources().getIntArray(R.array.appcolors);
 
-        getActionBar().hide();
 
         Mixen.currentContext = getApplicationContext();
 
@@ -68,7 +69,7 @@ public class StartScreen extends Activity {
     public void onBtnClicked(View v)
     {
 
-        //Salut.checkIfIsWifiEnabled(getApplicationContext());
+        Salut.checkIfIsWifiEnabled(getApplicationContext());
 
         switch(v.getId())
         {
@@ -76,16 +77,12 @@ public class StartScreen extends Activity {
 
                 //In order to stream down songs, the user must obviously have a connection to the internet.
 
-                findMixen.setVisibility(View.INVISIBLE);
-                createMixen.setVisibility(View.INVISIBLE);
-                indeterminateProgress.setVisibility(View.VISIBLE);
-                progressBarInfoTV.setVisibility(View.VISIBLE);
-
+                hideControls();
+                showProgress();
 
                 if (indeterminateProgress.getVisibility() == View.VISIBLE)
                 {
-                    indeterminateProgress.setVisibility(View.GONE);
-                    progressBarInfoTV.setVisibility(View.GONE);
+                    hideProgress();
                     skipNetworkCheck();
                     return;
                 }
@@ -104,24 +101,30 @@ public class StartScreen extends Activity {
 
             case R.id.findMixen:
 
-                findMixen.setVisibility(View.INVISIBLE);
-                createMixen.setVisibility(View.INVISIBLE);
-                indeterminateProgress.setVisibility(View.VISIBLE);
+                hideControls();
+                progressBarInfoTV.setGravity(Gravity.CENTER);
                 progressBarInfoTV.setVisibility(View.VISIBLE);
-                progressBarInfoTV.setText(R.string.mixen_network_search);
+                progressBarInfoTV.setText("Woah there, this feature isn't quite ready yet, come back later.");
 
-                Map appData = new HashMap();
-                appData.put("username", null);
-                appData.put("isHost", "FALSE");
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideProgress();
+                        restoreControls();
+                    }
+                }, 4000);
+                return;
 
+//                Map appData = new HashMap();
+//                appData.put("username", null);
+//                appData.put("isHost", "FALSE");
+//
+//
+//                Mixen.network = new Salut(getApplicationContext(), "_mixen", appData);
+//                Mixen.network.startNetworkService();
+//
+//                startActivity(new Intent(StartScreen.this, SongQueue.class));
 
-                Mixen.network = new Salut(getApplicationContext(), "_mixen", appData);
-                Mixen.network.startNetworkService();
-
-                startActivity(new Intent(StartScreen.this, SongQueue.class));
-
-
-            return;
         }
     }
 
@@ -132,9 +135,7 @@ public class StartScreen extends Activity {
 
             Log.i(Mixen.TAG, "An internet connection is available.");
 
-            indeterminateProgress.setVisibility(View.GONE);
-            progressBarInfoTV.setVisibility(View.GONE);
-
+            hideProgress();
 
             Intent createNewMixen = new Intent(StartScreen.this, CreateMixen.class);
 
@@ -153,11 +154,8 @@ public class StartScreen extends Activity {
 
             startActivity(provideMoreInfo);
 
-            indeterminateProgress.setVisibility(View.GONE);
-            progressBarInfoTV.setVisibility(View.GONE);
-
-            findMixen.setVisibility(View.VISIBLE);
-            createMixen.setVisibility(View.VISIBLE);
+            hideProgress();
+            restoreControls();
 
         }
 
@@ -166,16 +164,33 @@ public class StartScreen extends Activity {
 
     public static void restoreControls()
     {
-        //Called when MixenPlayer is closed for some reason.
         findMixen.setVisibility(View.VISIBLE);
         createMixen.setVisibility(View.VISIBLE);
 
     }
 
+    public static void hideControls()
+    {
+        findMixen.setVisibility(View.INVISIBLE);
+        createMixen.setVisibility(View.INVISIBLE);
+    }
+
+    public void showProgress()
+    {
+        indeterminateProgress.setVisibility(View.VISIBLE);
+        progressBarInfoTV.setVisibility(View.VISIBLE);
+    }
+
+    public void hideProgress()
+    {
+        indeterminateProgress.setVisibility(View.GONE);
+        progressBarInfoTV.setVisibility(View.GONE);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.mixen_stage, menu);
+        getMenuInflater().inflate(R.menu.menu_mixen_base, menu);
         return true;
     }
 

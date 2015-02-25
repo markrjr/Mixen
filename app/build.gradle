@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.0.0"
+    buildToolsVersion '21.1.2'
     defaultConfig {
         applicationId "com.peak.mixen"
         minSdkVersion 16
         targetSdkVersion 21
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName '0.1.8'
     }
     buildTypes {
         release {
@@ -44,6 +44,7 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.0.+'
     compile 'com.melnykov:floatingactionbutton:1.1.0'
     compile 'com.android.support:palette-v7:21.0.+'
+    compile 'it.neokree:MaterialTabs:0.11'
+    compile 'com.nispok:snackbar:2.9.1'
     compile project(':salut')
-
 }

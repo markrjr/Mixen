@@ -1,48 +1,42 @@
 package com.peak.mixen;
 
 
-import android.app.ActionBar;
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.SimpleCursorAdapter;
+import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.listeners.ActionClickListener;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 
 import co.arcs.groove.thresher.Song;
-import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.Artist;
-import kaaes.spotify.webapi.android.models.ArtistsPager;
-import kaaes.spotify.webapi.android.models.Tracks;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 
-public class SearchSongs extends Activity{
+public class SearchSongs extends ActionBarActivity{
 
-    private querySongs searchSongs;
-    private Handler queryHandler;
     private ProgressBar indeterminateProgress;
-    private EditText searchTermsET;
     private ListView songsLV;
 
     public static ArrayList<Song> foundSongs;
@@ -53,65 +47,41 @@ public class SearchSongs extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_songs);
 
-        getActionBar().hide();
+        getSupportActionBar().setTitle(Mixen.username + "'s Mixen.");
 
         // Boilerplate.
         songsLV = (ListView) findViewById(R.id.songsLV);
         indeterminateProgress = (ProgressBar)findViewById(R.id.progressBar);
-        searchTermsET = (EditText)findViewById(R.id.searchTermsET);
-
-
-        setupListListener();
-
         indeterminateProgress.setVisibility(View.GONE);
-        return;
 
-    }
+        this.setResult(Activity.RESULT_OK);
+        }
 
-
-    public void setupListListener()
+    private void handleIntent(Intent intent)
     {
-        searchTermsET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent keyEvent) {
-                //This will handle tapping the "Done" or "Enter" button on the keyboard after entering text.
-                songsLV.setVisibility(View.GONE);
+        if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
 
-                boolean handled = false;
-                if(actionId == EditorInfo.IME_ACTION_DONE);
-                {
-                    InputMethodManager inputManager = (InputMethodManager) SearchSongs.this.getSystemService(Context.INPUT_METHOD_SERVICE); // All this ridiculousness to hide the keyboard so that the user can see if an error has occurred in text validation.
-                    inputManager.hideSoftInputFromWindow(SearchSongs.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+            String query = intent.getStringExtra(SearchManager.QUERY);
 
-                    String searchTerms = searchTermsET.getText().toString();
+            if(query.length() != 0 && query.matches("^[a-zA-Z0-9 ]*$"))
+            {
+                indeterminateProgress.setVisibility(View.VISIBLE);
 
-                    if(searchTermsET.getText().length() != 0 && searchTerms.matches("^[a-zA-Z0-9 ]*$"))
-                    {
-                        indeterminateProgress.setVisibility(View.VISIBLE);
 
-                        GrooveSharkRequests.findSong(searchTermsET.getText().toString(), new SimpleCallback() {
+                GrooveSharkRequests.findSong(query, new SimpleCallback() {
+                    @Override
+                    public void call() {
+                        runOnUiThread(new Runnable() {
                             @Override
-                            public void call() {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        postHandleSearchTask();
-                                    }
-                                });
+                            public void run() {
+                                postHandleSearchTask();
                             }
                         });
-
                     }
+                });
 
-                    //We handled the input event.
-                    handled = true;
-
-                }
-
-                //In the actual function body.
-                return handled;
             }
-        });
+        }
     }
 
     public void postHandleSearchTask()
@@ -133,33 +103,24 @@ public class SearchSongs extends Activity{
 
         }
 
-
-
     }
 
-    public void populateListView(ArrayList<Song> listOfSongs)
+    private void populateListView(final ArrayList<Song> listOfSongs)
     {
-        String[] songNames = new String[listOfSongs.size()];
-        String[] songArtists = new String[listOfSongs.size()];
-        int names = 0;
-        int artists = 0;
+        ArrayAdapter adapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, listOfSongs) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
 
-        for(Song song : listOfSongs)
-        {
-
-            songNames[names] = song.getName();
-            songArtists[artists] = song.getArtistName();
-            names++;
-            artists++;
-        }
-
-
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, songNames);
-
-
-
+                text1.setText(listOfSongs.get(position).getName());
+                text2.setText(listOfSongs.get(position).getArtistName());
+                //text1.setTextSize(24);
+                //text2.setTextSize(18);
+                return view;
+            }
+        };
 
 
         // Assign adapter to ListView
@@ -170,61 +131,96 @@ public class SearchSongs extends Activity{
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
+                                    final int position, long id) {
 
                 // ListView Clicked item value
-                String userSelection = (String) songsLV.getItemAtPosition(position);
-
-                Log.i(Mixen.TAG, "Adding " + userSelection + " to song queue.");
-
-                addSongToQueue(userSelection);
+                final Song selected = (Song) songsLV.getItemAtPosition(position);
 
 
+                addSongToQueue(selected);
+
+                SnackbarManager.show(
+                        Snackbar.with(getApplicationContext())
+                                .text("Added " + selected.getName())
+                                .actionLabel("Undo")
+                                .actionColor(Color.YELLOW)
+                                .actionListener(new ActionClickListener() {
+                                    @Override
+                                    public void onActionClicked(Snackbar snackbar) {
+                                        Mixen.queuedSongs.remove(Mixen.queuedSongs.indexOf(selected));
+                                    }
+                                })
+                        , SearchSongs.this);
             }
 
         });
 
+        //Log.d(Mixen.TAG, "Updating Queue");
+    }
+
+    public void addSongToQueue(Song song)
+    {
+        if(Mixen.queuedSongs.isEmpty())
+        {
+            Log.i(Mixen.TAG, "First song added to queue.");
+            Mixen.queuedSongs.add(song);
+            Mixen.currentSongAsInt = 0;
+            Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
+            MixenPlayerFrag.preparePlayback();
+            Log.d(Mixen.TAG, "PREPARE FROM SEARCH. 1");
+            return;
+        }
+        else
+        {
+            Mixen.queuedSongs.add(song);
+
+            if(!Mixen.player.isPlaying() && !MixenPlayerFrag.queueHasNextTrack())
+            {
+                Mixen.currentSongAsInt++;
+                Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
+                MixenPlayerFrag.preparePlayback();
+            }
+        }
+
+        //TODO What if songs are in the queue, but have completed playback and a new one is suddenly added?
 
     }
 
-
-    public void addSongToQueue(String songName)
-    {
-        boolean firstSong = false;
-
-        if(Mixen.queuedSongs.isEmpty())
-        {
-            firstSong = true;
-            Log.i(Mixen.TAG, "First song added to queue.");
-        }
-
-        for(Song song : foundSongs)
-        {
-            if(song.getName() != null && song.getName().equals(songName))
-            {
-                Mixen.queuedSongs.add(song);
-                break;
-            }
-
-        }
-
-        if(firstSong)
-        {
-            Mixen.currentSongAsInt = 0;
-            Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
-            MixenPlayer.preparePlayback();
-
-        }
-
-        Log.i(Mixen.TAG, "Queue contains " + Mixen.queuedSongs.size() + " songs.");
-
+    @Override
+    protected void onNewIntent(Intent intent) {
+        handleIntent(intent);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.mixen_stage, menu);
+        getMenuInflater().inflate(R.menu.menu_search_songs, menu);
+
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager =
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        android.support.v7.widget.SearchView searchView =
+                (android.support.v7.widget.SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getComponentName()));
+
+        menu.findItem(R.id.search).expandActionView();
+
+        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean queryTextFocused) {
+
+                if(!queryTextFocused)
+                {
+                    SearchSongs.this.finish();
+                }
+
+            }
+        });
+
+
         return true;
 
     }

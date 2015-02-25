@@ -20,6 +20,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class Salut{
 
     //WiFi P2P Objects
     public WifiP2pServiceInfo serviceInfo;
-    public static WifiP2pDevice foundDevice;
+    public ArrayList<WifiP2pDevice> foundDevices;
     private static WifiManager wifiManager;
     public IntentFilter intentFilter = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
@@ -53,7 +54,7 @@ public class Salut{
     public String TTP = "._tcp";
     private final String SERVER_PORT = "25400"; //TODO Should not be hardcoded, instead should be an available port handed by Android.
 
-
+    //TODO For the love of God, please user super here in these constructors to bring it down to just one.
 
     public Salut(Context currentContext, String serviceName, Map<String, String> serviceData)
     {
@@ -61,6 +62,8 @@ public class Salut{
         this.serviceName = serviceName;
         this.serviceData = serviceData;
         TTP = serviceName + TTP;
+
+        foundDevices = new ArrayList<>();
 
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -84,6 +87,8 @@ public class Salut{
         this.serviceName = serviceName;
         TTP = serviceName + TTP;
 
+        foundDevices = new ArrayList<>();
+
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
@@ -103,6 +108,8 @@ public class Salut{
 
     public static void checkIfIsWifiEnabled(Context context)
     {
+        //TODO Create boolean to remember if WiFi was already enabled before we enable it.
+
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         if (!wifiManager.isWifiEnabled())
         {
@@ -120,7 +127,7 @@ public class Salut{
     }
 
 
-    public void startNetworkService() {
+    public void startNetworkService(SalutCallback function) {
         this.serviceData.put("LISTEN_PORT", String.valueOf(SERVER_PORT));
         serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceName, TTP , this.serviceData);
 
@@ -137,15 +144,15 @@ public class Salut{
             }
         });
 
-        setupDNSResponders();
+        setupDNSResponders(function);
 
     }
 
 
-    private void setupDNSResponders()
+    private void setupDNSResponders(final SalutCallback function)
     {
          /*
-         *Here, we register a listener for services. Each time a service is found
+         *Here, we register a listener for services. Each time a service is found we simply log.
          */
         WifiP2pManager.DnsSdServiceResponseListener serviceListener = new WifiP2pManager.DnsSdServiceResponseListener() {
             @Override
@@ -154,6 +161,11 @@ public class Salut{
                 if (instanceName.equalsIgnoreCase(serviceName))
                 {
                     Log.d(TAG, "Found a service named " + instanceName + " running on " + sourceDevice.deviceName + " registered as " + transportProtocol);
+                    if (!foundDevices.contains(sourceDevice))
+                    {
+                        foundDevices.add(sourceDevice);
+                        function.call();
+                    }
                 }
 
             }
@@ -194,7 +206,7 @@ public class Salut{
         discoverNetworkService(new SalutCallback() {
             @Override
             public void call() {
-
+                //
             }
         });
 

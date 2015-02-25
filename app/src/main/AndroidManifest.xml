@@ -6,22 +6,25 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+
+    <!--To check for incoming phone calls.-->
 
     <application
-        tools:replace="android:icon"
         android:allowBackup="true"
         android:icon="@drawable/mixen_icon"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme"
+        tools:replace="android:icon" >
         <activity
             android:name=".StartScreen"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -30,15 +33,19 @@
             android:label="@string/title_activity_create_mixen"
             android:screenOrientation="portrait" >
         </activity>
-        <activity
-            android:name=".MixenPlayer"
-            android:label="@string/title_activity_mixen_stage"
-            android:screenOrientation="portrait" >
-        </activity>
+
         <activity
             android:name=".SearchSongs"
             android:label="@string/title_activity_search_songs"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop">
+
+            <meta-data android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+
         </activity>
         <activity
             android:name=".MoreInfo"
@@ -46,8 +53,9 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".SongQueue"
-            android:label="@string/title_activity_song_queue" >
+            android:name=".MixenBase"
+            android:label="@string/title_activity_mixen_base"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 
