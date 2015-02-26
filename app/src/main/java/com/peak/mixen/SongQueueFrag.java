@@ -42,13 +42,12 @@ import co.arcs.groove.thresher.Song;
 
 public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
-    private ListView queueLV;
+    private static ListView queueLV;
     private FloatingActionButton addSongButton;
-    private FloatingActionButton musicPlayerButton;
-    private TextView infoTV;
+    private static TextView infoTV;
     private RelativeLayout relativeLayout;
     private Intent addSong;
-    private ArrayAdapter queueAdapter;
+    private static ArrayAdapter queueAdapter;
     public static final int ADD_SONG_REQUEST = 5;
     public static boolean snackBarVisible = false;
 
@@ -72,7 +71,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         return relativeLayout;
     }
 
-    public void updateQueueUI() {
+    public static void updateQueueUI() {
 
         if (MixenPlayerFrag.playerHasTrack()) {
 
@@ -135,6 +134,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         @Override
                                         public void onActionClicked(Snackbar snackbar) {
 
+                                            boolean currentSongWasDeleted = false;
+
                                             if(Mixen.queuedSongs.size() == 1)
                                             {
                                                 //If this is the only song in the queue.
@@ -142,19 +143,27 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                                 Mixen.player.reset();
 
                                                 //TODO Cleanup UI.
+                                                MixenPlayerFrag.cleanUpUI();
                                             }
-                                            else if(MixenPlayerFrag.queueHasNextTrack() && Mixen.currentSong.getName().equals(MixenPlayerFrag.titleTV.getText().toString()))
+                                            else if(Mixen.currentSong == selected)
                                             {
                                                 //Or, someone wants to delete the current playing song.
                                                 Mixen.player.stop();
                                                 Mixen.player.reset();
-                                                Mixen.currentSongAsInt++;
-                                                Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
-                                                MixenPlayerFrag.preparePlayback();
+                                                currentSongWasDeleted = true;
+                                                Log.d(Mixen.TAG, "Current song was deleted.");
                                             }
 
                                             Mixen.queuedSongs.remove(Mixen.queuedSongs.indexOf(selected));
                                             updateQueueUI();
+
+                                            if(currentSongWasDeleted)
+                                            {
+                                                Mixen.previousAlbumArt = Mixen.currentAlbumArt;
+                                                Mixen.currentSongAsInt = 0;
+                                                Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
+                                                MixenPlayerFrag.preparePlayback();
+                                            }
 
                                         }
                                     })

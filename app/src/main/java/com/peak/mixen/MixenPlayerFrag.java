@@ -36,15 +36,15 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener, V
     private RelativeLayout playerControls;
     private static ProgressBar bufferPB;
     private static getStreamURLAsync retrieveURLsAsync;
-    public static TextView titleTV;
-    private static TextView artistTV;
+
     private static Drawable playDrawable;
     private static Drawable pauseDrawable;
 
     public static TextView upNextTV;
-    private ImageView albumArtIV;
+    public static TextView titleTV;
+    public static TextView artistTV;
+    public static ImageView albumArtIV;
     private View currentView;
-    private boolean UIIsUpdated;
     public boolean stoppedPlayingUnexpectedly;
 
     @Override
@@ -68,7 +68,9 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener, V
         rewindIB.setOnClickListener(this);
 
 
-        //Create the required list of songs.
+        bufferPB.getIndeterminateDrawable().setColorFilter(
+                getResources().getColor(R.color.Snow_White),
+                android.graphics.PorterDuff.Mode.SRC_IN);
 
 
         setupMediaPlayerListeners();
@@ -86,8 +88,16 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener, V
 
         if (hasAlbumArt()) {
             //TODO Check for same album.
-            new DownloadAlbumArt(albumArtIV, currentView).execute();
-            Log.i(Mixen.TAG, "Will download album art.");
+            if(Mixen.previousAlbumArt.equals(Mixen.currentAlbumArt))
+            {
+                Log.i(Mixen.TAG, "Album art is same.");
+            }
+            else
+            {
+                new DownloadAlbumArt(albumArtIV, currentView).execute();
+                Log.i(Mixen.TAG, "Will download album art.");
+            }
+
         } else {
             albumArtIV.setBackgroundColor(Mixen.appColors[new Random().nextInt(Mixen.appColors.length)]);
 
@@ -102,15 +112,13 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener, V
             upNextTV.setText("Up Next: " + getNextTrack().getName());
         }
 
-        UIIsUpdated = true;
     }
 
-    public void cleanUpUI()
+    public static void cleanUpUI()
     {
         titleTV.setText("");
         artistTV.setText("");
         albumArtIV.setImageResource(0);
-        UIIsUpdated = false;
     }
 
     public void showOrHidePlayBtn()
@@ -142,7 +150,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener, V
         else if(playerHasTrack())
         {
             Mixen.player.seekTo(Mixen.currentSongProgress);
-            Mixen.player.start();
+            //Mixen.player.start();
             showOrHidePlayBtn();
             //Log.i(Mixen.TAG, "Music playback has resumed.");
 
@@ -164,6 +172,9 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener, V
 
     public void setupMediaPlayerListeners()
     {
+        //How the hell do these even work if I'm running the media player in a separate thread?
+        //Shouldn't this require "runOnUIThread" anytime I want to make an update to the UI?
+
         Mixen.player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
@@ -197,9 +208,15 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener, V
                 }
 
                 hideUIControls();
-                Mixen.currentSongAsInt++;
+
+                Mixen.previousAlbumArt = Mixen.currentAlbumArt;
+
+                Mixen.currentSongAsInt = 0;
+                Mixen.queuedSongs.remove(Mixen.queuedSongs.indexOf(Mixen.currentSong));
+                SongQueueFrag.updateQueueUI();
                 Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
                 mediaPlayer.reset();
+
 
                 preparePlayback();
             }
@@ -378,19 +395,10 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener, V
             Log.i(Mixen.TAG, "Track ID is " + Mixen.currentSong.getId());
             Mixen.player.setDataSource(Mixen.currentContext, streamURI);
         }
-        catch (InterruptedException e)
+        catch (Exception ex)
         {
             Log.e(Mixen.TAG, "An error occurred, playback could not be started.");
-            return;
-        }
-        catch (IOException e)
-        {
-            Log.e(Mixen.TAG, "An error occurred, playback could not be started.");
-            return;
-        }
-        catch (ExecutionException e)
-        {
-            Log.e(Mixen.TAG, "An error occurred.");
+            ex.printStackTrace();
             return;
         }
 

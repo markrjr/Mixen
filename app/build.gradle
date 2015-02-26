@@ -7,8 +7,8 @@ android {
         applicationId "com.peak.mixen"
         minSdkVersion 16
         targetSdkVersion 21
-        versionCode 4
-        versionName '0.1.8'
+        versionCode 7
+        versionName '0.1.9'
     }
     buildTypes {
         release {

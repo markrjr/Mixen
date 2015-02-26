@@ -54,6 +54,10 @@ public class SearchSongs extends ActionBarActivity{
         indeterminateProgress = (ProgressBar)findViewById(R.id.progressBar);
         indeterminateProgress.setVisibility(View.GONE);
 
+        indeterminateProgress.getIndeterminateDrawable().setColorFilter(
+                getResources().getColor(R.color.Snow_White),
+                android.graphics.PorterDuff.Mode.SRC_IN);
+
         this.setResult(Activity.RESULT_OK);
         }
 

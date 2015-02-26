@@ -114,6 +114,7 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> implements Palette.
 
 
         String coverArt = Mixen.COVER_ART_URL + Mixen.currentSong.getCoverArtFilename();
+        Mixen.currentAlbumArt = coverArt;
 
         Bitmap art = null;
         try {

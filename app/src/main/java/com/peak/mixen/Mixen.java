@@ -1,22 +1,29 @@
 package com.peak.mixen;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.RemoteControlClient;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
 
 import com.nispok.snackbar.SnackbarManager;
 import com.peak.salut.Salut;
+import com.squareup.okhttp.internal.Util;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Set;
 
 import co.arcs.groove.thresher.Client;
 import co.arcs.groove.thresher.Song;
@@ -48,6 +55,8 @@ public class Mixen {
 
     public static boolean networkisReachableAsync;
 
+    public static AudioManager audioManager;
+
 
     //Song and current session related data.
 
@@ -64,6 +73,8 @@ public class Mixen {
     public static int bufferTimes = 0;
 
     public static String currentAlbumArt;
+
+    public static String previousAlbumArt = "";
 
     public static Song currentSong;
 
@@ -83,6 +94,54 @@ public class Mixen {
         return (provideErrorInfo);
     }
 
+    public static void setupAudioManager()
+    {
+        Mixen.audioManager = (AudioManager)currentContext.getSystemService(Context.AUDIO_SERVICE);
+    }
+    public static boolean requestAudioFocus() {
+        // Request audio focus for playback
+        int result = audioManager.requestAudioFocus(new AudioManager.OnAudioFocusChangeListener() {
+                                                        @Override
+                                                        public void onAudioFocusChange(int audioChange) {
+
+                                                            if(audioChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)
+                                                            {
+                                                                if(Mixen.player.isPlaying())
+                                                                {
+                                                                    Mixen.currentSongProgress = Mixen.player.getCurrentPosition();
+                                                                    Mixen.player.pause();
+                                                                }
+
+                                                            }
+                                                            else if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
+                                                            {
+                                                                if(!Mixen.player.isPlaying() && MixenPlayerFrag.playerHasTrack() && Mixen.player.getCurrentPosition() > 0)
+                                                                {
+                                                                    Mixen.player.seekTo(Mixen.currentSongProgress);
+                                                                }
+                                                            }
+                                                            else if(audioChange == AudioManager.AUDIOFOCUS_LOSS);
+                                                            {
+                                                                if(Mixen.player.isPlaying())
+                                                                {
+                                                                    Mixen.currentSongProgress = Mixen.player.getCurrentPosition();
+                                                                    Mixen.player.pause();
+                                                                    audioManager.abandonAudioFocus(this);
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                // Use the music stream.
+                AudioManager.STREAM_MUSIC,
+                // Request permanent focus.
+                AudioManager.AUDIOFOCUS_GAIN);
+
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 interface SimpleCallback

@@ -70,15 +70,23 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         initMixen();
         setupPhoneListener();
+        //Mixen.setupAudioManager();
 
     }
 
     public void initMixen()
     {
-        Mixen.player = new MediaPlayer();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
 
-        Mixen.player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-        Mixen.player.setLooping(false);
+                Mixen.player = new MediaPlayer();
+                Mixen.player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                Mixen.player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+                Mixen.player.setLooping(false);
+            }
+        }, "Mixen-Player").start();
+
 
         Mixen.grooveSharkSession = new Client();
         Mixen.queuedSongs = new ArrayList<Song>();
@@ -115,6 +123,12 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Salut.disableWiFi(getApplicationContext());
+    }
+
     public void setupMixenNetwork()
     {
         Map appData = new HashMap();
@@ -138,6 +152,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         }
 
     }
+
 
     public void setupPhoneListener() {
 
@@ -197,9 +212,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             telephonyManager.listen(phoneStateListener,PhoneStateListener.LISTEN_CALL_STATE);
         }
     }
-
-
-
 
 
 
