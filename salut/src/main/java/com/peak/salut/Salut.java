@@ -37,7 +37,7 @@ public class Salut{
 
     //WiFi P2P Objects
     public WifiP2pServiceInfo serviceInfo;
-    public ArrayList<WifiP2pDevice> foundDevices;
+    public HashMap<String, WifiP2pDevice> foundDevices;
     private static WifiManager wifiManager;
     public IntentFilter intentFilter = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
@@ -63,7 +63,7 @@ public class Salut{
         this.serviceData = serviceData;
         TTP = serviceName + TTP;
 
-        foundDevices = new ArrayList<>();
+        foundDevices = new HashMap<>();
 
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -87,7 +87,7 @@ public class Salut{
         this.serviceName = serviceName;
         TTP = serviceName + TTP;
 
-        foundDevices = new ArrayList<>();
+        foundDevices = new HashMap<>();
 
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -160,12 +160,7 @@ public class Salut{
 
                 if (instanceName.equalsIgnoreCase(serviceName))
                 {
-                    Log.d(TAG, "Found a service named " + instanceName + " running on " + sourceDevice.deviceName + " registered as " + transportProtocol);
-                    if (!foundDevices.contains(sourceDevice))
-                    {
-                        foundDevices.add(sourceDevice);
-                        function.call();
-                    }
+                    Log.v(TAG, "Found a service named " + instanceName + " running on " + sourceDevice.deviceName + " registered as " + transportProtocol);
                 }
 
             }
@@ -177,7 +172,15 @@ public class Salut{
             public void onDnsSdTxtRecordAvailable(String serviceFullDomainName, Map<String, String> record, WifiP2pDevice device) {
 
                 Log.d(TAG, "Found " + device.deviceName +  " " + record.values().toString());
+
+                String username = record.get("username");
+
                 Toast.makeText(currentContext, "Found " + device.deviceName + "  :  User is " + record.get("username"), Toast.LENGTH_SHORT).show();
+                if (!foundDevices.containsValue(device) && record.get("username") != null)
+                {
+                    foundDevices.put(username, device);
+                    function.call();
+                }
 
             }
         };

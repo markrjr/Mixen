@@ -113,8 +113,8 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> implements Palette.
     protected Bitmap doInBackground(Void... params) {
 
 
-        String coverArt = Mixen.COVER_ART_URL + Mixen.currentSong.getCoverArtFilename();
-        Mixen.currentAlbumArt = coverArt;
+        String coverArt = Mixen.COVER_ART_URL + MixenPlayerService.currentSong.getCoverArtFilename();
+        MixenPlayerService.currentAlbumArt = coverArt;
 
         Bitmap art = null;
         try {
@@ -198,7 +198,7 @@ class getStreamURLAsync extends AsyncTask<Song, Void, URL>
     @Override
     protected void onPostExecute(URL url) {
         super.onPostExecute(url);
-        MixenPlayerFrag.beginPlayback();
+        Mixen.currentContext.startService(MixenPlayerService.setup);
     }
 }
 

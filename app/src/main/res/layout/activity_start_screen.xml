@@ -65,7 +65,7 @@
         android:background="@color/Dark_Primary" />
 
     <ProgressBar
-        style="?android:attr/progressBarStyleLarge"
+        style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/progressBar"
@@ -83,7 +83,7 @@
         android:text="@string/progressBarInfo"
         android:id="@+id/progressBarInfoTV"
         android:textColor="@color/Snow_White"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:visibility="gone"
         android:layout_alignBottom="@+id/findMixen"
         android:layout_centerHorizontal="true"

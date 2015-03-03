@@ -1,6 +1,7 @@
 package com.peak.mixen;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,11 +29,12 @@ public class StartScreen extends Activity {
 
 
     private boolean pressedBefore = false;
+    private Intent createNewMixen;
     private TextView AppNameTV;
     private TextView DescriptTV;
 
-    private static Button findMixen;
-    private static Button createMixen;
+    private Button findMixen;
+    private Button createMixen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,35 @@ public class StartScreen extends Activity {
 
         Mixen.currentContext = getApplicationContext();
 
+        Mixen.sharedPref = getSharedPreferences(Mixen.MIXEN_PREF_FILE, Context.MODE_PRIVATE);
+
+        //Mixen.sharedPref.edit().clear().apply();
+
+        if(!isFirstRun())
+        {
+            createNewMixen = new Intent(StartScreen.this, MixenBase.class);
+            progressBarInfoTV.setText("Restoring " + Mixen.username + "'s mixen...");
+        }
+        else
+        {
+            createNewMixen = new Intent(StartScreen.this, CreateMixen.class);
+        }
+
+        indeterminateProgress.getIndeterminateDrawable().setColorFilter(
+                getResources().getColor(R.color.Snow_White),
+                android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    public boolean isFirstRun()
+    {
+        boolean isFirstRun;
+
+
+            isFirstRun = Mixen.sharedPref.getBoolean("FIRST_RUN", true);
+            Mixen.username = Mixen.sharedPref.getString("username", "Anonymous");
+
+        return isFirstRun;
+
     }
 
 
@@ -59,11 +90,26 @@ public class StartScreen extends Activity {
     {
         Log.i(Mixen.TAG, "Skipping network connection check...");
 
-        Intent createNewMixen = new Intent(StartScreen.this, CreateMixen.class);
-
         Mixen.isHost = true; //User will host content for other users.
 
-        startActivity(createNewMixen);
+        if(!isFirstRun())
+        {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(createNewMixen);
+                    hideProgress();
+                    restoreControls();
+                }
+            }, 1500);
+        }
+        else
+        {
+            startActivity(createNewMixen);
+            hideProgress();
+            restoreControls();
+        }
+
     }
 
     public void onBtnClicked(View v)
@@ -76,25 +122,19 @@ public class StartScreen extends Activity {
             case R.id.createMixenButton:
 
                 //In order to stream down songs, the user must obviously have a connection to the internet.
-
-                hideControls();
                 showProgress();
+                hideControls();
 
-                if (indeterminateProgress.getVisibility() == View.VISIBLE)
-                {
-                    hideProgress();
-                    skipNetworkCheck();
-                    return;
-                }
+                skipNetworkCheck();
 
-                check = new checkNetworkConnection();
-                check.execute(new SimpleCallback() {
-                    @Override
-                    public void call() {
-
-                        validateNetwork();
-                    }
-                });
+//                check = new checkNetworkConnection();
+//                check.execute(new SimpleCallback() {
+//                    @Override
+//                    public void call() {
+//
+//                        validateNetwork();
+//                    }
+//                });
 
 
             return;
@@ -104,7 +144,7 @@ public class StartScreen extends Activity {
                 hideControls();
                 progressBarInfoTV.setGravity(Gravity.CENTER);
                 progressBarInfoTV.setVisibility(View.VISIBLE);
-                progressBarInfoTV.setText("Woah there, this feature isn't quite ready yet, come back later.");
+                progressBarInfoTV.setText("Whoa there, this feature isn't quite ready yet, come back later.");
 
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -112,7 +152,7 @@ public class StartScreen extends Activity {
                         hideProgress();
                         restoreControls();
                     }
-                }, 4000);
+                }, 3000);
                 return;
 
 //                Map appData = new HashMap();
@@ -162,14 +202,14 @@ public class StartScreen extends Activity {
     }
 
 
-    public static void restoreControls()
+    public void restoreControls()
     {
         findMixen.setVisibility(View.VISIBLE);
         createMixen.setVisibility(View.VISIBLE);
 
     }
 
-    public static void hideControls()
+    public void hideControls()
     {
         findMixen.setVisibility(View.INVISIBLE);
         createMixen.setVisibility(View.INVISIBLE);
@@ -238,7 +278,7 @@ public class StartScreen extends Activity {
 
                 pressedBefore = false;
             }
-        }, 5000);
+        }, 3000);
 
 
         pressedBefore = true;

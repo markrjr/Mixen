@@ -41,7 +41,7 @@ public class SalutBroadcastReceiver extends BroadcastReceiver {
             int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
 
             if (state != WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
-                Log.d(TAG, " WiFi P2P is no longer enabled.");
+                Log.v(TAG, " WiFi P2P is no longer enabled.");
             }
 
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
@@ -67,19 +67,19 @@ public class SalutBroadcastReceiver extends BroadcastReceiver {
                 manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
                     @Override
                     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-                        Log.d(TAG, "Group has been formed " + wifiP2pInfo.groupFormed);
+                        Log.v(TAG, "Group has been formed " + wifiP2pInfo.groupFormed);
                     }
                 });
 
             } else {
-                Log.d(TAG, "Not connected to another device.");
+                Log.v(TAG, "Not connected to another device.");
             }
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 
             WifiP2pDevice device = (WifiP2pDevice) intent
                     .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-            Log.d(TAG, device.deviceName + " is now using P2P. ");
+            Log.v(TAG, device.deviceName + " is now using P2P. ");
 
         }
 

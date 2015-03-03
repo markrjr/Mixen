@@ -151,7 +151,7 @@ public class SearchSongs extends ActionBarActivity{
                                 .actionListener(new ActionClickListener() {
                                     @Override
                                     public void onActionClicked(Snackbar snackbar) {
-                                        Mixen.queuedSongs.remove(Mixen.queuedSongs.indexOf(selected));
+                                        MixenPlayerService.queuedSongs.remove(MixenPlayerService.queuedSongs.indexOf(selected));
                                     }
                                 })
                         , SearchSongs.this);
@@ -164,29 +164,33 @@ public class SearchSongs extends ActionBarActivity{
 
     public void addSongToQueue(Song song)
     {
-        if(Mixen.queuedSongs.isEmpty())
+        if(MixenPlayerService.queuedSongs.isEmpty())
         {
             Log.i(Mixen.TAG, "First song added to queue.");
-            Mixen.queuedSongs.add(song);
-            Mixen.currentSongAsInt = 0;
-            Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
+            MixenPlayerService.queuedSongs.add(song);
+            MixenPlayerService.currentSongAsInt = 0;
+            MixenPlayerService.currentSong = MixenPlayerService.queuedSongs.get(MixenPlayerService.currentSongAsInt);
             MixenPlayerFrag.preparePlayback();
-            Log.d(Mixen.TAG, "PREPARE FROM SEARCH. 1");
             return;
         }
         else
         {
-            Mixen.queuedSongs.add(song);
+            MixenPlayerService.queuedSongs.add(song);
 
-            if(!Mixen.player.isPlaying() && !MixenPlayerFrag.queueHasNextTrack())
+            if(MixenPlayerFrag.upNextTV.getText().equals(""))
             {
-                Mixen.currentSongAsInt++;
-                Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
+                MixenPlayerFrag.upNextTV.setText(MixenPlayerFrag.getNextTrack().getName());
+            }
+
+            if(!MixenPlayerService.playerIsPlaying() && !MixenPlayerFrag.queueHasNextTrack())
+            {
+                //If songs are in the queue, but have completed playback and a new one is suddenly added.
+                MixenPlayerService.currentSongAsInt++;
+                MixenPlayerService.currentSong = MixenPlayerService.queuedSongs.get(MixenPlayerService.currentSongAsInt);
                 MixenPlayerFrag.preparePlayback();
             }
-        }
 
-        //TODO What if songs are in the queue, but have completed playback and a new one is suddenly added?
+        }
 
     }
 

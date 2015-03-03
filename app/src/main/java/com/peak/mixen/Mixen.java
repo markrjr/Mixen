@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RemoteControlClient;
@@ -12,6 +13,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.preference.Preference;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
 
@@ -43,6 +45,8 @@ public class Mixen {
     public static final int HELP = 5;
     public static final int ABOUT = 6;
 
+    public static final int MIXEN_NOTIFY_CODE = 11;
+
     //Misc
 
     public static final String TAG = "Mixen";
@@ -57,32 +61,20 @@ public class Mixen {
 
     public static AudioManager audioManager;
 
+    public static final String COVER_ART_URL = "http://images.gs-cdn.net/static/albums/";
+
+    public static final String MIXEN_PREF_FILE = "com.peak.mixen.preferences";
+
+    public static SharedPreferences sharedPref;
 
     //Song and current session related data.
 
-    public static MediaPlayer player;
 
     public static Client grooveSharkSession;
 
-    public static final String COVER_ART_URL = "http://images.gs-cdn.net/static/albums/";
-
-    public static int currentSongProgress;
-
-    public static int currentSongAsInt;
-
-    public static int bufferTimes = 0;
-
-    public static String currentAlbumArt;
-
-    public static String previousAlbumArt = "";
-
-    public static Song currentSong;
 
     public static Context currentContext;
 
-    public static ArrayList<Song> queuedSongs;
-
-    public static ArrayList<Song> proposedSongs;
 
     public static String username;
 
@@ -106,26 +98,24 @@ public class Mixen {
 
                                                             if(audioChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)
                                                             {
-                                                                if(Mixen.player.isPlaying())
+                                                                if(MixenPlayerService.playerIsPlaying())
                                                                 {
-                                                                    Mixen.currentSongProgress = Mixen.player.getCurrentPosition();
-                                                                    Mixen.player.pause();
+                                                                    Mixen.currentContext.startActivity(MixenPlayerService.pause);
                                                                 }
 
                                                             }
                                                             else if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
                                                             {
-                                                                if(!Mixen.player.isPlaying() && MixenPlayerFrag.playerHasTrack() && Mixen.player.getCurrentPosition() > 0)
+                                                                if(!MixenPlayerService.playerIsPlaying() && MixenPlayerFrag.playerHasTrack())
                                                                 {
-                                                                    Mixen.player.seekTo(Mixen.currentSongProgress);
+                                                                    Mixen.currentContext.startActivity(MixenPlayerService.play);
                                                                 }
                                                             }
                                                             else if(audioChange == AudioManager.AUDIOFOCUS_LOSS);
                                                             {
-                                                                if(Mixen.player.isPlaying())
+                                                                if(MixenPlayerService.playerIsPlaying())
                                                                 {
-                                                                    Mixen.currentSongProgress = Mixen.player.getCurrentPosition();
-                                                                    Mixen.player.pause();
+                                                                    Mixen.currentContext.startActivity(MixenPlayerService.pause);
                                                                     audioManager.abandonAudioFocus(this);
                                                                 }
                                                             }

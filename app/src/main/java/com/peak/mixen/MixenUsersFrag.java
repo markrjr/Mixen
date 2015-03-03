@@ -10,11 +10,14 @@ import android.view.ViewGroup;
 import android.support.annotation.Nullable;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MixenUsersFrag extends Fragment{
 
@@ -51,18 +54,20 @@ public class MixenUsersFrag extends Fragment{
 
         infoTV.setVisibility(View.GONE);
 
-        ArrayAdapter adapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, Mixen.network.foundDevices) {
+        final ArrayList<Object> nearbyUsers = new ArrayList<>(Arrays.asList(Mixen.network.foundDevices.keySet().toArray()));
+
+        ArrayAdapter adapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_1, android.R.id.text1, nearbyUsers) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
 
-                text1.setText(Mixen.network.foundDevices.get(position).deviceName);
-                text2.setText(Mixen.network.foundDevices.get(position).deviceAddress);
+                text1.setText((String)nearbyUsers.get(position));
                 return view;
             }
         };
+
+
 
 
         // Assign adapter to ListView
@@ -83,6 +88,8 @@ public class MixenUsersFrag extends Fragment{
             }
 
         });
+
+
 
         queueLV.setVisibility(View.VISIBLE);
     }

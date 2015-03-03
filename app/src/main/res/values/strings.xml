@@ -9,7 +9,7 @@
     <string name="title_activity_mixen_stage">MixenStage</string>
     <string name="title_activity_more_info">MoreInfo</string>
     <string name="createDescript">First, enter your name to identify your Mixen.</string>
-    <string name="username_hint">bobscandycanes</string>
+    <string name="username_hint">Enter a username.</string>
     <string name="textValidationError">Your username should contain no spaces or symbols, and be fairly short.</string>
     <string name="currently_playing">Currently Playing </string>
     <string name="now_playing_string">Now Playing</string>
@@ -30,7 +30,7 @@
     <string name="empty_queue">The queue is empty! Add a song to get started.</string>
     <string name="title_activity_tabbed_song_queue">TabbedSongQueue</string>
     <string name="mixen_network_search">Searching for nearby Mixens...</string>
-    <string name="revision_number">Revision 19 (Patch 3)</string>
+    <string name="revision_number">Revision 20</string>
     <string name="build_type">Alpha Build</string>
     <string name="title_activity_mixen_base">MixenBase</string>
     <string name="empty_users_queue">There are no users connected yet.</string>

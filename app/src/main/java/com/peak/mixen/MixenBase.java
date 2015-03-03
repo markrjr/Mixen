@@ -1,6 +1,7 @@
 package com.peak.mixen;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
@@ -18,6 +19,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.nispok.snackbar.SnackbarManager;
@@ -69,38 +71,35 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         mixenUsersFrag = new MixenUsersFrag();
 
         initMixen();
-        setupPhoneListener();
         //Mixen.setupAudioManager();
 
     }
 
     public void initMixen()
     {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
 
-                Mixen.player = new MediaPlayer();
-                Mixen.player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                Mixen.player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-                Mixen.player.setLooping(false);
-            }
-        }, "Mixen-Player").start();
-
+        Mixen.currentContext = getApplicationContext();
 
         Mixen.grooveSharkSession = new Client();
-        Mixen.queuedSongs = new ArrayList<Song>();
-        Mixen.proposedSongs = new ArrayList<Song>();
+        MixenPlayerService.queuedSongs = new ArrayList<Song>();
+        MixenPlayerService.proposedSongs = new ArrayList<Song>();
 
-        Mixen.currentContext = this.getApplicationContext();
+        if(Mixen.isHost)
+        {
+            setupMixenNetwork();
+        }
+        else
+        {
+            //Goto Users Tab
 
-        setupMixenNetwork();
+        }
 
     }
 
+
     public void setupTabbedView()
     {
-        // init view pager
+
         pagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(pagerAdapter);
         mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -111,13 +110,12 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             }
         });
 
-        // insert all tabs from pagerAdapter data
+
         for (int i = 0; i < pagerAdapter.getCount(); i++) {
-            mixenTabs.addTab(
-                    mixenTabs.newTab()
+            MaterialTab tab = mixenTabs.newTab()
                             .setTabListener(this)
-                            .setText(TABNAMES[i])
-            );
+                            .setText(TABNAMES[i]);
+            mixenTabs.addTab(tab);
         }
 
     }
@@ -152,68 +150,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         }
 
     }
-
-
-    public void setupPhoneListener() {
-
-        PhoneStateListener phoneStateListener = new PhoneStateListener() {
-            @Override
-            public void onCallStateChanged(int state, String incomingNumber) {
-                if (state == TelephonyManager.CALL_STATE_RINGING) {
-                    //INCOMING call
-                    //Do all necessary action to pause the audio
-                    if (Mixen.player != null && mixenPlayerFrag != null) {
-
-                        if (Mixen.player.isPlaying()) {
-                            mixenPlayerFrag.showOrHidePlayBtn();
-                            Mixen.player.pause();
-                            Mixen.currentSongProgress = Mixen.player.getCurrentPosition();
-                            mixenPlayerFrag.stoppedPlayingUnexpectedly = true;
-                        }
-                    }
-
-                } else if (state == TelephonyManager.CALL_STATE_IDLE) {
-
-                    if (Mixen.player != null && mixenPlayerFrag != null) {
-
-                        if (!Mixen.player.isPlaying() && mixenPlayerFrag.stoppedPlayingUnexpectedly) {
-                            //mixenPlayerFrag.showOrHidePlayBtn();
-                            Mixen.player.seekTo(Mixen.currentSongProgress);
-                            Log.d(Mixen.TAG, "Resuming playback.");
-                            //Seek on prepared listener will handle restarting the song and updating the UI.
-
-                            AudioManager audioManager =  (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-                            audioManager.setMode(AudioManager.MODE_NORMAL);
-                        }
-                    }
-
-                } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-                    //A call is dialing, active or on hold
-                    //do all necessary action to pause the audio
-                    if (Mixen.player != null && mixenPlayerFrag != null) {
-
-                        if (Mixen.player.isPlaying()) {
-
-                            mixenPlayerFrag.showOrHidePlayBtn();
-                            Mixen.player.pause();
-                            Mixen.currentSongProgress = Mixen.player.getCurrentPosition();
-                            mixenPlayerFrag.stoppedPlayingUnexpectedly = true;
-                        }
-                    }
-
-                    super.onCallStateChanged(state, incomingNumber);
-                }
-            }
-        }; //End PhoneStateListener
-
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        if(telephonyManager != null)
-        {
-            telephonyManager.listen(phoneStateListener,PhoneStateListener.LISTEN_CALL_STATE);
-        }
-    }
-
-
 
 
     @Override
@@ -313,11 +249,11 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         if (pressedBefore)
         {
             //If the user has pressed the back button twice at this point kill the app.
-            if(Mixen.player.isPlaying())
+            if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
             {
-                Mixen.player.stop();
-                Mixen.player.reset();
-                Mixen.player.release();
+                startService(MixenPlayerService.reset);
+                //Context is no longer instantianted?
+                stopService(new Intent(this, MixenPlayerService.class));
             }
 
             this.finish();
@@ -334,7 +270,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
                 pressedBefore = false;
             }
-        }, 5000);
+        }, 3000);
 
 
         pressedBefore = true;

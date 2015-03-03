@@ -3,6 +3,7 @@ package com.peak.mixen;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -71,6 +72,12 @@ public class CreateMixen extends Activity {
 
                     Log.i(Mixen.TAG, "Creating a Mixen service for: " + userNameET.getText().toString());
                     Mixen.username = userNameET.getText().toString();
+
+                    SharedPreferences.Editor prefs = Mixen.sharedPref.edit();
+                    prefs.putBoolean("FIRST_RUN", false);
+                    prefs.putString("username", Mixen.username);
+                    prefs.apply();
+
                     Intent createNewMixen = new Intent(CreateMixen.this, MixenBase.class);
                     createNewMixen.putExtra("userName", userNameET.getText().toString());
                     this.finish();
@@ -101,6 +108,5 @@ public class CreateMixen extends Activity {
     public void onDestroy()
     {
         super.onDestroy();
-        StartScreen.restoreControls();
     }
 }

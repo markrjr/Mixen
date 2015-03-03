@@ -91,15 +91,15 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     private void setupQueueAdapter() {
 
 
-        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, Mixen.queuedSongs) {
+        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.queuedSongs) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
 
-                text1.setText(Mixen.queuedSongs.get(position).getName());
-                text2.setText(Mixen.queuedSongs.get(position).getArtistName());
+                text1.setText(MixenPlayerService.queuedSongs.get(position).getName());
+                text2.setText(MixenPlayerService.queuedSongs.get(position).getArtistName());
                 //text1.setTextSize(24);
                 //text2.setTextSize(18);
                 return view;
@@ -136,32 +136,30 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                                             boolean currentSongWasDeleted = false;
 
-                                            if(Mixen.queuedSongs.size() == 1)
+                                            if(MixenPlayerService.queuedSongs.size() == 1)
                                             {
                                                 //If this is the only song in the queue.
-                                                Mixen.player.stop();
-                                                Mixen.player.reset();
+                                                getActivity().startService(MixenPlayerService.reset);
 
                                                 //TODO Cleanup UI.
                                                 MixenPlayerFrag.cleanUpUI();
                                             }
-                                            else if(Mixen.currentSong == selected)
+                                            else if(MixenPlayerService.currentSong == selected)
                                             {
                                                 //Or, someone wants to delete the current playing song.
-                                                Mixen.player.stop();
-                                                Mixen.player.reset();
+                                                getActivity().startService(MixenPlayerService.reset);
                                                 currentSongWasDeleted = true;
                                                 Log.d(Mixen.TAG, "Current song was deleted.");
                                             }
 
-                                            Mixen.queuedSongs.remove(Mixen.queuedSongs.indexOf(selected));
+                                            MixenPlayerService.queuedSongs.remove(MixenPlayerService.queuedSongs.indexOf(selected));
                                             updateQueueUI();
 
                                             if(currentSongWasDeleted)
                                             {
-                                                Mixen.previousAlbumArt = Mixen.currentAlbumArt;
-                                                Mixen.currentSongAsInt = 0;
-                                                Mixen.currentSong = Mixen.queuedSongs.get(Mixen.currentSongAsInt);
+                                                MixenPlayerService.previousAlbumArt = MixenPlayerService.currentAlbumArt;
+                                                MixenPlayerService.currentSongAsInt = 0;
+                                                MixenPlayerService.currentSong = MixenPlayerService.queuedSongs.get(MixenPlayerService.currentSongAsInt);
                                                 MixenPlayerFrag.preparePlayback();
                                             }
 
