@@ -26,8 +26,8 @@ import co.arcs.groove.thresher.Song;
 public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
 
     public static ImageButton playPauseButton;
-    private ImageButton fastForwardIB;
-    private ImageButton rewindIB;
+    private static ImageButton fastForwardIB;
+    private static ImageButton rewindIB;
     private RelativeLayout playerControls;
     private static ProgressBar bufferPB;
     public static getStreamURLAsync retrieveURLsAsync;
@@ -88,7 +88,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
 
         if (hasAlbumArt()) {
 //            //TODO Check for same album using ArrayList.
-//            if(MixenPlayerService.previousAlbumArt.equals(MixenPlayerService.currentAlbumArt))
+//            if(MixenPlayerService.previousAlbumArt.equals(MixenPlayerService.currentAlbumArtURL))
 //            {
 //                Log.i(Mixen.TAG, "Album art is same.");
 //            }
@@ -196,6 +196,9 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
         bufferPB.setVisibility(View.VISIBLE);
         playPauseButton.setVisibility(View.INVISIBLE);
         playPauseButton.setImageDrawable(playDrawable);
+        fastForwardIB.setClickable(false);
+        rewindIB.setClickable(false);
+
     }
 
     public static boolean hasAlbumArt()
@@ -215,6 +218,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
         bufferPB.setVisibility(View.GONE);
         playPauseButton.setVisibility(View.VISIBLE);
         playPauseButton.setImageDrawable(pauseDrawable);
+        fastForwardIB.setClickable(true);
+        rewindIB.setClickable(true);
     }
 
 
@@ -252,12 +257,12 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
                 //updateUI
                 if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
                 {
-                    getActivity().startService(MixenPlayerService.pause);
+                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.pause);
 
                 }
                 else if (MixenPlayerService.isRunning)
                 {
-                    getActivity().startService(MixenPlayerService.play);
+                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.play);
                 }
 
                 return;
@@ -268,8 +273,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
                 //updateUI
                 if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
                 {
-                    getActivity().startService(MixenPlayerService.fastForward);
-
+                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.fastForward);
                 }
                 return;
             }
@@ -279,8 +283,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
                 //updateUI
                 if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
                 {
-                    getActivity().startService(MixenPlayerService.rewind);
-
+                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.rewind);
                 }
                 return;
             }

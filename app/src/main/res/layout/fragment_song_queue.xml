@@ -31,13 +31,13 @@
         fab:fab_colorPressed="@color/Accent_Color"
         fab:fab_colorRipple="@color/Snow_White"
         android:visibility="visible"
-        android:layout_alignBottom="@+id/queueLV"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="10dp"
         android:scaleType="center"
         android:nestedScrollingEnabled="false"
-        android:background="#2196F3" />
+        android:background="#2196F3"
+        android:layout_alignParentBottom="true" />
 
 
     <TextView

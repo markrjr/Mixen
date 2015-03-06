@@ -1,28 +1,24 @@
 package com.peak.mixen;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
+import android.content.IntentFilter;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 
 
 import android.os.Bundle;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
-import com.nispok.snackbar.SnackbarManager;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutCallback;
 
@@ -39,14 +35,16 @@ import it.neokree.materialtabs.MaterialTabListener;
 
 public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
-    MaterialTabHost mixenTabs;
-    ViewPager mPager;
-    ViewPagerAdapter pagerAdapter;
-    String[] TABNAMES = {"Up Next", "Now Playing", "Users"};
+    private MaterialTabHost mixenTabs;
+    private ViewPager mPager;
+    private ViewPagerAdapter pagerAdapter;
+    private String[] TABNAMES = {"Up Next", "Now Playing", "Users"};
+
     boolean pressedBefore = false;
     public SongQueueFrag songQueueFrag;
     public MixenPlayerFrag mixenPlayerFrag;
     public MixenUsersFrag mixenUsersFrag;
+
 
 
     @Override
@@ -71,8 +69,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         mixenUsersFrag = new MixenUsersFrag();
 
         initMixen();
-        //Mixen.setupAudioManager();
-
     }
 
     public void initMixen()
@@ -95,6 +91,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         }
 
     }
+
 
 
     public void setupTabbedView()
@@ -251,12 +248,11 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             //If the user has pressed the back button twice at this point kill the app.
             if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
             {
-                startService(MixenPlayerService.reset);
-                //Context is no longer instantianted?
                 stopService(new Intent(this, MixenPlayerService.class));
             }
 
             this.finish();
+            return;
 
         }
 
@@ -270,12 +266,10 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
                 pressedBefore = false;
             }
-        }, 3000);
+        }, 5000);
 
 
         pressedBefore = true;
-        return;
-
     }
 }
 

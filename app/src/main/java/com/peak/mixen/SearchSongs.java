@@ -216,17 +216,16 @@ public class SearchSongs extends ActionBarActivity{
 
         menu.findItem(R.id.search).expandActionView();
 
-        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+        searchView.setOnCloseListener(new android.support.v7.widget.SearchView.OnCloseListener() {
             @Override
-            public void onFocusChange(View view, boolean queryTextFocused) {
+            public boolean onClose() {
 
-                if(!queryTextFocused)
-                {
-                    SearchSongs.this.finish();
-                }
+                SearchSongs.this.finish();
 
+                return false;
             }
         });
+
 
 
         return true;
@@ -238,10 +237,7 @@ public class SearchSongs extends ActionBarActivity{
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//        if (id == R.id.exit_app) {
-//            return true;
-//        }
+
         return super.onOptionsItemSelected(item);
     }
 

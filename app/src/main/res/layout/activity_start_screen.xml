@@ -19,7 +19,8 @@
         android:layout_marginTop="88dp"
         android:textSize="64sp"
         android:textColor="@color/Snow_White"
-        android:background="@color/Dark_Primary" />
+        android:background="@color/Dark_Primary"
+        android:onClick="onBtnClicked" />
 
     <Button
         android:layout_width="wrap_content"

@@ -29,6 +29,7 @@ public class StartScreen extends Activity {
 
 
     private boolean pressedBefore = false;
+    private boolean namePressedBefore = false;
     private Intent createNewMixen;
     private TextView AppNameTV;
     private TextView DescriptTV;
@@ -56,7 +57,6 @@ public class StartScreen extends Activity {
 
         Mixen.sharedPref = getSharedPreferences(Mixen.MIXEN_PREF_FILE, Context.MODE_PRIVATE);
 
-        //Mixen.sharedPref.edit().clear().apply();
 
         if(!isFirstRun())
         {
@@ -117,8 +117,7 @@ public class StartScreen extends Activity {
 
         Salut.checkIfIsWifiEnabled(getApplicationContext());
 
-        switch(v.getId())
-        {
+        switch(v.getId()) {
             case R.id.createMixenButton:
 
                 //In order to stream down songs, the user must obviously have a connection to the internet.
@@ -137,7 +136,7 @@ public class StartScreen extends Activity {
 //                });
 
 
-            return;
+                return;
 
             case R.id.findMixen:
 
@@ -164,6 +163,36 @@ public class StartScreen extends Activity {
 //                Mixen.network.startNetworkService();
 //
 //                startActivity(new Intent(StartScreen.this, SongQueue.class));
+
+
+            case R.id.appNameTV:
+                if (namePressedBefore) {
+                    //If the user has pressed the back button twice at this point kill the app.
+
+                    Mixen.sharedPref.edit().clear().apply();
+                    Toast.makeText(getApplicationContext(),
+                            "Removed all settings. Please restart the app.", Toast.LENGTH_SHORT)
+                            .show();
+                    this.finish();
+                    Salut.disableWiFi(getApplicationContext());
+                    System.exit(0);
+                }
+
+                Toast.makeText(getApplicationContext(),
+                        "Press again to clear all settings.", Toast.LENGTH_SHORT)
+                        .show();
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        namePressedBefore = false;
+                    }
+                }, 5000);
+
+
+                namePressedBefore = true;
+                return;
 
         }
     }
@@ -260,12 +289,11 @@ public class StartScreen extends Activity {
 
         if (pressedBefore)
         {
-            //If the user has pressed the back button twice at this point kill the app.
 
             this.finish();
             Salut.disableWiFi(getApplicationContext());
             System.exit(0);
-            
+
         }
 
         Toast.makeText(getApplicationContext(),
@@ -278,7 +306,7 @@ public class StartScreen extends Activity {
 
                 pressedBefore = false;
             }
-        }, 3000);
+        }, 5000);
 
 
         pressedBefore = true;

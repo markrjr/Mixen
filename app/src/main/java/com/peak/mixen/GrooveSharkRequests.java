@@ -1,6 +1,5 @@
 package com.peak.mixen;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -22,9 +21,6 @@ import java.util.List;
 import co.arcs.groove.thresher.GroovesharkException;
 import co.arcs.groove.thresher.Song;
 
-/**
- * Created by markrjr on 1/28/15.
- */
 
 
 public class GrooveSharkRequests {
@@ -114,7 +110,7 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> implements Palette.
 
 
         String coverArt = Mixen.COVER_ART_URL + MixenPlayerService.currentSong.getCoverArtFilename();
-        MixenPlayerService.currentAlbumArt = coverArt;
+        MixenPlayerService.currentAlbumArtURL = coverArt;
 
         Bitmap art = null;
         try {
@@ -132,6 +128,7 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> implements Palette.
         if(result != null)
         {
             imageView.setImageBitmap(result);
+            MixenPlayerService.currentAlbumArt = result;
             //Palette.generate(result);
         }
 
@@ -198,7 +195,7 @@ class getStreamURLAsync extends AsyncTask<Song, Void, URL>
     @Override
     protected void onPostExecute(URL url) {
         super.onPostExecute(url);
-        Mixen.currentContext.startService(MixenPlayerService.setup);
+        MixenPlayerService.doAction(Mixen.currentContext, MixenPlayerService.setup);
     }
 }
 

@@ -1,36 +1,21 @@
 package com.peak.mixen;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.RemoteControlClient;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.preference.Preference;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 
-import com.nispok.snackbar.SnackbarManager;
 import com.peak.salut.Salut;
-import com.squareup.okhttp.internal.Util;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Set;
 
 import co.arcs.groove.thresher.Client;
-import co.arcs.groove.thresher.Song;
-
-import static android.support.v4.app.ActivityCompat.startActivity;
 
 /**
  * Created by markrjr on 11/24/14.
@@ -59,8 +44,6 @@ public class Mixen {
 
     public static boolean networkisReachableAsync;
 
-    public static AudioManager audioManager;
-
     public static final String COVER_ART_URL = "http://images.gs-cdn.net/static/albums/";
 
     public static final String MIXEN_PREF_FILE = "com.peak.mixen.preferences";
@@ -69,12 +52,9 @@ public class Mixen {
 
     //Song and current session related data.
 
-
     public static Client grooveSharkSession;
 
-
     public static Context currentContext;
-
 
     public static String username;
 
@@ -86,52 +66,6 @@ public class Mixen {
         return (provideErrorInfo);
     }
 
-    public static void setupAudioManager()
-    {
-        Mixen.audioManager = (AudioManager)currentContext.getSystemService(Context.AUDIO_SERVICE);
-    }
-    public static boolean requestAudioFocus() {
-        // Request audio focus for playback
-        int result = audioManager.requestAudioFocus(new AudioManager.OnAudioFocusChangeListener() {
-                                                        @Override
-                                                        public void onAudioFocusChange(int audioChange) {
-
-                                                            if(audioChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)
-                                                            {
-                                                                if(MixenPlayerService.playerIsPlaying())
-                                                                {
-                                                                    Mixen.currentContext.startActivity(MixenPlayerService.pause);
-                                                                }
-
-                                                            }
-                                                            else if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
-                                                            {
-                                                                if(!MixenPlayerService.playerIsPlaying() && MixenPlayerFrag.playerHasTrack())
-                                                                {
-                                                                    Mixen.currentContext.startActivity(MixenPlayerService.play);
-                                                                }
-                                                            }
-                                                            else if(audioChange == AudioManager.AUDIOFOCUS_LOSS);
-                                                            {
-                                                                if(MixenPlayerService.playerIsPlaying())
-                                                                {
-                                                                    Mixen.currentContext.startActivity(MixenPlayerService.pause);
-                                                                    audioManager.abandonAudioFocus(this);
-                                                                }
-                                                            }
-                                                        }
-                                                    },
-                // Use the music stream.
-                AudioManager.STREAM_MUSIC,
-                // Request permanent focus.
-                AudioManager.AUDIOFOCUS_GAIN);
-
-        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }
 
 interface SimpleCallback
