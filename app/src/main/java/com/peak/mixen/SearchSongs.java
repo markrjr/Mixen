@@ -47,7 +47,7 @@ public class SearchSongs extends ActionBarActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_songs);
 
-        getSupportActionBar().setTitle(Mixen.username + "'s Mixen.");
+        getSupportActionBar().setTitle(Mixen.username + "'s Mixen");
 
         // Boilerplate.
         songsLV = (ListView) findViewById(R.id.songsLV);
@@ -96,7 +96,7 @@ public class SearchSongs extends ActionBarActivity{
         if (GrooveSharkRequests.searchResultCode != 99)
         {
             songsLV.setVisibility(View.GONE);
-            Intent provideErrorInfo = new Intent(SearchSongs.this, MoreInfo.class); //Totally lazy, but really easy.
+            Intent provideErrorInfo = new Intent(SearchSongs.this, MoreInfo.class);
             provideErrorInfo.putExtra("START_REASON", GrooveSharkRequests.searchResultCode);
             startActivity(provideErrorInfo);
         }
@@ -179,10 +179,11 @@ public class SearchSongs extends ActionBarActivity{
 
             if(MixenPlayerFrag.upNextTV.getText().equals(""))
             {
+                //TODO Fix Bug here.
                 MixenPlayerFrag.upNextTV.setText(MixenPlayerFrag.getNextTrack().getName());
             }
 
-            if(!MixenPlayerService.playerIsPlaying() && !MixenPlayerFrag.queueHasNextTrack())
+            if(MixenPlayerService.isRunning && !MixenPlayerService.instance.playerIsPlaying() && !MixenPlayerFrag.queueHasNextTrack())
             {
                 //If songs are in the queue, but have completed playback and a new one is suddenly added.
                 MixenPlayerService.currentSongAsInt++;
@@ -201,7 +202,7 @@ public class SearchSongs extends ActionBarActivity{
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_search_songs, menu);
 
@@ -216,17 +217,15 @@ public class SearchSongs extends ActionBarActivity{
 
         menu.findItem(R.id.search).expandActionView();
 
-        searchView.setOnCloseListener(new android.support.v7.widget.SearchView.OnCloseListener() {
+        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public boolean onClose() {
-
-                SearchSongs.this.finish();
-
-                return false;
+            public void onFocusChange(View view, boolean hasFocus) {
+                if(!hasFocus)
+                {
+                    menu.findItem(R.id.search).collapseActionView();
+                }
             }
         });
-
-
 
         return true;
 

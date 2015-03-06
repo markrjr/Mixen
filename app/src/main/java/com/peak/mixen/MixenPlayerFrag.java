@@ -4,6 +4,7 @@ package com.peak.mixen;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,12 +24,12 @@ import java.util.Random;
 import co.arcs.groove.thresher.Song;
 
 
-public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
+public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     public static ImageButton playPauseButton;
     private static ImageButton fastForwardIB;
     private static ImageButton rewindIB;
-    private RelativeLayout playerControls;
+    private static RelativeLayout playerControls;
     private static ProgressBar bufferPB;
     public static getStreamURLAsync retrieveURLsAsync;
     public static boolean isRunning;
@@ -79,23 +80,25 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
 
     }
 
-
-
     public static void prepareUI()
     {
         titleTV.setText(MixenPlayerService.currentSong.getName());
         artistTV.setText(MixenPlayerService.currentSong.getArtistName());
 
         if (hasAlbumArt()) {
-//            //TODO Check for same album using ArrayList.
-//            if(MixenPlayerService.previousAlbumArt.equals(MixenPlayerService.currentAlbumArtURL))
+
+            new DownloadAlbumArt(albumArtIV, currentView).execute();
+            Log.i(Mixen.TAG, "Will download album art.");
+
+//            //TODO Check for same album using ArrayList, fix color palette generation.
+//            if(MixenPlayerService.previousAlbumArtURL.equals(MixenPlayerService.currentAlbumArtURL))
 //            {
 //                Log.i(Mixen.TAG, "Album art is same.");
 //            }
 //            else
 //            {
-                new DownloadAlbumArt(albumArtIV, currentView).execute();
-                Log.i(Mixen.TAG, "Will download album art.");
+//                new DownloadAlbumArt(albumArtIV, currentView).execute();
+//                Log.i(Mixen.TAG, "Will download album art.");
 //            }
 
         } else {
@@ -112,6 +115,35 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
             upNextTV.setText("Up Next: " + getNextTrack().getName());
         }
 
+    }
+
+    public static void generateAlbumArtPalette()
+    {
+        Palette.generateAsync(MixenPlayerService.currentAlbumArt, new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+
+                Log.d(Mixen.TAG, "Generated colors.");
+
+                int darkVibrant = palette.getDarkVibrantColor(R.color.Accent_Color);
+                int lightMuted = palette.getLightMutedColor(R.color.Accent_Color);
+                int lightVibrant = palette.getLightVibrantColor(R.color.Primary_Color);
+                int vibrant = palette.getVibrantColor(R.color.Primary_Color);
+
+                titleTV.setBackgroundColor(darkVibrant);
+                artistTV.setBackgroundColor(darkVibrant);
+                upNextTV.setBackgroundColor(darkVibrant);
+
+                playPauseButton.setBackgroundColor(lightMuted);
+                fastForwardIB.setBackgroundColor(lightMuted);
+                rewindIB.setBackgroundColor(lightMuted);
+                bufferPB.setBackgroundColor(lightMuted);
+                playerControls.setBackgroundColor(lightMuted);
+
+                MixenBase.mixenTabs.setPrimaryColor(lightMuted);
+                MixenBase.mixenTabs.setAccentColor(lightMuted);
+            }
+        });
     }
 
     public static void cleanUpUI()
@@ -135,7 +167,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
 
         }
     }
-
 
 
     public static void showOrHideProgressBar()
@@ -255,7 +286,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
             case R.id.playPauseButton:
             {
                 //updateUI
-                if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
+                if(MixenPlayerService.isRunning && MixenPlayerService.instance.playerIsPlaying())
                 {
                     MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.pause);
 
@@ -271,7 +302,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
             case R.id.fastForwardIB:
             {
                 //updateUI
-                if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
+                if(MixenPlayerService.isRunning && MixenPlayerService.instance.playerIsPlaying())
                 {
                     MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.fastForward);
                 }
@@ -281,7 +312,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
             case R.id.rewindIB:
             {
                 //updateUI
-                if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
+                if(MixenPlayerService.isRunning && MixenPlayerService.instance.playerIsPlaying())
                 {
                     MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.rewind);
                 }
@@ -290,7 +321,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener {
 
         }
     }
-
 
 }
 

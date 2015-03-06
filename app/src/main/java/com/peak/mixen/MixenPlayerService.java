@@ -38,8 +38,9 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     public static final String setup = "ACTION_SETUP";
     public static final String changePlayBackState = "CHANGE_PLAYBACK_STATE";
 
+    public static MixenPlayerService instance;
 
-    private static MediaPlayer player;
+    private MediaPlayer player;
 
     private NoisyAudioReciever noisyAudioReciever;
     private IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -71,7 +72,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         {
             audioManager = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
             noisyAudioReciever = new NoisyAudioReciever();
-
+            instance = this;
             setupPhoneListener();
             initMusicPlayer();
             isRunning = true;
@@ -98,8 +99,6 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         intent.setAction(action);
         context.startService(intent);
     }
-
-
     public void initMusicPlayer(){
 
         player = new MediaPlayer();
@@ -113,7 +112,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         player.setOnInfoListener(this);
     }
 
-    public static boolean playerIsPlaying(){
+    public boolean playerIsPlaying(){
         return player.isPlaying();
     }
 
@@ -266,7 +265,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     public void onAudioFocusChange(int audioChange) {
         if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
         {
-            if(!MixenPlayerService.playerIsPlaying() && MixenPlayerFrag.playerHasTrack())
+            if(!MixenPlayerService.instance.playerIsPlaying() && MixenPlayerFrag.playerHasTrack())
             {
                 MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.play);
                 Log.d(Mixen.TAG, "Loop");
@@ -274,7 +273,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         }
         else if(audioChange == AudioManager.AUDIOFOCUS_LOSS);
         {
-            if(MixenPlayerService.playerIsPlaying())
+            if(MixenPlayerService.instance.playerIsPlaying())
             {
                 MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.pause);
                 audioManager.abandonAudioFocus(this);
@@ -337,17 +336,16 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             Log.d(Mixen.TAG, "Playback has completed.");
             MixenPlayerFrag.cleanUpUI();
 
-            if (!MixenPlayerFrag.queueHasNextTrack()) {
+            queuedSongs.remove(queuedSongs.indexOf(currentSong));
+            SongQueueFrag.updateQueueUI();
+
+            if (!MixenPlayerFrag.queueHasNextTrack()) { //TODO Implement other check here to fix bug.
                 //If the queue does not have a track after this one, stop everything.
                 stopForeground(true);
                 mediaPlayer.reset();
 
                 return;
             }
-
-            queuedSongs.remove(queuedSongs.indexOf(currentSong));
-            SongQueueFrag.updateQueueUI();
-
 
 
             MixenPlayerFrag.hideUIControls();
@@ -504,7 +502,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                     //Do all necessary action to pause the audio
                     if (MixenPlayerService.isRunning  && MixenPlayerFrag.isRunning) {
 
-                        if (MixenPlayerService.playerIsPlaying()) {
+                        if (MixenPlayerService.instance.playerIsPlaying()) {
                             MixenPlayerFrag.showOrHidePlayBtn();
                             doAction(getApplicationContext(), pause);
                             MixenPlayerService.stoppedPlayingUnexpectedly = true;
@@ -513,9 +511,9 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
                 } else if (state == TelephonyManager.CALL_STATE_IDLE && MixenPlayerService.isRunning) {
 
-                    if (MixenPlayerService.playerIsPlaying() && MixenPlayerFrag.isRunning) {
+                    if (MixenPlayerService.instance.playerIsPlaying() && MixenPlayerFrag.isRunning) {
 
-                        if (!MixenPlayerService.playerIsPlaying() && MixenPlayerService.stoppedPlayingUnexpectedly) {
+                        if (!MixenPlayerService.instance.playerIsPlaying() && MixenPlayerService.stoppedPlayingUnexpectedly) {
                             MixenPlayerFrag.showOrHidePlayBtn();
                             doAction(getApplicationContext(), play);
                             Log.d(Mixen.TAG, "Resuming playback.");
@@ -530,7 +528,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                     //do all necessary action to pause the audio
                     if (MixenPlayerService.isRunning && MixenPlayerFrag.isRunning) {
 
-                        if (MixenPlayerService.playerIsPlaying()) {
+                        if (MixenPlayerService.instance.playerIsPlaying()) {
 
                             MixenPlayerFrag.showOrHidePlayBtn();
                             doAction(getApplicationContext(), pause);

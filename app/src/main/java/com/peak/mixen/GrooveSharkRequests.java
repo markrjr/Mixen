@@ -3,15 +3,9 @@ package com.peak.mixen;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -97,7 +91,7 @@ class querySongs extends AsyncTask<String, Void, Void> {
 }
 
 
-class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> implements Palette.PaletteAsyncListener{
+class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap>{
     ImageView imageView;
     View v;
 
@@ -118,8 +112,7 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> implements Palette.
             art = BitmapFactory.decodeStream(in);
         } catch (Exception e) {
             Log.e(Mixen.TAG, "Failed to get album art. It will not be available for this song.");
-            //Log.e(Mixen.TAG, e.getMessage());
-            //e.printStackTrace();
+            e.printStackTrace();
         }
         return art;
     }
@@ -129,42 +122,8 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap> implements Palette.
         {
             imageView.setImageBitmap(result);
             MixenPlayerService.currentAlbumArt = result;
-            //Palette.generate(result);
+            //MixenPlayerFrag.generateAlbumArtPalette();
         }
-
-    }
-
-    @Override
-    public void onGenerated(Palette palette) {
-
-        //TODO Clean this up for the love of God, please.
-        Log.d(Mixen.TAG, "Generated colors.");
-
-        int darkVibrant = palette.getDarkVibrantColor(R.color.Dark_Primary);
-        int vibrant = palette.getVibrantColor(R.color.Accent_Color);
-
-        TextView titleTV = (TextView) v.findViewById(R.id.titleTV);
-        TextView artistTV = (TextView) v.findViewById(R.id.artistTV);
-        TextView upNextTV = (TextView) v.findViewById(R.id.upNextTV);
-
-        ImageButton playPauseButton = (ImageButton) v.findViewById(R.id.playPauseButton);
-        ImageButton fastForwardIB = (ImageButton) v.findViewById(R.id.fastForwardIB);
-        ImageButton rewindIB = (ImageButton) v.findViewById(R.id.rewindIB);
-        ProgressBar bufferPB = (ProgressBar) v.findViewById(R.id.bufferingPB);
-
-        RelativeLayout playerControls = (RelativeLayout) v.findViewById(R.id.playerControls);
-
-        titleTV.setBackgroundColor(vibrant);
-        artistTV.setBackgroundColor(vibrant);
-        upNextTV.setBackgroundColor(vibrant);
-
-        playPauseButton.setBackgroundColor(darkVibrant);
-        fastForwardIB.setBackgroundColor(darkVibrant);
-        rewindIB.setBackgroundColor(darkVibrant);
-        bufferPB.setBackgroundColor(darkVibrant);
-        playerControls.setBackgroundColor(darkVibrant);
-
-
 
     }
 }

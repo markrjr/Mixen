@@ -35,7 +35,7 @@ import it.neokree.materialtabs.MaterialTabListener;
 
 public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
-    private MaterialTabHost mixenTabs;
+    public static MaterialTabHost mixenTabs;
     private ViewPager mPager;
     private ViewPagerAdapter pagerAdapter;
     private String[] TABNAMES = {"Up Next", "Now Playing", "Users"};
@@ -44,8 +44,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     public SongQueueFrag songQueueFrag;
     public MixenPlayerFrag mixenPlayerFrag;
     public MixenUsersFrag mixenUsersFrag;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +56,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         mixenTabs = (MaterialTabHost) this.findViewById(R.id.mixenTabs);
         mPager = (ViewPager) this.findViewById(R.id.viewPager);
 
-        mixenTabs.setBackgroundColor(getResources().getColor(R.color.Dark_Primary));
-        mPager.setBackgroundColor(getResources().getColor(R.color.Dark_Primary));
         //getSupportActionBar().hide();
 
         setupTabbedView();
@@ -76,7 +72,10 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         Mixen.currentContext = getApplicationContext();
 
-        Mixen.grooveSharkSession = new Client();
+        Mixen.grooveSharkSession = new Client()
+        {
+            public static final int TIMEOUT = 5000;
+        };
         MixenPlayerService.queuedSongs = new ArrayList<Song>();
         MixenPlayerService.proposedSongs = new ArrayList<Song>();
 
@@ -91,9 +90,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         }
 
     }
-
-
-
     public void setupTabbedView()
     {
 
@@ -246,7 +242,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         if (pressedBefore)
         {
             //If the user has pressed the back button twice at this point kill the app.
-            if(MixenPlayerService.isRunning && MixenPlayerService.playerIsPlaying())
+            if(MixenPlayerService.isRunning && MixenPlayerService.instance.playerIsPlaying())
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }
