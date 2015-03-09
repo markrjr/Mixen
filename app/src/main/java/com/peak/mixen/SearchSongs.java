@@ -152,6 +152,11 @@ public class SearchSongs extends ActionBarActivity{
                                     @Override
                                     public void onActionClicked(Snackbar snackbar) {
                                         MixenPlayerService.queuedSongs.remove(MixenPlayerService.queuedSongs.indexOf(selected));
+                                        SongQueueFrag.updateQueueUI();
+                                        if(MixenPlayerService.instance.playerIsPlaying() && MixenPlayerService.queuedSongs.size() == 1)
+                                        {
+                                            MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.reset);
+                                        }
                                     }
                                 })
                         , SearchSongs.this);

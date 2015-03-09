@@ -21,6 +21,10 @@ import android.widget.Toast;
 
 import com.peak.salut.Salut;
 import com.peak.salut.SalutCallback;
+import com.rdio.android.api.Rdio;
+import com.rdio.android.api.RdioListener;
+
+import org.apache.http.NameValuePair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,12 +37,14 @@ import it.neokree.materialtabs.MaterialTabHost;
 import it.neokree.materialtabs.MaterialTabListener;
 
 
+
 public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
     public static MaterialTabHost mixenTabs;
     private ViewPager mPager;
     private ViewPagerAdapter pagerAdapter;
     private String[] TABNAMES = {"Up Next", "Now Playing", "Users"};
+    public static boolean userHasLeftApp = false;
 
     boolean pressedBefore = false;
     public SongQueueFrag songQueueFrag;
@@ -65,6 +71,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         mixenUsersFrag = new MixenUsersFrag();
 
         initMixen();
+
     }
 
     public void initMixen()
@@ -76,6 +83,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         {
             public static final int TIMEOUT = 5000;
         };
+
         MixenPlayerService.queuedSongs = new ArrayList<Song>();
         MixenPlayerService.proposedSongs = new ArrayList<Song>();
 
@@ -149,13 +157,23 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     protected void onPause() {
         super.onPause();
         unregisterReceiver(Mixen.network.receiver);
+        userHasLeftApp = true;
+        if(!pressedBefore && MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying())
+        {
+            MixenPlayerService.instance.startForeground(Mixen.MIXEN_NOTIFY_CODE, MixenPlayerService.instance.prepareNotif());
+            //Checking for pressedBefore fixes some illegal state exception caused by calling playerIsPlaying as the app is exiting.
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         registerReceiver(Mixen.network.receiver, Mixen.network.intentFilter);
-
+        userHasLeftApp = false;
+        if(MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying())
+        {
+            MixenPlayerService.instance.stopForeground(true);
+        }
     }
 
 

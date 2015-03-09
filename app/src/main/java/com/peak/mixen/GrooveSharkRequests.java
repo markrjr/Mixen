@@ -62,23 +62,24 @@ class querySongs extends AsyncTask<String, Void, Void> {
             SearchSongs.foundSongs = new ArrayList<Song>(10);
             SearchSongs.foundSongs.addAll(GrooveSharkRequests.removeDups(songs));
 
-        } catch (IOException IOError) {
-            Log.e(Mixen.TAG, "IOError");
-            GrooveSharkRequests.searchResultCode = Mixen.GENERIC_NETWORK_ERROR;
-            return null;
-        } catch (GroovesharkException GSExcep) {
-            Log.e(Mixen.TAG, "Grooveshark Exception");
-            GrooveSharkRequests.searchResultCode = Mixen.SONG_NOT_FOUND;
-            return null;
-        } catch (NullPointerException nullReturn) {
-            Log.e(Mixen.TAG, "There was a network error while attempting to retrieving the data.");
+        } catch (Exception ex) {
+            Log.e(Mixen.TAG, "There was an error while attempting to retrieve the data.");
+            ex.printStackTrace();
             GrooveSharkRequests.searchResultCode = Mixen.GENERIC_NETWORK_ERROR;
             return null;
         }
 
-        GrooveSharkRequests.searchResultCode = 99; //Success
-        return null;
+        if (SearchSongs.foundSongs.isEmpty())
+        {
+            GrooveSharkRequests.searchResultCode = Mixen.SONG_NOT_FOUND;
+        }
+        else
+        {
+            GrooveSharkRequests.searchResultCode = 99; //Success
 
+        }
+
+        return null;
     }
 
     @Override

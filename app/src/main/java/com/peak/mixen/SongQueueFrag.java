@@ -129,16 +129,13 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                                             boolean currentSongWasDeleted = false;
 
-                                            if(MixenPlayerService.queuedSongs.size() == 1)
+                                            if(MixenPlayerService.currentSong == selected)
                                             {
-                                                //If this is the only song in the queue.
-                                                MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
+                                                if(!MixenPlayerService.queuedSongs.isEmpty())
+                                                {
+                                                    MixenPlayerService.currentSongAsInt = 0;
+                                                }
 
-                                                //TODO Cleanup UI.
-                                                MixenPlayerFrag.cleanUpUI();
-                                            }
-                                            else if(MixenPlayerService.currentSong == selected)
-                                            {
                                                 //Or, someone wants to delete the current playing song.
                                                 MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
                                                 currentSongWasDeleted = true;
@@ -148,10 +145,9 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                             MixenPlayerService.queuedSongs.remove(MixenPlayerService.queuedSongs.indexOf(selected));
                                             updateQueueUI();
 
-                                            if(currentSongWasDeleted)
+                                            if(currentSongWasDeleted && !MixenPlayerService.queuedSongs.isEmpty())
                                             {
                                                 MixenPlayerService.previousAlbumArtURL = MixenPlayerService.currentAlbumArtURL;
-                                                MixenPlayerService.currentSongAsInt = 0;
                                                 MixenPlayerService.currentSong = MixenPlayerService.queuedSongs.get(MixenPlayerService.currentSongAsInt);
                                                 MixenPlayerFrag.preparePlayback();
                                             }

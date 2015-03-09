@@ -9,7 +9,7 @@
     <string name="title_activity_mixen_stage">MixenStage</string>
     <string name="title_activity_more_info">MoreInfo</string>
     <string name="createDescript">First, enter your name to identify your Mixen.</string>
-    <string name="username_hint">Enter a username.</string>
+    <string name="username_hint">Enter a username</string>
     <string name="textValidationError">Your username should contain no spaces or symbols, and be fairly short.</string>
     <string name="currently_playing">Currently Playing </string>
     <string name="now_playing_string">Now Playing</string>
@@ -25,7 +25,6 @@
     <string name="happy_face">:)</string>
     <string name="song_not_found">We couldn\'t find the song you were looking for. Sorry about that.</string>
     <string name="generic_streaming_error">An error occurred while trying to stream down your music. Sorry about that.</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_song_queue">SongQueue</string>
     <string name="empty_queue">The queue is empty! Add a song to get started.</string>
     <string name="title_activity_tabbed_song_queue">TabbedSongQueue</string>

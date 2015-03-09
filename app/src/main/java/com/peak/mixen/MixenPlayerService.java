@@ -293,6 +293,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             {
                 bufferTimes = 0;
                 player.pause();
+                Log.d(Mixen.TAG, "Buffer Times Exceeded.");
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -336,8 +337,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             Log.d(Mixen.TAG, "Playback has completed.");
             MixenPlayerFrag.cleanUpUI();
 
-            queuedSongs.remove(queuedSongs.indexOf(currentSong));
-            SongQueueFrag.updateQueueUI();
+            //TODO Delete x amount of tracks if after x amount of completions.
 
             if (!MixenPlayerFrag.queueHasNextTrack()) { //TODO Implement other check here to fix bug.
                 //If the queue does not have a track after this one, stop everything.
@@ -347,7 +347,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                 return;
             }
 
-
+            currentSongAsInt++;
             MixenPlayerFrag.hideUIControls();
             MixenPlayerService.previousAlbumArtURL = MixenPlayerService.currentAlbumArtURL;
             currentSong = queuedSongs.get(currentSongAsInt);
@@ -387,8 +387,10 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         {
             mediaPlayer.start();
             registerReceiver(noisyAudioReciever, intentFilter);
-            startForeground(Mixen.MIXEN_NOTIFY_CODE, prepareNotif());
-
+            if(MixenBase.userHasLeftApp)
+            {
+                updateNotification();
+            }
             Log.i(Mixen.TAG, "Playback has been prepared, now playing.");
         }
 
@@ -406,10 +408,19 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     public Notification prepareNotif(){
 
         Intent changePlayBack = new Intent(getApplicationContext(), MixenPlayerService.class);
+        Intent rewindIntent = new Intent(getApplicationContext(), MixenPlayerService.class);
+        Intent fastForwardIntent = new Intent(getApplicationContext(), MixenPlayerService.class);
+
 
         changePlayBack.setAction(changePlayBackState);
+        rewindIntent.setAction(rewind);
+        fastForwardIntent.setAction(fastForward);
+
 
         PendingIntent changePlaybackPendingIntent = PendingIntent.getService(getApplicationContext(), 11, changePlayBack, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent rewindPendingIntent = PendingIntent.getService(getApplicationContext(), 11, rewindIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent fastForwardPendingIntent = PendingIntent.getService(getApplicationContext(), 11, fastForwardIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
 
         RemoteViews contentView = new RemoteViews(Mixen.currentContext.getPackageName(), R.layout.player_notification);
         contentView.setImageViewResource(R.id.icon, R.drawable.mixen_icon);
@@ -440,6 +451,8 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
         contentView.setOnClickPendingIntent(R.id.playbackState, changePlaybackPendingIntent);
         bigContentView.setOnClickPendingIntent(R.id.status_bar_play, changePlaybackPendingIntent);
+        bigContentView.setOnClickPendingIntent(R.id.status_bar_next, fastForwardPendingIntent);
+        bigContentView.setOnClickPendingIntent(R.id.status_bar_prev, rewindPendingIntent);
 
 
         Notification.Builder mBuilder = new Notification.Builder(getApplicationContext())

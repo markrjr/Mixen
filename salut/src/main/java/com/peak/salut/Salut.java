@@ -21,12 +21,15 @@ public class Salut{
 
 
     private final static String TAG = "Salut";
+
+    private static boolean wifiWasEnabledBefore = false;
+    private static WifiManager wifiManager;
+
     public boolean serviceIsRunning;
 
     //WiFi P2P Objects
-    public WifiP2pServiceInfo serviceInfo;
+    private WifiP2pServiceInfo serviceInfo;
     public HashMap<String, WifiP2pDevice> foundDevices;
-    private static WifiManager wifiManager;
     public IntentFilter intentFilter = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
     private WifiP2pManager manager;
@@ -70,29 +73,6 @@ public class Salut{
         });
     }
 
-    public Salut(Context currentContext, String serviceName) {
-        this.currentContext = currentContext;
-        this.serviceName = serviceName;
-        TTP = serviceName + TTP;
-
-        foundDevices = new HashMap<>();
-
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-
-        manager = (WifiP2pManager) currentContext.getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = manager.initialize(currentContext, currentContext.getMainLooper(), null);
-
-        receiver = new SalutBroadcastReceiver(manager, channel, new WifiP2pManager.PeerListListener() {
-            @Override
-            public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
-                Log.d(TAG, "Found " + wifiP2pDeviceList.getDeviceList().size() + " devices.");
-            }
-        });
-    }
-
 
     public static void checkIfIsWifiEnabled(Context context)
     {
@@ -103,12 +83,16 @@ public class Salut{
         {
             wifiManager.setWifiEnabled(true);
         }
+        else
+        {
+            wifiWasEnabledBefore = true;
+        }
     }
 
     public static void disableWiFi(Context context)
     {
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        if (wifiManager.isWifiEnabled())
+        if (wifiManager.isWifiEnabled() && !wifiWasEnabledBefore)
         {
             wifiManager.setWifiEnabled(false);
         }

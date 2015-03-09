@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutCallback;
 
@@ -141,18 +142,27 @@ public class StartScreen extends Activity {
             case R.id.findMixen:
 
                 hideControls();
-                progressBarInfoTV.setGravity(Gravity.CENTER);
-                progressBarInfoTV.setVisibility(View.VISIBLE);
-                progressBarInfoTV.setText("Whoa there, this feature isn't quite ready yet, come back later.");
 
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        hideProgress();
-                        restoreControls();
-                    }
-                }, 3000);
+                new MaterialDialog.Builder(this)
+                        .title("Bummer :(")
+                        .content("This feature isn't quite ready yet, come back later.")
+                        .neutralText("Okay")
+                        .callback(new MaterialDialog.ButtonCallback() {
+                            @Override
+                            public void onNeutral(MaterialDialog dialog) {
+                                super.onNeutral(dialog);
+                                restoreControls();
+                            }
+                        })
+                        .show();
+
                 return;
+
+//                new MaterialDialog.Builder(this)
+//                        .title("Searching for nearby mixens...")
+//                        .content("Please wait...")
+//                        .progress(true, 0)
+//                        .show();
 
 //                Map appData = new HashMap();
 //                appData.put("username", null);

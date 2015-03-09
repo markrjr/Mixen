@@ -46,5 +46,6 @@ dependencies {
     compile 'com.android.support:palette-v7:21.0.+'
     compile 'it.neokree:MaterialTabs:0.11'
     compile 'com.nispok:snackbar:2.9.1'
+    compile 'com.afollestad:material-dialogs:0.6.3.5'
     compile project(':salut')
 }
