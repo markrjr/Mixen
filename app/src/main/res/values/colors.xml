@@ -10,6 +10,7 @@
     <color name="Jacksons_Purple">#1F3A93</color>
     <color name="Madison">#2C3E50</color>
     <color name="Black">#000000</color>
+    <color name="Tundora">#424242</color>
     <color name="Plum">#913D88</color>
     <color name="Lynch">#6C7A89</color>
     <color name="Edward">#ABB7B7</color>
@@ -21,10 +22,14 @@
     <color name="Valencia">#D64541</color>
     <color name="San_Marino">#446CB3</color>
     <color name="Picton_Blue">#22A7F0</color>
-    <color name="Primary_Color">#2196F3</color>
-    <color name="Dark_Primary">#1976D2</color>
-    <color name="Accent_Color">#FF5252</color>
-    <color name="Dark_Secondary">#E51C23</color>
+    <color name="Burnt_Orange">#D35400</color>
+    <color name="Puerto_Rico">#4ECDC4</color>
+    <color name="EXP_1">#1C264A</color>
+    <color name="EXP_2">#1E6075</color>
+    <color name="EXP_3">#2DA89C</color>
+    <color name="EXP_4">#2DEBAE</color>
+    <color name="EXP_5">#DCDEAC</color>
+
 
     <integer-array name="appcolors">
         <item>@color/Icon_Orange</item>

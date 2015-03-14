@@ -104,8 +104,8 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap>{
     protected Bitmap doInBackground(Void... params) {
 
 
-        String coverArt = Mixen.COVER_ART_URL + MixenPlayerService.currentSong.getCoverArtFilename();
-        MixenPlayerService.currentAlbumArtURL = coverArt;
+        String coverArt = Mixen.COVER_ART_URL + MixenPlayerService.instance.currentSong.getCoverArtFilename();
+        MixenPlayerService.instance.currentAlbumArtURL = coverArt;
 
         Bitmap art = null;
         try {
@@ -122,8 +122,8 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap>{
         if(result != null)
         {
             imageView.setImageBitmap(result);
-            MixenPlayerService.currentAlbumArt = result;
-            //MixenPlayerFrag.generateAlbumArtPalette();
+            MixenPlayerService.instance.currentAlbumArt = result;
+            MixenBase.mixenPlayerFrag.generateAlbumArtPalette();
         }
 
     }

@@ -71,7 +71,7 @@
         android:layout_marginTop="39dp"
         android:layout_below="@+id/moreInfoTV"
         android:layout_centerHorizontal="true"
-        android:hint="@string/username_hint"
+        android:hint="Enter A Username"
         android:textColorHint="@color/Silver_Sand"
         android:textColor="@color/Snow_White"
         android:singleLine="true"

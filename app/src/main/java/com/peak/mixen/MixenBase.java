@@ -14,17 +14,14 @@ import android.support.v7.app.ActionBarActivity;
 
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.peak.salut.Salut;
 import com.peak.salut.SalutCallback;
-import com.rdio.android.api.Rdio;
-import com.rdio.android.api.RdioListener;
 
-import org.apache.http.NameValuePair;
+import net.danlew.android.joda.JodaTimeAndroid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,9 +44,9 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     public static boolean userHasLeftApp = false;
 
     boolean pressedBefore = false;
-    public SongQueueFrag songQueueFrag;
-    public MixenPlayerFrag mixenPlayerFrag;
-    public MixenUsersFrag mixenUsersFrag;
+    public static SongQueueFrag songQueueFrag;
+    public static MixenPlayerFrag mixenPlayerFrag;
+    public static MixenUsersFrag mixenUsersFrag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,20 +54,17 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         setContentView(R.layout.activity_mixen_base);
 
         getSupportActionBar().hide();
-        //getSupportActionBar().setTitle(" " + Mixen.username + "'s Mixen"); //Will have been set by create Mixen or from network discovery.
-
         mixenTabs = (MaterialTabHost) this.findViewById(R.id.mixenTabs);
         mPager = (ViewPager) this.findViewById(R.id.viewPager);
 
-        //getSupportActionBar().hide();
-
+        JodaTimeAndroid.init(this);
         setupTabbedView();
+
+        initMixen();
 
         songQueueFrag = new SongQueueFrag();
         mixenPlayerFrag = new MixenPlayerFrag();
         mixenUsersFrag = new MixenUsersFrag();
-
-        initMixen();
 
     }
 
@@ -84,8 +78,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             public static final int TIMEOUT = 5000;
         };
 
-        MixenPlayerService.queuedSongs = new ArrayList<Song>();
-        MixenPlayerService.proposedSongs = new ArrayList<Song>();
+        startService(new Intent(this, MixenPlayerService.class).setAction("Init"));
 
         if(Mixen.isHost)
         {
@@ -158,7 +151,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         super.onPause();
         unregisterReceiver(Mixen.network.receiver);
         userHasLeftApp = true;
-        if(!pressedBefore && MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying())
+        if(MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying())
         {
             MixenPlayerService.instance.startForeground(Mixen.MIXEN_NOTIFY_CODE, MixenPlayerService.instance.prepareNotif());
             //Checking for pressedBefore fixes some illegal state exception caused by calling playerIsPlaying as the app is exiting.
@@ -260,7 +253,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         if (pressedBefore)
         {
             //If the user has pressed the back button twice at this point kill the app.
-            if(MixenPlayerService.isRunning && MixenPlayerService.instance.playerIsPlaying())
+            if(MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerIsPlaying())
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }

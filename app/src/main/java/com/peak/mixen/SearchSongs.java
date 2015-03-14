@@ -7,22 +7,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.nispok.snackbar.Snackbar;
@@ -69,6 +63,7 @@ public class SearchSongs extends ActionBarActivity{
 
             if(query.length() != 0 && query.matches("^[a-zA-Z0-9 ]*$"))
             {
+                //TODO Fix bug to cancel queries.
                 indeterminateProgress.setVisibility(View.VISIBLE);
 
 
@@ -84,6 +79,10 @@ public class SearchSongs extends ActionBarActivity{
                     }
                 });
 
+            }
+            else
+            {
+                SnackbarManager.show(Snackbar.with(getApplicationContext()).text("Please use only letters and numbers in your query."));
             }
         }
     }
@@ -151,11 +150,11 @@ public class SearchSongs extends ActionBarActivity{
                                 .actionListener(new ActionClickListener() {
                                     @Override
                                     public void onActionClicked(Snackbar snackbar) {
-                                        MixenPlayerService.queuedSongs.remove(MixenPlayerService.queuedSongs.indexOf(selected));
+                                        MixenPlayerService.instance.queuedSongs.remove(MixenPlayerService.instance.queuedSongs.indexOf(selected));
                                         SongQueueFrag.updateQueueUI();
-                                        if(MixenPlayerService.instance.playerIsPlaying() && MixenPlayerService.queuedSongs.size() == 1)
+                                        if(MixenPlayerService.instance.instance.playerIsPlaying() && MixenPlayerService.instance.queuedSongs.size() == 1)
                                         {
-                                            MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.reset);
+                                            MixenPlayerService.instance.doAction(getApplicationContext(), MixenPlayerService.instance.reset);
                                         }
                                     }
                                 })
@@ -169,31 +168,30 @@ public class SearchSongs extends ActionBarActivity{
 
     public void addSongToQueue(Song song)
     {
-        if(MixenPlayerService.queuedSongs.isEmpty())
+        if(MixenPlayerService.instance.queuedSongs.isEmpty())
         {
             Log.i(Mixen.TAG, "First song added to queue.");
-            MixenPlayerService.queuedSongs.add(song);
-            MixenPlayerService.currentSongAsInt = 0;
-            MixenPlayerService.currentSong = MixenPlayerService.queuedSongs.get(MixenPlayerService.currentSongAsInt);
-            MixenPlayerFrag.preparePlayback();
-            return;
+            MixenPlayerService.instance.queuedSongs.add(song);
+            MixenPlayerService.instance.currentSongAsInt = 0;
+            MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.currentSongAsInt);
+            MixenPlayerService.instance.preparePlayback();
         }
         else
         {
-            MixenPlayerService.queuedSongs.add(song);
+            MixenPlayerService.instance.queuedSongs.add(song);
 
-            if(MixenPlayerFrag.upNextTV.getText().equals(""))
+            if(MixenBase.mixenPlayerFrag.upNextTV.getText().equals(""))
             {
                 //TODO Fix Bug here.
-                MixenPlayerFrag.upNextTV.setText(MixenPlayerFrag.getNextTrack().getName());
+                MixenBase.mixenPlayerFrag.upNextTV.setText("Next: \n" + MixenPlayerService.instance.getNextTrack().getName());
             }
 
-            if(MixenPlayerService.isRunning && !MixenPlayerService.instance.playerIsPlaying() && !MixenPlayerFrag.queueHasNextTrack())
+            if(MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerHasFinishedSong && !MixenPlayerService.instance.playerIsPlaying())
             {
                 //If songs are in the queue, but have completed playback and a new one is suddenly added.
-                MixenPlayerService.currentSongAsInt++;
-                MixenPlayerService.currentSong = MixenPlayerService.queuedSongs.get(MixenPlayerService.currentSongAsInt);
-                MixenPlayerFrag.preparePlayback();
+                MixenPlayerService.instance.currentSongAsInt++;
+                MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.currentSongAsInt);
+                MixenPlayerService.instance.preparePlayback();
             }
 
         }
@@ -227,7 +225,7 @@ public class SearchSongs extends ActionBarActivity{
             public void onFocusChange(View view, boolean hasFocus) {
                 if(!hasFocus)
                 {
-                    menu.findItem(R.id.search).collapseActionView();
+                    SearchSongs.this.finish();
                 }
             }
         });

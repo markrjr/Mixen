@@ -9,7 +9,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.peak.mixen.SongQueueFrag"
     android:id="@+id/relativeLayout"
-    android:background="@color/Dark_Primary">
+    android:background="@color/EXP_2">
 
     <ListView
         android:layout_width="fill_parent"
@@ -19,7 +19,7 @@
         android:layout_centerHorizontal="true"
         android:visibility="invisible"
         android:layout_alignParentStart="false"
-        android:background="@color/Dark_Primary" />
+        android:background="@color/EXP_2" />
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/fab"
@@ -27,16 +27,16 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
         android:src="@drawable/ic_action_add"
-        fab:fab_colorNormal="@color/Accent_Color"
-        fab:fab_colorPressed="@color/Accent_Color"
-        fab:fab_colorRipple="@color/Snow_White"
+        fab:fab_colorNormal="@color/Puerto_Rico"
+        fab:fab_colorPressed="@color/Puerto_Rico"
+        fab:fab_colorRipple="@color/Puerto_Rico"
         android:visibility="visible"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="10dp"
         android:scaleType="center"
         android:nestedScrollingEnabled="false"
-        android:background="#2196F3"
+        android:background="@color/EXP_2"
         android:layout_alignParentBottom="true" />
 
 
@@ -52,7 +52,7 @@
         android:textSize="40dp"
         android:visibility="visible"
         android:gravity="center"
-        android:background="@color/Dark_Primary" />
+        android:background="@color/EXP_2" />
 
 
 </RelativeLayout>

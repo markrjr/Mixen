@@ -2,6 +2,7 @@ package com.peak.mixen;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -136,7 +137,6 @@ public class StartScreen extends Activity {
 //                    }
 //                });
 
-
                 return;
 
             case R.id.findMixen:
@@ -147,10 +147,9 @@ public class StartScreen extends Activity {
                         .title("Bummer :(")
                         .content("This feature isn't quite ready yet, come back later.")
                         .neutralText("Okay")
-                        .callback(new MaterialDialog.ButtonCallback() {
+                        .dismissListener(new DialogInterface.OnDismissListener() {
                             @Override
-                            public void onNeutral(MaterialDialog dialog) {
-                                super.onNeutral(dialog);
+                            public void onDismiss(DialogInterface dialog) {
                                 restoreControls();
                             }
                         })

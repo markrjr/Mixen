@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
@@ -23,6 +24,8 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import co.arcs.groove.thresher.Song;
 
 public class MixenPlayerService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
@@ -33,10 +36,13 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     public static final String pause = "ACTION_PAUSE";
     public static final String rewind = "ACTION_REWIND";
     public static final String fastForward = "ACTION_FAST_FORWARD";
-    public static final String skip = "ACTION_SKIP";
+    public static final String skipToNext = "ACTION_SKIP_NEXT";
+    public static final String skipToLast = "ACTION_SKIP_LAST";
     public static final String reset = "ACTION_RESET_PLAYER";
     public static final String setup = "ACTION_SETUP";
     public static final String changePlayBackState = "CHANGE_PLAYBACK_STATE";
+    public static final String init = "INIT_MIXEN_PLAYER_SERVICE";
+
 
     public static MixenPlayerService instance;
 
@@ -47,20 +53,22 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     private AudioManager audioManager;
     private int bufferTimes;
 
-    public static int currentSongProgress;
-    public static int currentSongAsInt;
+    private boolean playerHasStartedSong;
+    public boolean playerHasFinishedSong;
 
-    public static boolean stoppedPlayingUnexpectedly;
-    public static boolean isRunning = false;
+    public int currentSongProgress;
+    public int currentSongAsInt;
 
-    public static Bitmap currentAlbumArt;
-    public static String currentAlbumArtURL;
-    public static String previousAlbumArtURL = "";
-    public static Song currentSong;
+    public boolean stoppedPlayingUnexpectedly;
+    public boolean isRunning = false;
 
-    public static ArrayList<Song> queuedSongs;
-    public static ArrayList<Song> proposedSongs;
+    public Bitmap currentAlbumArt;
+    public String currentAlbumArtURL;
+    public String previousAlbumArtURL = "";
+    public Song currentSong;
 
+    public ArrayList<Song> queuedSongs;
+    public ArrayList<Song> proposedSongs;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -70,12 +78,15 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
         if(player == null)
         {
+            instance = this;
             audioManager = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
             noisyAudioReciever = new NoisyAudioReciever();
-            instance = this;
+            queuedSongs = new ArrayList<Song>();
+            proposedSongs = new ArrayList<Song>();
             setupPhoneListener();
             initMusicPlayer();
             isRunning = true;
+            Log.d(Mixen.TAG, "Mixen Player Service successfully initialized.");
         }
         handleIntent(intent);
         return super.onStartCommand(intent, flags, startId);
@@ -112,11 +123,6 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         player.setOnInfoListener(this);
     }
 
-    public boolean playerIsPlaying(){
-        return player.isPlaying();
-    }
-
-
     public void handleIntent(Intent intent)
     {
         switch (intent.getAction())
@@ -139,22 +145,126 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             case reset:
                 resetAndStopPlayer();
                 return;
-            case skip:
+            case skipToNext:
                 skipToNextSong();
                 return;
+            case skipToLast:
+                skipToLastSong();
             case changePlayBackState:
                 setPlaybackState();
+            case init:
+                return;
         }
+    }
+
+    public void preparePlayback()
+    {
+        //Get all the necessary things to stream the song.
+
+        MixenBase.mixenPlayerFrag.retrieveURLsAsync = new getStreamURLAsync();
+        MixenBase.mixenPlayerFrag.retrieveURLsAsync.execute(currentSong);
+
+        Log.i(Mixen.TAG, "Grabbing URL for next song and signaling playback, it should begin shortly.");
+        MixenBase.mixenPlayerFrag.hideUIControls();
+    }
+
+    public int getCurrentSongProgress()
+    {
+        return player.getCurrentPosition();
+    }
+
+    public int getCurrentSongDuration()
+    {
+        return player.getDuration();
+    }
+
+    public boolean playerIsPlaying(){
+        try{
+            return player.isPlaying();
+        }
+        catch(IllegalStateException ex)
+        {
+            return false;
+        }
+
+    }
+
+    public Song getNextTrack()
+    {
+        return queuedSongs.get(instance.currentSongAsInt + 1);
+    }
+
+    public Song getLastTrack()
+    {
+        if(currentSongAsInt == 0)
+        {
+            return null;
+        }
+        else
+        {
+            try
+            {
+                return queuedSongs.get(currentSongAsInt - 1);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+    }
+
+
+
+    public boolean queueHasNextTrack()
+    {
+        try
+        {
+            getNextTrack();
+            return true;
+        }
+        catch (IndexOutOfBoundsException e)
+        {
+            //MixenBase.mixenPlayerFrag.cleanUpUI();
+            Log.i(Mixen.TAG, "No song was found after the current one in the queue.");
+        }
+
+        return false;
+    }
+
+    public boolean playerHasTrack()
+    {
+        try
+        {
+            queuedSongs.get(instance.currentSongAsInt);
+            return true;
+        }
+        catch (IndexOutOfBoundsException e)
+        {
+            Log.i(Mixen.TAG, "No song was found in the queue.");
+        }
+        catch (NullPointerException e)
+        {
+            Log.i(Mixen.TAG, "Queue not yet initialized.");
+        }
+
+        return false;
     }
 
 
     private void resetAndStopPlayer()
     {
-        if(MixenPlayerFrag.playerHasTrack())
+        if(playerHasTrack())
         {
-            player.stop();
+
+            if(playerIsPlaying())
+            {
+                player.pause();
+                player.stop();
+            }
+
             player.reset();
-            MixenPlayerFrag.cleanUpUI();
+            MixenBase.mixenPlayerFrag.cleanUpUI();
             audioManager.abandonAudioFocus(this);
         }
 
@@ -162,15 +272,33 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private void skipToNextSong()
     {
-        Song nextSong = MixenPlayerFrag.getNextTrack();
-        MixenPlayerFrag.cleanUpUI();
+        Song nextSong = getNextTrack();
+        MixenBase.mixenPlayerFrag.cleanUpUI();
         //Update UI
         resetAndStopPlayer();
-        MixenPlayerService.currentSong = nextSong;
-        MixenPlayerService.currentSongAsInt++;
-        MixenPlayerService.currentAlbumArtURL = Mixen.COVER_ART_URL + nextSong.getCoverArtFilename();
-        MixenPlayerFrag.preparePlayback();
+        currentSong = nextSong;
+        currentSongAsInt = queuedSongs.indexOf(nextSong);
+        currentAlbumArtURL = Mixen.COVER_ART_URL + nextSong.getCoverArtFilename();
+        preparePlayback();
         Log.d(Mixen.TAG, "Skipping songs to " + nextSong.getName());
+    }
+
+    private void skipToLastSong()
+    {
+        Song previousSong = getLastTrack();
+        if(previousSong == null)
+        {
+            return;
+        }
+
+        MixenBase.mixenPlayerFrag.cleanUpUI();
+        //Update UI
+        resetAndStopPlayer();
+        currentSong = previousSong;
+        currentSongAsInt = queuedSongs.indexOf(previousSong);
+        currentAlbumArtURL = Mixen.COVER_ART_URL + previousSong.getCoverArtFilename();
+        preparePlayback();
+        Log.d(Mixen.TAG, "Going back to " + previousSong.getName());
     }
 
 
@@ -180,36 +308,48 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
         try
         {
-            streamURI = Uri.parse(MixenPlayerFrag.retrieveURLsAsync.get().toString());
+            streamURI = Uri.parse(MixenBase.mixenPlayerFrag.retrieveURLsAsync.get().toString());
             //Album art should be set here.
             Log.i(Mixen.TAG, "Stream URL is " + streamURI.toString());
             Log.i(Mixen.TAG, "Track ID is " + currentSong.getId());
-            player.setDataSource(Mixen.currentContext, streamURI);
+            player.setDataSource(getApplicationContext(), streamURI);
         }
         catch (Exception ex)
         {
             Log.e(Mixen.TAG, "An error occurred, playback could not be started.");
-            if(MixenPlayerFrag.isRunning)
+            if(MixenBase.mixenPlayerFrag.isRunning)
             {
-                MixenPlayerFrag.cleanUpUI();
+                MixenBase.mixenPlayerFrag.cleanUpUI();
             }
             ex.printStackTrace();
             return;
         }
 
-        MixenPlayerFrag.prepareUI();
+        MixenBase.mixenPlayerFrag.prepareUI();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (playerHasTrack() && !playerHasStartedSong)
+                {
+                    startActivity(Mixen.moreInfoDialog(MixenPlayerService.this, Mixen.GENERIC_STREAMING_ERROR).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.reset);
+                    MixenBase.mixenPlayerFrag.cleanUpUI();
+                }
+            }
+        }, 8000);
         player.prepareAsync();
 
     }
 
     private void rewindPlayer()
     {
-        if (player.isPlaying() || MixenPlayerFrag.playerHasTrack())
+        if (player.isPlaying() || playerHasTrack())
         {
             currentSongProgress = player.getCurrentPosition();
             player.pause();
-            MixenPlayerService.stoppedPlayingUnexpectedly = false;
-            MixenPlayerFrag.hideUIControls();
+            stoppedPlayingUnexpectedly = false;
+            MixenBase.mixenPlayerFrag.hideUIControls();
             if(player.getCurrentPosition() - 30000 < 0)
             {
                 player.seekTo(0);
@@ -225,7 +365,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private void fastForwardPlayer()
     {
-        if (player.isPlaying() || MixenPlayerFrag.playerHasTrack())
+        if (player.isPlaying() || playerHasTrack())
         {
             currentSongProgress = player.getCurrentPosition();
 
@@ -236,8 +376,8 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             }
 
             player.pause();
-            MixenPlayerService.stoppedPlayingUnexpectedly = false;
-            MixenPlayerFrag.hideUIControls();
+            stoppedPlayingUnexpectedly = false;
+            MixenBase.mixenPlayerFrag.hideUIControls();
             player.seekTo(currentSongProgress + 30000); //Fast forward 30 seconds.
             //Log.i(Mixen.TAG, "Seeking forward 30 seconds.");
         }
@@ -265,7 +405,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     public void onAudioFocusChange(int audioChange) {
         if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
         {
-            if(!MixenPlayerService.instance.playerIsPlaying() && MixenPlayerFrag.playerHasTrack())
+            if(!MixenPlayerService.instance.playerIsPlaying() && playerHasTrack())
             {
                 MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.play);
                 Log.d(Mixen.TAG, "Loop");
@@ -286,7 +426,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
         if (action == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
             //TODO Fix buffering a lot.
-            MixenPlayerFrag.hideUIControls();
+            MixenBase.mixenPlayerFrag.hideUIControls();
 
             bufferTimes++;
             if(bufferTimes >= 3)
@@ -307,7 +447,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
         } else if (action == MediaPlayer.MEDIA_INFO_BUFFERING_END && player.isPlaying()) {
 
-            MixenPlayerFrag.restoreUIControls();
+            MixenBase.mixenPlayerFrag.restoreUIControls();
 
             Log.i(Mixen.TAG, "Buffering has stopped, and playback should have resumed.");
         }
@@ -322,7 +462,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         //Log.d(Mixen.TAG, "Seek operation complete.");
         if (hasAudioFocus())
         {
-            MixenPlayerFrag.restoreUIControls();
+            MixenBase.mixenPlayerFrag.restoreUIControls();
             mediaPlayer.start();
         }
 
@@ -335,11 +475,13 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             unregisterReceiver(noisyAudioReciever);
 
             Log.d(Mixen.TAG, "Playback has completed.");
-            MixenPlayerFrag.cleanUpUI();
+            MixenBase.mixenPlayerFrag.cleanUpUI();
+            playerHasStartedSong = false;
+            playerHasFinishedSong = true;
 
             //TODO Delete x amount of tracks if after x amount of completions.
 
-            if (!MixenPlayerFrag.queueHasNextTrack()) { //TODO Implement other check here to fix bug.
+            if (!queueHasNextTrack()) { //TODO Implement other check here to fix bug.
                 //If the queue does not have a track after this one, stop everything.
                 stopForeground(true);
                 mediaPlayer.reset();
@@ -348,31 +490,38 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             }
 
             currentSongAsInt++;
-            MixenPlayerFrag.hideUIControls();
-            MixenPlayerService.previousAlbumArtURL = MixenPlayerService.currentAlbumArtURL;
+            MixenBase.mixenPlayerFrag.hideUIControls();
+            previousAlbumArtURL = currentAlbumArtURL;
             currentSong = queuedSongs.get(currentSongAsInt);
             mediaPlayer.reset();
             
-            MixenPlayerFrag.preparePlayback();
+            preparePlayback();
 
     }
 
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int action, int extra) {
 
+        if(extra == 0)
+        {
+            //TODO Research
+            //Operation is pending.
+            return true;
+        }
+
         mediaPlayer.reset();
 
-        MixenPlayerFrag.showOrHidePlayBtn();
+        MixenBase.mixenPlayerFrag.cleanUpUI();
 
         Log.e(Mixen.TAG, "An error occurred whilst trying to stream down music.");
 
-        Intent provideMoreInfo = new Intent(MixenPlayerService.this, MoreInfo.class);
+        new MaterialDialog.Builder(MixenBase.mixenPlayerFrag.getActivity())
+                .title("Bummer :(")
+                .content(R.string.generic_streaming_error)
+                .neutralText("Okay")
+                .show();
 
-        provideMoreInfo.putExtra("START_REASON", Mixen.GENERIC_STREAMING_ERROR);
-
-        getApplicationContext().startActivity(provideMoreInfo);
-
-        return false;
+        return true;
 
     }
 
@@ -381,15 +530,18 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         //After the music player is ready to go, restore UI controls to the user,
         //setup some nice UI stuff, and finally, start playing music.
 
-        MixenPlayerFrag.restoreUIControls();
+        MixenBase.mixenPlayerFrag.restoreUIControls();
 
         if(hasAudioFocus())
         {
             mediaPlayer.start();
+            MixenBase.mixenPlayerFrag.updateProgressBar();
+            playerHasStartedSong = true;
+            playerHasFinishedSong = false;
             registerReceiver(noisyAudioReciever, intentFilter);
             if(MixenBase.userHasLeftApp)
             {
-                updateNotification();
+                startForeground(Mixen.MIXEN_NOTIFY_CODE, prepareNotif());
             }
             Log.i(Mixen.TAG, "Playback has been prepared, now playing.");
         }
@@ -412,6 +564,11 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         Intent fastForwardIntent = new Intent(getApplicationContext(), MixenPlayerService.class);
 
 
+        Notification.Builder mBuilder = new Notification.Builder(getApplicationContext())
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.mixen_notification_icon);
+
+
         changePlayBack.setAction(changePlayBackState);
         rewindIntent.setAction(rewind);
         fastForwardIntent.setAction(fastForward);
@@ -424,13 +581,13 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
         RemoteViews contentView = new RemoteViews(Mixen.currentContext.getPackageName(), R.layout.player_notification);
         contentView.setImageViewResource(R.id.icon, R.drawable.mixen_icon);
-        contentView.setTextViewText(R.id.title, MixenPlayerService.currentSong.getName());
-        contentView.setTextViewText(R.id.text, MixenPlayerService.currentSong.getArtistName());
+        contentView.setTextViewText(R.id.title, currentSong.getName());
+        contentView.setTextViewText(R.id.text, currentSong.getArtistName());
 
         RemoteViews bigContentView = new RemoteViews(Mixen.currentContext.getPackageName(), R.layout.player_notification_big);
-        bigContentView.setTextViewText(R.id.status_bar_track_name, MixenPlayerService.currentSong.getName());
-        bigContentView.setTextViewText(R.id.status_bar_artist_name, MixenPlayerService.currentSong.getArtistName());
-        bigContentView.setTextViewText(R.id.status_bar_album_name, MixenPlayerService.currentSong.getAlbumName());
+        bigContentView.setTextViewText(R.id.status_bar_track_name, currentSong.getName());
+        bigContentView.setTextViewText(R.id.status_bar_artist_name, currentSong.getArtistName());
+        bigContentView.setTextViewText(R.id.status_bar_album_name, currentSong.getAlbumName());
 
         if(MixenPlayerFrag.hasAlbumArt())
         {
@@ -441,11 +598,14 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         {
             contentView.setImageViewResource(R.id.playbackState, R.drawable.pause);
             bigContentView.setImageViewResource(R.id.status_bar_play, R.drawable.pause);
+            mBuilder.setOngoing(true);
+
         }
         else
         {
             contentView.setImageViewResource(R.id.playbackState, R.drawable.play);
             bigContentView.setImageViewResource(R.id.status_bar_play, R.drawable.play);
+            mBuilder.setOngoing(false);
 
         }
 
@@ -454,11 +614,6 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         bigContentView.setOnClickPendingIntent(R.id.status_bar_next, fastForwardPendingIntent);
         bigContentView.setOnClickPendingIntent(R.id.status_bar_prev, rewindPendingIntent);
 
-
-        Notification.Builder mBuilder = new Notification.Builder(getApplicationContext())
-                .setAutoCancel(true)
-                .setOngoing(true)
-                .setSmallIcon(R.drawable.mixen_notification_icon);
 
         final Intent notificationIntent = new Intent(getApplicationContext(), MixenBase.class);
         notificationIntent.setAction(Intent.ACTION_MAIN);
@@ -479,25 +634,31 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
     void setPlaybackState()
     {
-        if(player.isPlaying() && MixenPlayerFrag.playerHasTrack())
+        if(player.isPlaying() && playerHasTrack())
         {
             currentSongProgress = player.getCurrentPosition();
 
             player.pause();
-            MixenPlayerService.stoppedPlayingUnexpectedly = false;
-            MixenPlayerFrag.showOrHidePlayBtn();
-            updateNotification();
+            stoppedPlayingUnexpectedly = false;
+            MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
+            if(MixenBase.userHasLeftApp)
+            {
+                updateNotification();
+            }
             //Log.i(Mixen.TAG, "Music playback has been paused.");
         }
-        else if(MixenPlayerFrag.playerHasTrack())
+        else if(playerHasTrack())
         {
             player.seekTo(currentSongProgress);
 
             if(hasAudioFocus())
             {
                 player.start();
-                MixenPlayerFrag.showOrHidePlayBtn();
-                updateNotification();
+                MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
+                if(MixenBase.userHasLeftApp)
+                {
+                    updateNotification();
+                }
                 //Log.i(Mixen.TAG, "Music playback has resumed.");
             }
 
@@ -513,21 +674,19 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                 if (state == TelephonyManager.CALL_STATE_RINGING) {
                     //INCOMING call
                     //Do all necessary action to pause the audio
-                    if (MixenPlayerService.isRunning  && MixenPlayerFrag.isRunning) {
+                    if (isRunning  && MixenBase.mixenPlayerFrag.isRunning) {
 
                         if (MixenPlayerService.instance.playerIsPlaying()) {
-                            MixenPlayerFrag.showOrHidePlayBtn();
                             doAction(getApplicationContext(), pause);
-                            MixenPlayerService.stoppedPlayingUnexpectedly = true;
+                            stoppedPlayingUnexpectedly = true;
                         }
                     }
 
-                } else if (state == TelephonyManager.CALL_STATE_IDLE && MixenPlayerService.isRunning) {
+                } else if (state == TelephonyManager.CALL_STATE_IDLE && isRunning) {
 
-                    if (MixenPlayerService.instance.playerIsPlaying() && MixenPlayerFrag.isRunning) {
+                    if (MixenPlayerService.instance.playerIsPlaying() && MixenBase.mixenPlayerFrag.isRunning) {
 
-                        if (!MixenPlayerService.instance.playerIsPlaying() && MixenPlayerService.stoppedPlayingUnexpectedly) {
-                            MixenPlayerFrag.showOrHidePlayBtn();
+                        if (!MixenPlayerService.instance.playerIsPlaying() && stoppedPlayingUnexpectedly) {
                             doAction(getApplicationContext(), play);
                             Log.d(Mixen.TAG, "Resuming playback.");
                             //This might be an issue with audio focus and not require set the audio mode.
@@ -539,13 +698,12 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                 } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
                     //A call is dialing, active or on hold
                     //do all necessary action to pause the audio
-                    if (MixenPlayerService.isRunning && MixenPlayerFrag.isRunning) {
+                    if (isRunning && MixenBase.mixenPlayerFrag.isRunning) {
 
                         if (MixenPlayerService.instance.playerIsPlaying()) {
 
-                            MixenPlayerFrag.showOrHidePlayBtn();
                             doAction(getApplicationContext(), pause);
-                            MixenPlayerService.stoppedPlayingUnexpectedly = true;
+                            stoppedPlayingUnexpectedly = true;
                         }
                     }
 

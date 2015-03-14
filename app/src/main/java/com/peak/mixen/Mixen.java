@@ -59,10 +59,10 @@ public class Mixen {
     public static String username;
 
 
-    public static Intent prepareErrorHandlerActivity(Activity currentActivity)
+    public static Intent moreInfoDialog(Context context, int errorCode)
     {
-        Intent provideErrorInfo = new Intent(currentActivity, MoreInfo.class); //Totally lazy, but really easy.
-        provideErrorInfo.putExtra("START_REASON", Mixen.GENERIC_STREAMING_ERROR);
+        Intent provideErrorInfo = new Intent(context, MoreInfo.class); //Totally lazy, but really easy.
+        provideErrorInfo.putExtra("START_REASON", errorCode);
         return (provideErrorInfo);
     }
 

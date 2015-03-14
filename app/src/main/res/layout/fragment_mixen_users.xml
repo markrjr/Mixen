@@ -3,7 +3,7 @@
     android:id="@+id/relativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/Dark_Primary"
+    android:background="@color/EXP_2"
     tools:context="com.peak.mixen.MixenUsersFrag">
 
     <ListView
@@ -14,7 +14,7 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:visibility="invisible"
-        android:background="@color/Dark_Primary" />
+        android:background="@color/EXP_2" />
 
     <TextView
         android:id="@+id/infoTV"
@@ -28,7 +28,7 @@
         android:textColor="@color/Snow_White"
         android:textSize="40dp"
         android:visibility="visible"
-        android:background="@color/Dark_Primary" />
+        android:background="@color/EXP_2" />
 
 
 </RelativeLayout>

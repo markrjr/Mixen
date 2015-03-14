@@ -1,5 +1,6 @@
 package com.peak.mixen;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -45,6 +46,14 @@ public class MixenUsersFrag extends Fragment{
         }
 
     }
+
+    public void setColors(int bgColor)
+    {
+        relativeLayout.setBackgroundColor(bgColor);
+        queueLV.setBackgroundColor(bgColor);
+        infoTV.setBackgroundColor(bgColor);
+    }
+
     public void populateNetworkListView()
     {
         if(Mixen.network.foundDevices.isEmpty())

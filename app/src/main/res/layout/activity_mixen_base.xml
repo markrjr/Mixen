@@ -9,8 +9,8 @@
         android:id="@+id/mixenTabs"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        app:primaryColor="@color/Dark_Primary"
-        app:accentColor="@color/Accent_Color" />
+        app:primaryColor="@color/EXP_3"
+        app:accentColor="@color/EXP_1" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"

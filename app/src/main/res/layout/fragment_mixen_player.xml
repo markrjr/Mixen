@@ -1,170 +1,220 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:id="@+id/baseLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/Snow_White"
+    android:background="@color/Tundora"
     android:visibility="visible"
     tools:context="com.peak.mixen.MixenPlayerFrag">
 
 
-    <ImageView
-        android:id="@+id/albumArtIV"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginBottom="180dp"
-        android:scaleType="fitXY"
-        android:visibility="visible" />
-
-    <TextView
+    <TextView android:text="Holland, 1945" android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:id="@+id/titleTV"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/albumArtIV"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/albumArtIV"
-        android:layout_marginBottom="120dp"
-        android:background="@color/Accent_Color"
-        android:paddingLeft="20dp"
-        android:text="Song Name"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="24dp"
+        android:background="@color/Tundora"
         android:textColor="@color/Snow_White"
         android:textIsSelectable="false"
-        android:textSize="24dp"
-        android:visibility="visible"
-        android:layout_alignEnd="@+id/albumArtIV"
-        android:paddingBottom="20dp"
-        android:paddingTop="10dp" />
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp" />
+
 
     <TextView
-        android:id="@+id/artistTV"
-        android:layout_width="fill_parent"
+        android:text="Neutral Milk Hotel"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/titleTV"
-        android:layout_alignStart="@+id/titleTV"
-        android:layout_alignTop="@+id/titleTV"
-        android:layout_marginTop="50dp"
-        android:background="@color/Accent_Color"
-        android:gravity="left"
-        android:paddingLeft="20dp"
-        android:text="Artist"
-        android:textAlignment="gravity"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/artistTV"
+        android:background="@color/Tundora"
         android:textColor="@color/Snow_White"
-        android:textIsSelectable="false"
-        android:textSize="16dp"
+        android:alpha="0.9"
+        android:maxLines="1"
+        android:layout_above="@+id/playerControls"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="12dp"
+        android:textSize="18dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp" />
+
+    <com.github.lzyzsd.circleprogress.ArcProgress
+        android:id="@+id/arc_progress_bar"
+        android:background="@color/Tundora"
+        android:layout_width="335dp"
+        android:layout_height="335dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="55dp"
+        custom:arc_text_size="0dp"
+        custom:arc_suffix_text_size="0dp"
+        custom:arc_finished_color="@color/Dodger_Blue"
+        custom:arc_unfinished_color="@color/Madison"/>
+
+    <ImageButton
+        android:id="@+id/playPauseButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/play_circle"
+        android:text="Button"
         android:visibility="visible"
-        android:paddingBottom="30dp" />
+        android:background="@android:color/transparent"
+        android:alpha="0.8"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="200dp" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/albumArtIV"
+        android:layout_width="325dp"
+        android:layout_height="325dp"
+        android:src="@drawable/mixen_icon"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp"
+        android:backgroundTint="@color/Tundora"
+        android:backgroundTintMode="src_atop" />
 
 
     <TextView
         android:id="@+id/songProgressTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="20dp"
-        android:background="#1976D2"
-        android:text="2:53 | 3:30"
-        android:textColor="@color/Snow_White"
-        android:textSize="16dp"
-        android:visibility="invisible"
-        android:layout_alignEnd="@+id/albumArtIV" />
-
-    <TextView
-        android:id="@+id/upNextTV"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/Accent_Color"
-        android:text="Up Next: Song Name"
+        android:background="@color/Tundora"
         android:textColor="@color/Snow_White"
         android:visibility="visible"
-        android:layout_below="@+id/artistTV"
-        android:layout_toRightOf="@+id/genericImageArt"
-        android:layout_toEndOf="@+id/genericImageArt"
-        android:paddingLeft="20dp"
-        android:paddingBottom="15dp" />
+        android:text="0:01"
+        android:layout_toStartOf="@+id/artistTV"
+        android:layout_below="@+id/arc_progress_bar"
+        android:layout_toLeftOf="@+id/playPauseButton"
+        android:layout_marginRight="40dp"
+        android:textSize="16dp"
+        android:alpha="0.5"
+        android:layout_marginTop="-5dp" />
+
 
     <RelativeLayout
         android:id="@+id/playerControls"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@+id/artistTV"
-        android:layout_marginTop="30dp"
-        android:background="@color/Dark_Primary"
+        android:background="@color/EXP_3"
         android:visibility="visible"
-        android:layout_alignEnd="@+id/albumArtIV">
+        android:paddingTop="10dp"
+        android:alpha="0.8"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true">
 
 
         <ImageButton
-            android:id="@+id/rewindIB"
-            android:layout_width="wrap_content"
+            android:id="@+id/previousTrackBtn"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentStart="false"
+            android:background="@color/EXP_3"
+            android:scaleType="fitCenter"
+            android:src="@drawable/previous"
+            android:text="Button"
+            android:visibility="visible"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="20dp" />
+
+        <ImageButton
+            android:id="@+id/rewindBtn"
+            android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_alignParentStart="true"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="10dp"
-            android:background="@color/Dark_Primary"
+            android:layout_alignParentStart="false"
+            android:background="@color/EXP_3"
             android:scaleType="fitCenter"
             android:src="@drawable/rewind"
             android:text="Button"
             android:visibility="visible"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true" />
+            android:layout_toRightOf="@+id/previousTrackBtn"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="20dp" />
 
         <ImageButton
-            android:id="@+id/playPauseButton"
+            android:id="@+id/fastForwardBtn"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp"
-            android:background="@color/Dark_Primary"
-            android:paddingLeft="5dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/play"
-            android:text="Button"
-            android:visibility="visible"
-            android:layout_alignParentTop="true" />
-
-        <ImageButton
-            android:id="@+id/fastForwardIB"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="35dp"
-            android:layout_marginTop="10dp"
-            android:background="@color/Dark_Primary"
-            android:clickable="true"
+            android:layout_alignParentStart="false"
+            android:background="@color/EXP_3"
             android:scaleType="fitCenter"
             android:src="@drawable/fast_forward"
             android:text="Button"
             android:visibility="visible"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true" />
+            android:layout_toLeftOf="@+id/skipTrackBtn"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="20dp" />
+
+        <ImageButton
+            android:id="@+id/skipTrackBtn"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="false"
+            android:background="@color/EXP_3"
+            android:clickable="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/next"
+            android:text="Button"
+            android:visibility="visible"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="30dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:id="@+id/upNextTV"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:background="@color/EXP_3"
+            android:textColor="@color/Snow_White"
+            android:visibility="visible"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:alpha="0.8"
+            android:gravity="center"
+            android:textStyle="bold" />
 
         <ProgressBar
             android:id="@+id/bufferingPB"
             style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:indeterminate="true"
             android:indeterminateOnly="true"
             android:paddingLeft="2dp"
-            android:visibility="gone"
-            android:background="@color/Dark_Primary"
-            android:indeterminateTint="@color/Snow_White" />
+            android:visibility="invisible"
+            android:background="@color/EXP_3"
+            android:indeterminateTint="@color/Snow_White"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
 
     </RelativeLayout>
 
-    <ImageView
-        android:id="@+id/genericImageArt"
+    <TextView
+        android:id="@+id/songDurationTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="123dp"
-        android:visibility="gone" />
+        android:background="@color/Tundora"
+        android:textColor="@color/Snow_White"
+        android:visibility="visible"
+        android:text="4:35"
+        android:layout_below="@+id/arc_progress_bar"
+        android:layout_toRightOf="@+id/playPauseButton"
+        android:layout_toEndOf="@+id/playPauseButton"
+        android:layout_marginLeft="40dp"
+        android:layout_marginStart="40dp"
+        android:textSize="16dp"
+        android:alpha="0.5"
+        android:layout_marginTop="-5dp" />
 
 
 </RelativeLayout>
