@@ -96,14 +96,17 @@ public class StartScreen extends Activity {
 
         if(!isFirstRun())
         {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startActivity(createNewMixen);
-                    hideProgress();
-                    restoreControls();
-                }
-            }, 1500);
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    startActivity(createNewMixen);
+//                    hideProgress();
+//                    restoreControls();
+//                }
+//            }, 1500);
+            startActivity(createNewMixen);
+            hideProgress();
+            restoreControls();
         }
         else
         {
@@ -126,6 +129,7 @@ public class StartScreen extends Activity {
                 showProgress();
                 hideControls();
 
+                startService(new Intent(this, MixenPlayerService.class).setAction(MixenPlayerService.init));
                 skipNetworkCheck();
 
 //                check = new checkNetworkConnection();
@@ -183,7 +187,12 @@ public class StartScreen extends Activity {
                             "Removed all settings. Please restart the app.", Toast.LENGTH_SHORT)
                             .show();
                     this.finish();
-                    Salut.disableWiFi(getApplicationContext());
+
+                    if(BuildConfig.DEBUG)
+                    {
+                        Salut.disableWiFi(getApplicationContext());
+                    }
+
                     System.exit(0);
                 }
 
@@ -300,7 +309,10 @@ public class StartScreen extends Activity {
         {
 
             this.finish();
-            Salut.disableWiFi(getApplicationContext());
+            if(BuildConfig.DEBUG)
+            {
+                Salut.disableWiFi(getApplicationContext());
+            }
             System.exit(0);
 
         }

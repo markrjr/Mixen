@@ -5,44 +5,45 @@
     android:id="@+id/baseLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/Tundora"
+    android:background="@color/EXP_2"
     android:visibility="visible"
     tools:context="com.peak.mixen.MixenPlayerFrag">
 
 
-    <TextView android:text="Holland, 1945" android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/titleTV"
         android:textSize="24dp"
-        android:background="@color/Tundora"
+        android:background="@color/EXP_2"
         android:textColor="@color/Snow_White"
         android:textIsSelectable="false"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:maxLines="1" />
 
 
     <TextView
-        android:text="Neutral Milk Hotel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/artistTV"
-        android:background="@color/Tundora"
+        android:background="@color/EXP_2"
         android:textColor="@color/Snow_White"
-        android:alpha="0.9"
         android:maxLines="1"
         android:layout_above="@+id/playerControls"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="12dp"
         android:textSize="18dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp" />
+        android:layout_marginRight="5dp"
+        android:text="Nothing Is Playing" />
 
     <com.github.lzyzsd.circleprogress.ArcProgress
         android:id="@+id/arc_progress_bar"
-        android:background="@color/Tundora"
+        android:background="@color/EXP_2"
         android:layout_width="335dp"
         android:layout_height="335dp"
         android:layout_centerHorizontal="true"
@@ -57,13 +58,12 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:scaleType="fitCenter"
-        android:src="@drawable/play_circle"
         android:text="Button"
         android:visibility="visible"
         android:background="@android:color/transparent"
-        android:alpha="0.8"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="200dp" />
+        android:layout_marginTop="200dp"
+        android:alpha="1.0" />
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/albumArtIV"
@@ -74,23 +74,22 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="60dp"
         android:backgroundTint="@color/Tundora"
-        android:backgroundTintMode="src_atop" />
+        android:backgroundTintMode="src_atop"
+        android:alpha="1" />
 
 
     <TextView
         android:id="@+id/songProgressTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/Tundora"
+        android:background="@color/EXP_2"
         android:textColor="@color/Snow_White"
         android:visibility="visible"
-        android:text="0:01"
         android:layout_toStartOf="@+id/artistTV"
         android:layout_below="@+id/arc_progress_bar"
         android:layout_toLeftOf="@+id/playPauseButton"
         android:layout_marginRight="40dp"
         android:textSize="16dp"
-        android:alpha="0.5"
         android:layout_marginTop="-5dp" />
 
 
@@ -98,7 +97,7 @@
         android:id="@+id/playerControls"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@color/EXP_3"
+        android:background="@color/Tundora"
         android:visibility="visible"
         android:paddingTop="10dp"
         android:alpha="0.8"
@@ -114,7 +113,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_alignParentStart="false"
-            android:background="@color/EXP_3"
+            android:background="@color/Tundora"
             android:scaleType="fitCenter"
             android:src="@drawable/previous"
             android:text="Button"
@@ -130,7 +129,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_alignParentStart="false"
-            android:background="@color/EXP_3"
+            android:background="@color/Tundora"
             android:scaleType="fitCenter"
             android:src="@drawable/rewind"
             android:text="Button"
@@ -144,7 +143,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_alignParentStart="false"
-            android:background="@color/EXP_3"
+            android:background="@color/Tundora"
             android:scaleType="fitCenter"
             android:src="@drawable/fast_forward"
             android:text="Button"
@@ -158,7 +157,7 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_alignParentEnd="false"
-            android:background="@color/EXP_3"
+            android:background="@color/Tundora"
             android:clickable="true"
             android:scaleType="fitCenter"
             android:src="@drawable/next"
@@ -174,7 +173,7 @@
             android:id="@+id/upNextTV"
             android:layout_width="100dp"
             android:layout_height="50dp"
-            android:background="@color/EXP_3"
+            android:background="@color/Tundora"
             android:textColor="@color/Snow_White"
             android:visibility="visible"
             android:layout_centerVertical="true"
@@ -192,7 +191,7 @@
             android:indeterminateOnly="true"
             android:paddingLeft="2dp"
             android:visibility="invisible"
-            android:background="@color/EXP_3"
+            android:background="@color/Tundora"
             android:indeterminateTint="@color/Snow_White"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true" />
@@ -203,17 +202,15 @@
         android:id="@+id/songDurationTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/Tundora"
+        android:background="@color/EXP_2"
         android:textColor="@color/Snow_White"
         android:visibility="visible"
-        android:text="4:35"
         android:layout_below="@+id/arc_progress_bar"
         android:layout_toRightOf="@+id/playPauseButton"
         android:layout_toEndOf="@+id/playPauseButton"
         android:layout_marginLeft="40dp"
         android:layout_marginStart="40dp"
         android:textSize="16dp"
-        android:alpha="0.5"
         android:layout_marginTop="-5dp" />
 
 

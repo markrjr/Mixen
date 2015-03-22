@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
@@ -32,8 +33,11 @@ public class SearchSongs extends ActionBarActivity{
 
     private ProgressBar indeterminateProgress;
     private ListView songsLV;
+    private boolean queryPending = false;
+    private querySongs findSong;
 
-    public static ArrayList<Song> foundSongs;
+
+    public static SearchSongs instance;
 
 
     @Override
@@ -53,58 +57,69 @@ public class SearchSongs extends ActionBarActivity{
                 android.graphics.PorterDuff.Mode.SRC_IN);
 
         this.setResult(Activity.RESULT_OK);
-        }
+
+        instance = this;
+
+    }
 
     private void handleIntent(Intent intent)
     {
         if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
 
+            if(queryPending)
+            {
+                findSong.cancel(true);
+                queryPending = false;
+            }
+
             String query = intent.getStringExtra(SearchManager.QUERY);
 
             if(query.length() != 0 && query.matches("^[a-zA-Z0-9 ]*$"))
             {
-                //TODO Fix bug to cancel queries.
+                queryPending = true;
                 indeterminateProgress.setVisibility(View.VISIBLE);
-
-
-                GrooveSharkRequests.findSong(query, new SimpleCallback() {
-                    @Override
-                    public void call() {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postHandleSearchTask();
-                            }
-                        });
-                    }
-                });
+                songsLV.setVisibility(View.INVISIBLE);
+                findSong = new querySongs(query);
+                findSong.execute();
 
             }
             else
             {
-                SnackbarManager.show(Snackbar.with(getApplicationContext()).text("Please use only letters and numbers in your query."));
+                SnackbarManager.show(Snackbar.with(this).text("Please use only letters and numbers in your query."));
             }
         }
     }
 
-    public void postHandleSearchTask()
+    public void postHandleSearchTask(ArrayList foundSongs, Integer requestStatus)
     {
-
+        queryPending = false;
         indeterminateProgress.setVisibility(View.GONE);
 
-        if (GrooveSharkRequests.searchResultCode != 99)
-        {
-            songsLV.setVisibility(View.GONE);
-            Intent provideErrorInfo = new Intent(SearchSongs.this, MoreInfo.class);
-            provideErrorInfo.putExtra("START_REASON", GrooveSharkRequests.searchResultCode);
-            startActivity(provideErrorInfo);
-        }
-        else
-        {
-            populateListView(foundSongs);
-            songsLV.setVisibility(View.VISIBLE);
 
+        if(requestStatus.intValue() == querySongs.REQUEST_FAILED)
+        {
+            new MaterialDialog.Builder(this)
+                    .title("Bummer :(")
+                    .content(R.string.generic_network_error)
+                    .neutralText("Okay")
+                    .show();
+
+            return;
         }
+        else if(foundSongs.isEmpty())
+        {
+            new MaterialDialog.Builder(this)
+                    .title("Bummer :(")
+                    .content(R.string.song_not_found)
+                    .neutralText("Okay")
+                    .show();
+
+            return;
+        }
+
+        populateListView(foundSongs);
+        songsLV.setVisibility(View.VISIBLE);
+
 
     }
 
@@ -139,25 +154,14 @@ public class SearchSongs extends ActionBarActivity{
                 // ListView Clicked item value
                 final Song selected = (Song) songsLV.getItemAtPosition(position);
 
-
                 addSongToQueue(selected);
+                //TODO Fix undo action flow.
 
                 SnackbarManager.show(
                         Snackbar.with(getApplicationContext())
                                 .text("Added " + selected.getName())
-                                .actionLabel("Undo")
-                                .actionColor(Color.YELLOW)
-                                .actionListener(new ActionClickListener() {
-                                    @Override
-                                    public void onActionClicked(Snackbar snackbar) {
-                                        MixenPlayerService.instance.queuedSongs.remove(MixenPlayerService.instance.queuedSongs.indexOf(selected));
-                                        SongQueueFrag.updateQueueUI();
-                                        if(MixenPlayerService.instance.instance.playerIsPlaying() && MixenPlayerService.instance.queuedSongs.size() == 1)
-                                        {
-                                            MixenPlayerService.instance.doAction(getApplicationContext(), MixenPlayerService.instance.reset);
-                                        }
-                                    }
-                                })
+                        //.actionLabel("Undo")
+                        //.actionColor(Color.YELLOW)
                         , SearchSongs.this);
             }
 
@@ -165,6 +169,7 @@ public class SearchSongs extends ActionBarActivity{
 
         //Log.d(Mixen.TAG, "Updating Queue");
     }
+
 
     public void addSongToQueue(Song song)
     {
@@ -174,24 +179,25 @@ public class SearchSongs extends ActionBarActivity{
             MixenPlayerService.instance.queuedSongs.add(song);
             MixenPlayerService.instance.currentSongAsInt = 0;
             MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.currentSongAsInt);
-            MixenPlayerService.instance.preparePlayback();
+            MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.getSongStreamURL);
         }
         else
         {
             MixenPlayerService.instance.queuedSongs.add(song);
 
-            if(MixenBase.mixenPlayerFrag.upNextTV.getText().equals(""))
+            if(MixenBase.mixenPlayerFrag.upNextTV.getText().equals("") && MixenPlayerService.instance.getNextTrack() != null)
             {
-                //TODO Fix Bug here.
                 MixenBase.mixenPlayerFrag.upNextTV.setText("Next: \n" + MixenPlayerService.instance.getNextTrack().getName());
             }
 
-            if(MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerHasFinishedSong && !MixenPlayerService.instance.playerIsPlaying())
+            if(MixenPlayerService.instance.isRunning && !MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack && !MixenPlayerService.instance.playerIsPlaying())
             {
+                //Condense if to playerIsReady?
+                Log.d(Mixen.TAG, "This is being executed also.");
                 //If songs are in the queue, but have completed playback and a new one is suddenly added.
                 MixenPlayerService.instance.currentSongAsInt++;
                 MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.currentSongAsInt);
-                MixenPlayerService.instance.preparePlayback();
+                MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.getSongStreamURL);
             }
 
         }

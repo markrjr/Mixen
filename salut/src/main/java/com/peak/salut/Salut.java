@@ -170,11 +170,11 @@ public class Salut{
                 new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
-                        Log.d(TAG, "Service discovery request acknowledged.");
+                        Log.i(TAG, "Service discovery request acknowledged.");
                     }
                     @Override
                     public void onFailure(int arg0) {
-                        Log.d(TAG, "Failed adding service discovery request.");
+                        Log.i(TAG, "Failed adding service discovery request.");
                     }
                 });
 

@@ -26,7 +26,6 @@ import com.nispok.snackbar.listeners.EventListener;
 
 import co.arcs.groove.thresher.Song;
 
-
 public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     private static ListView queueLV;
@@ -36,7 +35,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     private Intent addSong;
     private static ArrayAdapter queueAdapter;
     public static final int ADD_SONG_REQUEST = 5;
-    public static boolean snackBarVisible = false;
+    public boolean snackBarIsVisible = false;
+    public boolean currentSongWasDeleted;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -62,7 +62,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         queueAdapter.notifyDataSetChanged();
 
-        if (!MixenPlayerService.instance.playerHasTrack()) {
+        if (MixenPlayerService.instance.queueIsEmpty()) {
 
             infoTV.setVisibility(View.VISIBLE);
             queueLV.setVisibility(View.GONE);
@@ -76,17 +76,28 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     }
 
     @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+
+        if (!isVisibleToUser && snackBarIsVisible) {
+            SnackbarManager.dismiss();
+        }
+
+    }
+
+    @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         updateQueueUI();
+        if(MixenPlayerService.instance != null)
+        {
+            Log.v(Mixen.TAG, "CURRENT SONG POSITION : " + MixenPlayerService.instance.currentSongAsInt);
+            Log.v(Mixen.TAG, "CURRENT QUEUE SIZE : " + MixenPlayerService.instance.queuedSongs.size());
+
+        }
     }
 
     private void setupQueueAdapter() {
-
-        if(MixenPlayerService.instance.queuedSongs == null)
-        {
-            return;
-        }
 
         queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.queuedSongs) {
             @Override
@@ -111,14 +122,14 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
+                                    final int position, long id) {
 
                 // ListView Clicked item value
                 final Song selected = (Song) queueLV.getItemAtPosition(position);
 
-                if(!snackBarVisible)
+                if(!snackBarIsVisible)
                 {
-                    snackBarVisible = true;
+                    snackBarIsVisible = true;
                     addSongButton.setVisibility(View.INVISIBLE);
 
                     SnackbarManager.show(
@@ -131,38 +142,24 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         @Override
                                         public void onActionClicked(Snackbar snackbar) {
 
-                                            boolean currentSongWasDeleted = false;
+                                            currentSongWasDeleted = false;
 
                                             if(MixenPlayerService.instance.currentSong == selected)
                                             {
-                                                if(!MixenPlayerService.instance.queuedSongs.isEmpty())
-                                                {
-                                                    MixenPlayerService.instance.currentSongAsInt = 0;
-                                                }
 
                                                 //Or, someone wants to delete the current playing song.
                                                 MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
                                                 currentSongWasDeleted = true;
                                                 Log.d(Mixen.TAG, "Current song was deleted.");
+
                                             }
 
-                                            MixenPlayerService.instance.queuedSongs.remove(MixenPlayerService.instance.queuedSongs.indexOf(selected));
+                                            MixenPlayerService.instance.queuedSongs.remove(position);
                                             updateQueueUI();
 
-                                            if(currentSongWasDeleted && !MixenPlayerService.instance.queuedSongs.isEmpty())
+                                            if(currentSongWasDeleted && MixenPlayerService.instance.getNextTrack() != null || currentSongWasDeleted && MixenPlayerService.instance.queueHasASingleTrack())
                                             {
-                                                MixenPlayerService.instance.previousAlbumArtURL = MixenPlayerService.instance.currentAlbumArtURL;
-                                                MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.currentSongAsInt);
-                                                MixenPlayerService.instance.preparePlayback();
-                                            }
-
-                                            if(MixenPlayerService.instance.queueHasNextTrack())
-                                            {
-                                                MixenBase.mixenPlayerFrag.upNextTV.setText(MixenPlayerService.instance.getNextTrack().getName());
-                                            }
-                                            else
-                                            {
-                                                MixenBase.mixenPlayerFrag.upNextTV.setText("");
+                                                MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.skipToNext);
                                             }
 
 
@@ -195,7 +192,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                                         @Override
                                         public void onDismissed(Snackbar snackbar) {
-                                            snackBarVisible = false;
+                                            snackBarIsVisible = false;
                                             addSongButton.setVisibility(View.VISIBLE);
                                         }
                                     })
