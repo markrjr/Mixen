@@ -82,7 +82,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         Log.d(Mixen.TAG, "Mixen UI sucessfully initialized.");
 
-
     }
 
     public void initMixen()
@@ -224,7 +223,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
     @Override
     public void onTabSelected(MaterialTab materialTab) {
-
+        mPager.setCurrentItem(materialTab.getPosition());
     }
 
     @Override
@@ -282,6 +281,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         if (songQueueFrag.snackBarIsVisible)
         {
             SnackbarManager.dismiss();
+            return;
         }
 
         if (pressedBefore)

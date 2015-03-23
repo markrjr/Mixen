@@ -250,7 +250,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         albumArtIV.setAnimation(recordPlayerAnim);
 
-
         Palette.generateAsync(MixenPlayerService.instance.currentAlbumArt, new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
@@ -294,15 +293,23 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         if (playPauseButton.getDrawable() == pauseDrawable)
         {
             playPauseButton.setImageDrawable(playDrawable);
-            playPauseButton.setAlpha(1.0f);
-            albumArtIV.setAlpha(0.3f);
+            playPauseButton.animate()
+                    .alpha(1.0f)
+                    .setDuration(250);
+            albumArtIV.animate()
+                    .alpha(0.3f)
+                    .setDuration(250);
             Log.d(Mixen.TAG, "PAUSED");
         }
         else
         {
             playPauseButton.setImageDrawable(pauseDrawable);
-            playPauseButton.setAlpha(0f);
-            albumArtIV.setAlpha(1f);
+            playPauseButton.animate()
+                    .alpha(0f)
+                    .setDuration(250);
+            albumArtIV.animate()
+                    .alpha(1.0f)
+                    .setDuration(250);
             Log.d(Mixen.TAG, "PLAYING");
 
         }
