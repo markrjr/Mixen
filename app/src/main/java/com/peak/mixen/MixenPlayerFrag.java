@@ -372,13 +372,14 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         }
     }
 
-    public void hideUIControls()
+    public void hideUIControls(boolean changeDrawable)
     {
         //Show an indeterminate progress bar.
 
         bufferPB.setVisibility(View.VISIBLE);
-        upNextTV.setVisibility(View.INVISIBLE);
-        showOrHidePlayBtn();
+        upNextTV.setVisibility(View.GONE);
+        if(changeDrawable)
+            showOrHidePlayBtn();
         playPauseButton.setClickable(false);
         fastForwardIB.setClickable(false);
         rewindIB.setClickable(false);

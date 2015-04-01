@@ -239,6 +239,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public void retrieveSongStreamURL()
     {
+        MixenBase.mixenPlayerFrag.hideUIControls(false);
         currentSong = queuedSongs.get(queueSongPosition);
         currentAlbumArtURL = Mixen.COVER_ART_URL + currentSong.getCoverArtFilename();
 
@@ -390,7 +391,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         if (player.isPlaying() || playerHasTrack)
         {
             player.pause();
-            MixenBase.mixenPlayerFrag.hideUIControls();
+            MixenBase.mixenPlayerFrag.hideUIControls(true);
             if(player.getCurrentPosition() - 30000 < 0)
             {
                 player.seekTo(0);
@@ -408,7 +409,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     {
         if (player.isPlaying() || playerHasTrack) {
             player.pause();
-            MixenBase.mixenPlayerFrag.hideUIControls();
+            MixenBase.mixenPlayerFrag.hideUIControls(true);
 
             player.seekTo(0);
             Log.d(Mixen.TAG, "Restarting track from the beginning.");
@@ -428,7 +429,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             }
 
             player.pause();
-            MixenBase.mixenPlayerFrag.hideUIControls();
+            MixenBase.mixenPlayerFrag.hideUIControls(true);
             player.seekTo(player.getCurrentPosition() + 30000); //Fast forward 30 seconds.
             //Log.i(Mixen.TAG, "Seeking forward 30 seconds.");
         }
@@ -483,7 +484,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     public boolean onInfo(MediaPlayer mediaPlayer, int action, int extra) {
 
         if (action == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
-            MixenBase.mixenPlayerFrag.hideUIControls();
+            MixenBase.mixenPlayerFrag.hideUIControls(true);
 
             bufferTimes++;
             if(bufferTimes >= 3)
