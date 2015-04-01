@@ -139,7 +139,12 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         if(BuildConfig.DEBUG)
         {
             Salut.disableWiFi(getApplicationContext());
+            if(!Mixen.isHost)
+            {
+                Mixen.network.disposeServiceRequests();
+            }
         }
+
     }
 
     public void setupMixenNetwork()
@@ -291,6 +296,10 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             if(MixenPlayerService.instance != null && MixenPlayerService.instance.isRunning) //TODO Fix null with real guard.
             {
                 stopService(new Intent(this, MixenPlayerService.class));
+            }
+            if(!Mixen.isHost)
+            {
+                Mixen.network.disposeServiceRequests();
             }
 
             this.finish();

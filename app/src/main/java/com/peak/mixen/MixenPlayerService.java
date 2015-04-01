@@ -125,18 +125,25 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public void initService()
     {
-        audioManager = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
-        noisyAudioReciever = new NoisyAudioReciever();
+
         queuedSongs = new ArrayList<Song>();
         proposedSongs = new ArrayList<Song>();
         previousAlbumArt = new LinkedHashMap<>(10);
+
+        if(Mixen.isHost)
+        {
+            initMusicPlayer();
+            setupPhoneListener();
+            audioManager = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+            noisyAudioReciever = new NoisyAudioReciever();
+        }
+
         if(BuildConfig.DEBUG)
         {
             mediaSession = new MediaSessionCompat(getApplicationContext(), "Mixen Player Service");
             mediaSession.setPlaybackToLocal(AudioManager.STREAM_MUSIC);
         }
-        initMusicPlayer();
-        setupPhoneListener();
+
         isRunning = true;
         instance = this;
 

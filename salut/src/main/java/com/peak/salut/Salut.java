@@ -98,6 +98,7 @@ public class Salut{
 
     public void startNetworkService(SalutCallback function, boolean callContinously) {
         this.serviceData.put("LISTEN_PORT", String.valueOf(SERVER_PORT));
+        Log.d(TAG, "Starting " + serviceName + " Transport Protocol " + TTP);
         serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceName, TTP , this.serviceData);
 
         manager.addLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
@@ -124,6 +125,8 @@ public class Salut{
         WifiP2pManager.DnsSdServiceResponseListener serviceListener = new WifiP2pManager.DnsSdServiceResponseListener() {
             @Override
             public void onDnsSdServiceAvailable(String instanceName, String transportProtocol, WifiP2pDevice sourceDevice) {
+                Log.d(TAG, "Found " + instanceName +  " " + transportProtocol);
+
 
                 if (instanceName.equalsIgnoreCase(serviceName))
                 {
@@ -171,7 +174,7 @@ public class Salut{
             public void run() {
                 if(foundDevices.size() == 0)
                 {
-                    disposeNetworkService();
+                    disposeServiceRequests();
                     cleanUpFunction.call();
                 }
             }
@@ -211,7 +214,7 @@ public class Salut{
             }
         });
 
-        //devicesNotFoundInTime(timeout, onDevicesNotFound);
+        devicesNotFoundInTime(timeout, onDevicesNotFound);
 
     }
 
@@ -233,7 +236,13 @@ public class Salut{
                     serviceIsRunning = false;
                 }
             });
+        }
+    }
 
+    public void disposeServiceRequests()
+    {
+        if (manager != null && channel != null)
+        {
             manager.removeServiceRequest(channel, serviceRequest, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
@@ -242,7 +251,7 @@ public class Salut{
 
                 @Override
                 public void onFailure(int reason) {
-                    Log.d(TAG, "Failed to remov service discovery request. Reason : " + reason);
+                    Log.d(TAG, "Failed to remove service discovery request. Reason : " + reason);
                 }
             });
         }

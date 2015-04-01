@@ -3,6 +3,7 @@ package com.peak.mixen;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,6 +57,8 @@ public class MixenUsersFrag extends Fragment{
 
     public void populateNetworkListView()
     {
+        Log.d(Mixen.TAG, "Updating network queue.");
+
         if(Mixen.network.foundDevices.isEmpty())
         {
             return;
