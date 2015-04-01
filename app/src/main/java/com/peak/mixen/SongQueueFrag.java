@@ -53,12 +53,19 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         addSong = new Intent(getActivity(), SearchSongs.class);
 
-        setupQueueAdapter();
+        if(Mixen.isHost)
+        {
+            setupQueueAdapter();
+        }
+        else
+        {
+
+        }
 
         return relativeLayout;
     }
 
-    public static void updateQueueUI() {
+    public static void updateHostQueueUI() {
 
         queueAdapter.notifyDataSetChanged();
 
@@ -75,6 +82,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     }
 
+    public static void updateClientQueueUI()
+    {
+
+    }
+
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -88,13 +100,16 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        updateQueueUI();
-        if(MixenPlayerService.instance != null)
-        {
-            Log.v(Mixen.TAG, "CURRENT SONG POSITION : " + MixenPlayerService.instance.currentSongAsInt);
-            Log.v(Mixen.TAG, "CURRENT QUEUE SIZE : " + MixenPlayerService.instance.queuedSongs.size());
 
+        if(Mixen.isHost)
+        {
+            updateHostQueueUI();
         }
+        else
+        {
+            //updateClientQueueUI();
+        }
+
     }
 
     private void setupQueueAdapter() {
@@ -134,7 +149,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                     SnackbarManager.show(
                             Snackbar.with(getActivity().getApplicationContext())
-                                    .text("SELECTED: " + selected.getName())
+                                    .text("Selected: " + selected.getName())
                                     .actionColor(Color.YELLOW)
                                     .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
                                     .actionLabel("Remove")
@@ -142,27 +157,32 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         @Override
                                         public void onActionClicked(Snackbar snackbar) {
 
-                                            currentSongWasDeleted = false;
+                                            MixenPlayerService.instance.queuedSongs.remove(position);
+                                            updateHostQueueUI();
 
                                             if(MixenPlayerService.instance.currentSong == selected)
                                             {
-
-                                                //Or, someone wants to delete the current playing song.
+                                                //If someone wants to delete the currently playing song, stop everything.
                                                 MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
-                                                currentSongWasDeleted = true;
                                                 Log.d(Mixen.TAG, "Current song was deleted.");
 
+                                                if(MixenPlayerService.instance.getNextTrack() != null || !MixenPlayerService.instance.queueIsEmpty())
+                                                {
+                                                    if(MixenPlayerService.instance.queueHasASingleTrack())
+                                                    {
+                                                        MixenPlayerService.instance.queueSongPosition = 0;
+                                                    }
+                                                    //We use getSongStreamURL here because we don't need to modify the counter, because the ArrayList will move around the counter.
+                                                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.getSongStreamURL);
+                                                }
+
                                             }
-
-                                            MixenPlayerService.instance.queuedSongs.remove(position);
-                                            updateQueueUI();
-
-                                            if(currentSongWasDeleted && MixenPlayerService.instance.getNextTrack() != null || currentSongWasDeleted && MixenPlayerService.instance.queueHasASingleTrack())
+                                            else if(position < MixenPlayerService.instance.queueSongPosition)
                                             {
-                                                MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.skipToNext);
+                                                MixenPlayerService.instance.queueSongPosition--;
                                             }
 
-
+                                            MixenBase.mixenPlayerFrag.updateUpNext();
                                         }
                                     })
                                     .eventListener(new EventListener() {
@@ -230,7 +250,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         {
             if (resultCode == Activity.RESULT_OK)
             {
-                updateQueueUI();
+                updateHostQueueUI();
                 //We really don't care about the Intent data here, we just need some way to know
                 //when the user has come back from searching for songs so that we can update the UI.
             }

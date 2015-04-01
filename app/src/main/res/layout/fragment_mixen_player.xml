@@ -36,16 +36,17 @@
         android:layout_above="@+id/playerControls"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="12dp"
-        android:textSize="18dp"
+        android:textSize="20dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
-        android:text="Nothing Is Playing" />
+        android:text="Nothing Is Playing"
+        android:textStyle="bold" />
 
     <com.github.lzyzsd.circleprogress.ArcProgress
         android:id="@+id/arc_progress_bar"
         android:background="@color/EXP_2"
-        android:layout_width="335dp"
-        android:layout_height="335dp"
+        android:layout_width="310dp"
+        android:layout_height="310dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="55dp"
         custom:arc_text_size="0dp"
@@ -62,20 +63,20 @@
         android:visibility="visible"
         android:background="@android:color/transparent"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="190dp"
         android:alpha="1.0" />
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/albumArtIV"
-        android:layout_width="325dp"
-        android:layout_height="325dp"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
         android:src="@drawable/mixen_icon"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="60dp"
         android:backgroundTint="@color/Tundora"
         android:backgroundTintMode="src_atop"
-        android:alpha="1" />
+        android:alpha="0.3" />
 
 
     <TextView

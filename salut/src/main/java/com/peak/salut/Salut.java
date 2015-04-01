@@ -10,6 +10,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.net.wifi.p2p.nsd.WifiP2pServiceInfo;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -24,6 +25,7 @@ public class Salut{
 
     private static boolean wifiWasEnabledBefore = false;
     private static WifiManager wifiManager;
+    private boolean firstDeviceAlreadyFound = false;
 
     public boolean serviceIsRunning;
 
@@ -44,8 +46,6 @@ public class Salut{
     //Protocol and Transport Layers
     public String TTP = "._tcp";
     private final String SERVER_PORT = "25400"; //TODO Should not be hardcoded, instead should be an available port handed by Android.
-
-    //TODO For the love of God, please user super here in these constructors to bring it down to just one.
 
     public Salut(Context currentContext, String serviceName, Map<String, String> serviceData)
     {
@@ -73,11 +73,8 @@ public class Salut{
         });
     }
 
-
     public static void checkIfIsWifiEnabled(Context context)
     {
-        //TODO Create boolean to remember if WiFi was already enabled before we enable it.
-
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         if (!wifiManager.isWifiEnabled())
         {
@@ -99,7 +96,7 @@ public class Salut{
     }
 
 
-    public void startNetworkService(SalutCallback function) {
+    public void startNetworkService(SalutCallback function, boolean callContinously) {
         this.serviceData.put("LISTEN_PORT", String.valueOf(SERVER_PORT));
         serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceName, TTP , this.serviceData);
 
@@ -116,12 +113,10 @@ public class Salut{
             }
         });
 
-        setupDNSResponders(function);
-
     }
 
 
-    private void setupDNSResponders(final SalutCallback function)
+    private void setupDNSResponders(final SalutCallback function, final boolean callContinously)
     {
          /*
          *Here, we register a listener for services. Each time a service is found we simply log.
@@ -151,19 +146,46 @@ public class Salut{
                 if (!foundDevices.containsValue(device) && record.get("username") != null)
                 {
                     foundDevices.put(username, device);
-                    function.call();
+                    if(!firstDeviceAlreadyFound && !callContinously)
+                    {
+                        function.call();
+                        firstDeviceAlreadyFound = true;
+                    }
+                    else if(firstDeviceAlreadyFound && callContinously)
+                    {
+                        function.call();
+                    }
                 }
-
             }
         };
 
 
         manager.setDnsSdResponseListeners(channel, serviceListener, txtRecordListener);
 
+    }
+
+    public void devicesNotFoundInTime(int timeout, final SalutCallback cleanUpFunction)
+    {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(foundDevices.size() == 0)
+                {
+                    disposeNetworkService();
+                    cleanUpFunction.call();
+                }
+            }
+        }, timeout);
+    }
+
+
+    public void discoverNetworkServices(SalutCallback onDevicesFound, boolean callContinously, SalutCallback onDevicesNotFound, int timeout)
+    {
+        setupDNSResponders(onDevicesFound, callContinously);
 
         // After attaching listeners, create a service request and initiate
         // discovery.
-        serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        serviceRequest = WifiP2pDnsSdServiceRequest.newInstance(serviceName, TTP);
 
         manager.addServiceRequest(channel, serviceRequest,
                 //Look for exactly this service.
@@ -178,43 +200,49 @@ public class Salut{
                     }
                 });
 
-        discoverNetworkService(new SalutCallback() {
-            @Override
-            public void call() {
-                //
-            }
-        });
-
-    }
-
-
-    public void discoverNetworkService(final SalutCallback function)
-    {
         manager.discoverServices(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
                 Log.d(TAG, "Service discovery initiated.");
-                function.call();
             }
             @Override
             public void onFailure(int arg0) {
                 Log.d(TAG, "Service discovery has failed." );
             }
         });
+
+        //devicesNotFoundInTime(timeout, onDevicesNotFound);
+
     }
 
     public void disposeNetworkService()
     {
         if (manager != null && channel != null && serviceInfo != null) {
+
+            manager.setDnsSdResponseListeners(null, null, null);
+
             manager.removeLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
                 @Override
-                public void onFailure(int reasonCode) {
-                    Log.d(TAG, "Could not end the service. Reason : " + reasonCode);
+                public void onFailure(int reason) {
+                    Log.d(TAG, "Could not end the service. Reason : " + reason);
                 }
+
                 @Override
                 public void onSuccess() {
                     Log.d(TAG, "Successfully shutdown service.");
                     serviceIsRunning = false;
+                }
+            });
+
+            manager.removeServiceRequest(channel, serviceRequest, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "Successfully removed service discovery request.");
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    Log.d(TAG, "Failed to remov service discovery request. Reason : " + reason);
                 }
             });
         }

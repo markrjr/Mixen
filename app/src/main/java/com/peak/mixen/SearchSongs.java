@@ -18,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
@@ -33,8 +34,8 @@ public class SearchSongs extends ActionBarActivity{
 
     private ProgressBar indeterminateProgress;
     private ListView songsLV;
-    private boolean queryPending = false;
     private querySongs findSong;
+    public boolean isFirstSong;
 
 
     public static SearchSongs instance;
@@ -65,21 +66,14 @@ public class SearchSongs extends ActionBarActivity{
     private void handleIntent(Intent intent)
     {
         if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
-
-            if(queryPending)
-            {
-                findSong.cancel(true);
-                queryPending = false;
-            }
-
             String query = intent.getStringExtra(SearchManager.QUERY);
 
             if(query.length() != 0 && query.matches("^[a-zA-Z0-9 ]*$"))
             {
-                queryPending = true;
                 indeterminateProgress.setVisibility(View.VISIBLE);
                 songsLV.setVisibility(View.INVISIBLE);
                 findSong = new querySongs(query);
+                //Should not need to cancel, because we instantiate a new one?
                 findSong.execute();
 
             }
@@ -92,9 +86,7 @@ public class SearchSongs extends ActionBarActivity{
 
     public void postHandleSearchTask(ArrayList foundSongs, Integer requestStatus)
     {
-        queryPending = false;
         indeterminateProgress.setVisibility(View.GONE);
-
 
         if(requestStatus.intValue() == querySongs.REQUEST_FAILED)
         {
@@ -154,6 +146,12 @@ public class SearchSongs extends ActionBarActivity{
                 // ListView Clicked item value
                 final Song selected = (Song) songsLV.getItemAtPosition(position);
 
+                if(MixenPlayerService.instance.currentSong != null && MixenPlayerService.instance.currentSong == selected)
+                {
+                    Toast.makeText(getApplicationContext(), "This song has already been added.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 addSongToQueue(selected);
                 //TODO Fix undo action flow.
 
@@ -177,30 +175,26 @@ public class SearchSongs extends ActionBarActivity{
         {
             Log.i(Mixen.TAG, "First song added to queue.");
             MixenPlayerService.instance.queuedSongs.add(song);
-            MixenPlayerService.instance.currentSongAsInt = 0;
-            MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.currentSongAsInt);
+            MixenPlayerService.instance.queueSongPosition = 0;
+            MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.queueSongPosition);
             MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.getSongStreamURL);
+            isFirstSong = true;
         }
         else
         {
+            isFirstSong = false;
             MixenPlayerService.instance.queuedSongs.add(song);
 
-            if(MixenBase.mixenPlayerFrag.upNextTV.getText().equals("") && MixenPlayerService.instance.getNextTrack() != null)
+            if(!MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack)
             {
-                MixenBase.mixenPlayerFrag.upNextTV.setText("Next: \n" + MixenPlayerService.instance.getNextTrack().getName());
-            }
-
-            if(MixenPlayerService.instance.isRunning && !MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack && !MixenPlayerService.instance.playerIsPlaying())
-            {
-                //Condense if to playerIsReady?
-                Log.d(Mixen.TAG, "This is being executed also.");
                 //If songs are in the queue, but have completed playback and a new one is suddenly added.
-                MixenPlayerService.instance.currentSongAsInt++;
-                MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.currentSongAsInt);
+                MixenPlayerService.instance.queueSongPosition++;
                 MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.getSongStreamURL);
             }
 
         }
+
+        MixenBase.mixenPlayerFrag.updateUpNext();
 
     }
 

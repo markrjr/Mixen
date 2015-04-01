@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,7 +30,6 @@ public class StartScreen extends Activity {
 
 
     private boolean pressedBefore = false;
-    private boolean namePressedBefore = false;
     private Intent createNewMixen;
     private TextView AppNameTV;
     private TextView DescriptTV;
@@ -96,14 +94,6 @@ public class StartScreen extends Activity {
 
         if(!isFirstRun())
         {
-//            new Handler().postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    startActivity(createNewMixen);
-//                    hideProgress();
-//                    restoreControls();
-//                }
-//            }, 1500);
             startActivity(createNewMixen);
             hideProgress();
             restoreControls();
@@ -117,12 +107,31 @@ public class StartScreen extends Activity {
 
     }
 
-    public void onBtnClicked(View v)
+    public void clearAppSettings()
     {
+        //If the user has pressed the back button twice at this point kill the app.
 
-        Salut.checkIfIsWifiEnabled(getApplicationContext());
+        Mixen.sharedPref.edit().clear().apply();
+        Toast.makeText(getApplicationContext(),
+                "Removed all settings. Please restart the app.", Toast.LENGTH_SHORT)
+                .show();
 
-        switch(v.getId()) {
+        if(BuildConfig.DEBUG)
+        {
+            Salut.disableWiFi(getApplicationContext());
+        }
+
+        this.finish();
+    }
+
+    public void onBtnClicked(View v) {
+
+        if(BuildConfig.DEBUG)
+        {
+            Salut.checkIfIsWifiEnabled(getApplicationContext());
+        }
+
+        switch (v.getId()) {
             case R.id.createMixenButton:
 
                 //In order to stream down songs, the user must obviously have a connection to the internet.
@@ -143,75 +152,61 @@ public class StartScreen extends Activity {
 
                 return;
 
-            case R.id.findMixen:
+            case R.id.findMixen: {
+                if (BuildConfig.DEBUG) {
+                    final MaterialDialog findingMixensProgress = new MaterialDialog.Builder(this)
+                            .title("Searching for nearby Mixens...")
+                            .content("Please wait...")
+                            .progress(true, 0)
+                            .build();
 
-                hideControls();
+                    final MaterialDialog cleanUpDialog = new MaterialDialog.Builder(this)
+                            .title("Bummer :(")
+                            .content(R.string.discover_p2p_error)
+                            .neutralText("Okay")
+                            .build();
 
-                new MaterialDialog.Builder(this)
-                        .title("Bummer :(")
-                        .content("This feature isn't quite ready yet, come back later.")
-                        .neutralText("Okay")
-                        .dismissListener(new DialogInterface.OnDismissListener() {
-                            @Override
-                            public void onDismiss(DialogInterface dialog) {
-                                restoreControls();
-                            }
-                        })
-                        .show();
+                    findingMixensProgress.show();
 
-                return;
+                    Map appData = new HashMap();
+                    appData.put("username", null);
+                    appData.put("isHost", "FALSE");
 
-//                new MaterialDialog.Builder(this)
-//                        .title("Searching for nearby mixens...")
-//                        .content("Please wait...")
-//                        .progress(true, 0)
-//                        .show();
+                    Mixen.network = new Salut(getApplicationContext(), "_mixen", appData);
 
-//                Map appData = new HashMap();
-//                appData.put("username", null);
-//                appData.put("isHost", "FALSE");
-//
-//
-//                Mixen.network = new Salut(getApplicationContext(), "_mixen", appData);
-//                Mixen.network.startNetworkService();
-//
-//                startActivity(new Intent(StartScreen.this, SongQueue.class));
+                    Mixen.network.discoverNetworkServices(new SalutCallback() {
+                              @Override
+                              public void call() {
+                                  findingMixensProgress.dismiss();
+                                  startActivity(new Intent(StartScreen.this, MixenBase.class));
+                              }
+                          }, false,
+                            new SalutCallback() {
+                                @Override
+                                public void call() {
+                                    findingMixensProgress.dismiss();
+                                    cleanUpDialog.show();
+                                }
+                            }, 5000);
 
+                } else {
+                    hideControls();
 
-            case R.id.appNameTV:
-                if (namePressedBefore) {
-                    //If the user has pressed the back button twice at this point kill the app.
-
-                    Mixen.sharedPref.edit().clear().apply();
-                    Toast.makeText(getApplicationContext(),
-                            "Removed all settings. Please restart the app.", Toast.LENGTH_SHORT)
+                    new MaterialDialog.Builder(this)
+                            .title("Bummer :(")
+                            .content("This feature isn't quite ready yet, come back later.")
+                            .neutralText("Okay")
+                            .dismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    restoreControls();
+                                }
+                            })
                             .show();
-                    this.finish();
 
-                    if(BuildConfig.DEBUG)
-                    {
-                        Salut.disableWiFi(getApplicationContext());
-                    }
-
-                    System.exit(0);
+                    return;
                 }
-
-                Toast.makeText(getApplicationContext(),
-                        "Press again to clear all settings.", Toast.LENGTH_SHORT)
-                        .show();
-
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        namePressedBefore = false;
-                    }
-                }, 5000);
-
-
-                namePressedBefore = true;
-                return;
-
+            }
         }
     }
 
@@ -308,12 +303,12 @@ public class StartScreen extends Activity {
         if (pressedBefore)
         {
 
-            this.finish();
             if(BuildConfig.DEBUG)
             {
                 Salut.disableWiFi(getApplicationContext());
             }
             System.exit(0);
+            this.finish();
 
         }
 

@@ -25,11 +25,12 @@
     <string name="happy_face">:)</string>
     <string name="song_not_found">We couldn\'t find the song you were looking for. Sorry about that.</string>
     <string name="generic_streaming_error">An error occurred while trying to stream down your music. Sorry about that.</string>
+    <string name="discover_p2p_error">Unfortunately, we couldn\'t find anybody nearby. Sorry about that.</string>
     <string name="title_activity_song_queue">SongQueue</string>
     <string name="empty_queue">The queue is empty! Add a song to get started.</string>
     <string name="title_activity_tabbed_song_queue">TabbedSongQueue</string>
     <string name="mixen_network_search">Searching for nearby Mixens...</string>
-    <string name="revision_number">Revision 20</string>
+    <string name="revision_number">Revision 22</string>
     <string name="build_type">Alpha Build</string>
     <string name="title_activity_mixen_base">MixenBase</string>
     <string name="empty_users_queue">There are no users connected yet.</string>

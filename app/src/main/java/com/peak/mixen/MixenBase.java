@@ -61,7 +61,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         TabNames.add("Up Next");
         TabNames.add("Now Playing");
 
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG && Mixen.isHost) {
 //            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
 //                    .detectAll()    // detect everything potentially suspect
 //                    .penaltyLog()   // penalty is to write to log
@@ -93,6 +93,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         {
             public static final int TIMEOUT = 5000;
         };
+        //Mixen.grooveSharkSession.setDebugLoggingEnabled(true);
 
         if(BuildConfig.DEBUG)
         {
@@ -103,7 +104,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             else
             {
                 //Goto Users Tab
-
+                //Mixen.network.discoverNetworkServices();
             }
         }
 
@@ -152,14 +153,14 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         if(Mixen.isHost && !Mixen.network.serviceIsRunning)
         {
-
+            //TODO Move to StartScreen?
 
             Mixen.network.startNetworkService(new SalutCallback() {
                 @Override
                 public void call() {
-                    //mixenUsersFrag.populateNetworkListView();
+                    mixenUsersFrag.populateNetworkListView();
                 }
-            });
+            }, false);
             Mixen.network.serviceIsRunning = true;
         }
 
@@ -287,7 +288,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         if (pressedBefore)
         {
             //If the user has pressed the back button twice at this point kill the app.
-            if(MixenPlayerService.instance.isRunning)
+            if(MixenPlayerService.instance != null && MixenPlayerService.instance.isRunning) //TODO Fix null with real guard.
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }

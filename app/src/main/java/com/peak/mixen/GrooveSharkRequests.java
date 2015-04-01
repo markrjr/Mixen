@@ -114,6 +114,24 @@ class DownloadAlbumArt extends AsyncTask<Void, Void, Bitmap>{
     }
 }
 
+class getTopSongs extends AsyncTask<Void, Void, List<Song>>
+{
+    List<Song> songs;
+
+
+    @Override
+    protected List<Song> doInBackground(Void... params) {
+        try{
+            return Mixen.grooveSharkSession.searchPopularSongs();
+        }
+        catch (Exception ex)
+        {
+            Log.e(Mixen.TAG, "There was a network error while attempting to retrieving the data.");
+        }
+    return null;
+    }
+}
+
 
 class getStreamURLAsync extends AsyncTask<Void, Void, URL>
 {
@@ -129,11 +147,7 @@ class getStreamURLAsync extends AsyncTask<Void, Void, URL>
 
         try {
             return Mixen.grooveSharkSession.getStreamUrl(song);
-        } catch (IOException IOError) {
-            Log.e(Mixen.TAG, "IOError");
-        } catch (GroovesharkException GSExcep) {
-            Log.e(Mixen.TAG, "Grooveshark Exception");
-        } catch (NullPointerException nullReturn)
+        } catch (Exception ex)
         {
             Log.e(Mixen.TAG, "There was a network error while attempting to retrieving the data.");
         }

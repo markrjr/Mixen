@@ -71,7 +71,15 @@ public class MixenUsersFrag extends Fragment{
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
 
-                text1.setText((String)nearbyUsers.get(position));
+                if(position == 0 && !Mixen.isHost)
+                {
+                    text1.setText((String)nearbyUsers.get(position) + " - Host");
+                }
+                else
+                {
+                    text1.setText((String)nearbyUsers.get(position));
+                }
+
                 return view;
             }
         };
