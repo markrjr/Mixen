@@ -293,7 +293,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         if (pressedBefore)
         {
             //If the user has pressed the back button twice at this point kill the app.
-            if(MixenPlayerService.instance != null && MixenPlayerService.instance.isRunning) //TODO Fix null with real guard.
+            if(MixenPlayerService.instance != null && MixenPlayerService.instance.isRunning)
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }
