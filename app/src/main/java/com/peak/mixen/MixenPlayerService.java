@@ -73,7 +73,8 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public int queueSongPosition;
 
-    public boolean stoppedPlayingUnexpectedly = false;
+    public boolean pausedForPhoneCall = false;
+    public boolean pausedUnexpectedly = false;
     public boolean isRunning = false;
     public boolean serviceIsBusy = true;
     //Another catch all boolean for when the service is fetching data, and cannot handle another request.
@@ -459,9 +460,10 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         {
             if(audioChange == AudioManager.AUDIOFOCUS_LOSS)
             {
-                    doAction(getApplicationContext(), MixenPlayerService.pause);
-                    audioManager.abandonAudioFocus(this);
-                    Log.d(Mixen.TAG, "Abandoning audio focus.");
+                doAction(getApplicationContext(), MixenPlayerService.pause);
+                pausedUnexpectedly = true;
+                audioManager.abandonAudioFocus(this);
+                Log.d(Mixen.TAG, "Abandoning audio focus.");
             }
             else if(audioChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
             {
@@ -469,12 +471,27 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalMusicVolume / 2, AudioManager.FLAG_SHOW_UI);
                 Log.v(Mixen.TAG, "Ducking Audio");
             }
-            else if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
+            else if(audioChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)
             {
-                if(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) != originalMusicVolume)
+                //originalMusicVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC); //Also works, which is better?
+                doAction(getApplicationContext(), MixenPlayerService.pause);
+                pausedUnexpectedly = true;
+            }
+        }
+        else
+        {
+            if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
+            {
+                if(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) != originalMusicVolume && !pausedUnexpectedly)
                 {
                     audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalMusicVolume, AudioManager.FLAG_SHOW_UI);
                     Log.v(Mixen.TAG, "Unducking Audio");
+                }
+                else if(pausedUnexpectedly && !pausedForPhoneCall)
+                {
+                    doAction(getApplicationContext(), MixenPlayerService.play);
+                    pausedUnexpectedly = false;
+                    Log.d(Mixen.TAG, "Resuming playback.");
                 }
             }
         }
@@ -776,19 +793,19 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                     if (isRunning && MixenPlayerService.instance.playerIsPlaying()) {
                         doAction(getApplicationContext(), pause);
                         audioManager.abandonAudioFocus(MixenPlayerService.this);
-                        stoppedPlayingUnexpectedly = true;
+                        pausedForPhoneCall = true;
                         Log.d(Mixen.TAG, "Incoming call, pausing playback.");
 
                     }
 
                 } else if (state == TelephonyManager.CALL_STATE_IDLE) {
-                    if (isRunning && stoppedPlayingUnexpectedly) {
+                    if (isRunning && pausedForPhoneCall) {
 
                             new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     doAction(getApplicationContext(), play);
-                                    stoppedPlayingUnexpectedly = false;
+                                    pausedForPhoneCall = false;
                                     Log.d(Mixen.TAG, "Resuming playback.");
                                 }
                             }, 1000);
@@ -802,7 +819,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                     if (isRunning && MixenPlayerService.instance.playerIsPlaying()) {
                         doAction(getApplicationContext(), pause);
                         audioManager.abandonAudioFocus(MixenPlayerService.this);
-                        stoppedPlayingUnexpectedly = true;
+                        pausedForPhoneCall = true;
                         Log.d(Mixen.TAG, "Ongoing call, pausing playback.");
                     }
 
