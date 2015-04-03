@@ -11,7 +11,3 @@ import java.util.Map;
 public interface SalutCallback {
     void call();
 }
-
-interface SalutDeviceCallback {
-    void call(Map<String, String> serviceData, WifiP2pDevice foundDevice);
-}

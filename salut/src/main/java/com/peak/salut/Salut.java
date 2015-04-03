@@ -12,7 +12,6 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.net.wifi.p2p.nsd.WifiP2pServiceInfo;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -178,7 +177,6 @@ public class Salut{
 
                 String username = record.get("username");
 
-                Toast.makeText(currentContext, "Found " + device.deviceName + "  :  User is " + record.get("username"), Toast.LENGTH_SHORT).show();
                 if (!foundDevices.containsValue(device) && record.get("username") != null)
                 {
                     foundDevices.put(username, device);
@@ -232,7 +230,6 @@ public class Salut{
 
                 String username = record.get("username");
 
-                Toast.makeText(currentContext, "Found " + device.deviceName + "  :  User is " + record.get("username"), Toast.LENGTH_SHORT).show();
                 if (!foundDevices.containsValue(device) && record.get("username") != null)
                 {
                     foundDevices.put(username, device);
@@ -310,6 +307,18 @@ public class Salut{
         discoverNetworkServices();
     }
 
+    public void discoverNetworkServicesDeviceCallbacksWithTimeout(SalutDeviceCallback onDeviceFound, boolean callContinously, SalutCallback onDevicesNotFound, int timeout)
+    {
+        //TODO Use nullable to set flags to reduce method overloading.
+        if(!respondersAlreadySet)
+        {
+            setupDNSRespondersWithDevice(onDeviceFound, callContinously);
+        }
+
+        discoverNetworkServices();
+        devicesNotFoundInTime(timeout, onDevicesNotFound);
+    }
+
     public void discoverNetworkServices(SalutCallback onDeviceFound, boolean callContinously)
     {
         if(!respondersAlreadySet)
@@ -336,9 +345,6 @@ public class Salut{
     {
         if (manager != null && channel != null && serviceInfo != null) {
 
-            manager.setDnsSdResponseListeners(null, null, null);
-            respondersAlreadySet = false;
-
             manager.removeLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onFailure(int reason) {
@@ -351,6 +357,8 @@ public class Salut{
                     serviceIsRunning = false;
                 }
             });
+
+            respondersAlreadySet = false;
         }
 
         disposeServiceRequests();
@@ -374,8 +382,3 @@ public class Salut{
         }
     }
 }
-
-
-
-
-

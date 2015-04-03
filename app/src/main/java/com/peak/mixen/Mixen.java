@@ -70,20 +70,7 @@ public class Mixen {
         return (provideErrorInfo);
     }
 
-}
-
-interface SimpleCallback
-{
-    void call();
-}
-
-
-
-class InternetState
-{
-    //Check if there is a connection to the internet either over mobile data or Wi-Fi.
-
-    public static boolean isConnected(Context context) {
+    public static boolean isConnected(Context context, int timeout) {
         ConnectivityManager cm = (ConnectivityManager)context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -94,7 +81,7 @@ class InternetState
                 HttpURLConnection urlc = (HttpURLConnection)url.openConnection();
                 urlc.setRequestProperty("User-Agent", "development");
                 urlc.setRequestProperty("Connection", "close");
-                urlc.setConnectTimeout(1000); // mTimeout is in seconds
+                urlc.setConnectTimeout(timeout); // mTimeout is in seconds
                 urlc.connect();
                 if (urlc.getResponseCode() == 200) {
                     return true;
@@ -110,25 +97,23 @@ class InternetState
         return false;
 
     }
+
 }
 
 
-class checkNetworkConnection extends AsyncTask<SimpleCallback, Void, Boolean>
+class checkNetworkConnection extends AsyncTask<Void, Void, Boolean>
 {
     //A simple wrapper for the internet state class.
-    SimpleCallback functionToCallWhenFinished;
 
     @Override
-    protected Boolean doInBackground(SimpleCallback... params) {
-        functionToCallWhenFinished = params[0];
-        return InternetState.isConnected(Mixen.currentContext);
+    protected Boolean doInBackground(Void... params) {
+        return Mixen.isConnected(Mixen.currentContext, 1000);
     }
 
     @Override
     protected void onPostExecute(Boolean result) {
         //After execution of the async task to check the network, set the result out.
         Mixen.networkisReachableAsync = result;
-        functionToCallWhenFinished.call();
 
     }
 }

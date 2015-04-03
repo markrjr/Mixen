@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -11,13 +12,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.prefs.MaterialEditTextPreference;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutCallback;
+import com.peak.salut.SalutDeviceCallback;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +35,6 @@ public class StartScreen extends Activity {
 
     private boolean pressedBefore = false;
     private Intent createNewMixen;
-    private TextView AppNameTV;
-    private TextView DescriptTV;
 
     private Button findMixen;
     private Button createMixen;
@@ -43,8 +45,6 @@ public class StartScreen extends Activity {
         setContentView(R.layout.activity_start_screen);
 
         //Map TextViews and other widgets.
-        AppNameTV = (TextView)findViewById(R.id.appNameTV);
-        DescriptTV = (TextView)findViewById(R.id.moreInfoTV);
         findMixen = (Button)findViewById(R.id.findMixen);
         createMixen = (Button)findViewById(R.id.createMixenButton);
         progressBarInfoTV = (TextView)findViewById(R.id.progressBarInfoTV);
@@ -90,8 +90,6 @@ public class StartScreen extends Activity {
     {
         Log.i(Mixen.TAG, "Skipping network connection check...");
 
-        Mixen.isHost = true; //User will host content for other users.
-
         if(!isFirstRun())
         {
             startActivity(createNewMixen);
@@ -124,15 +122,30 @@ public class StartScreen extends Activity {
         this.finish();
     }
 
-    public void onBtnClicked(View v) {
-
+    @Override
+    protected void onStart() {
+        super.onStart();
         if(BuildConfig.DEBUG)
         {
             Salut.enableWiFi(getApplicationContext());
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(BuildConfig.DEBUG)
+        {
+            Salut.disableWiFi(getApplicationContext());
+        }
+    }
+
+    public void onBtnClicked(View v) {
 
         switch (v.getId()) {
             case R.id.createMixenButton:
+
+                Mixen.isHost = true;
 
                 //In order to stream down songs, the user must obviously have a connection to the internet.
                 showProgress();
@@ -153,6 +166,9 @@ public class StartScreen extends Activity {
                 return;
 
             case R.id.findMixen: {
+
+                Mixen.isHost = false;
+
                 if (BuildConfig.DEBUG) {
                     final MaterialDialog findingMixensProgress = new MaterialDialog.Builder(this)
                             .title("Searching for nearby Mixens...")
@@ -166,9 +182,10 @@ public class StartScreen extends Activity {
                             .neutralText("Okay")
                             .build();
 
+
                     findingMixensProgress.show();
 
-                   hideControls();
+                    hideControls();
 
                     Map appData = new HashMap();
                     appData.put("username", null);
@@ -176,22 +193,24 @@ public class StartScreen extends Activity {
 
                     Mixen.network = new Salut(getApplicationContext(), "Client",  "_mixen", appData);
 
-                    Mixen.network.discoverNetworkServicesWithTimeout(new SalutCallback() {
-                              @Override
-                              public void call() {
-                                  restoreControls();
-                                  findingMixensProgress.dismiss();
-                                  startActivity(new Intent(StartScreen.this, MixenBase.class));
-                              }
-                          }, false,
-                            new SalutCallback() {
-                                @Override
-                                public void call() {
-                                    restoreControls();
-                                    findingMixensProgress.dismiss();
-                                    cleanUpDialog.show();
-                                }
-                            }, 5000);
+                    Mixen.network.discoverNetworkServicesDeviceCallbacksWithTimeout(new SalutDeviceCallback() {
+                        @Override
+                        public void call(Map<String, String> serviceData, WifiP2pDevice foundDevice) {
+                            restoreControls();
+                            findingMixensProgress.dismiss();
+                            startActivity(new Intent(StartScreen.this, MixenBase.class));
+                            Toast.makeText(getApplicationContext(), "You're now connected to " + serviceData.get("username") + " 's Mixen.", Toast.LENGTH_SHORT).show();
+                        }
+                    }, false, new SalutCallback() {
+                        @Override
+                        public void call() {
+                            restoreControls();
+                            findingMixensProgress.dismiss();
+                            cleanUpDialog.show();
+                        }
+                    }, 5000);
+
+
 
                 } else {
 
@@ -307,11 +326,6 @@ public class StartScreen extends Activity {
 
         if (pressedBefore)
         {
-
-            if(BuildConfig.DEBUG)
-            {
-                Salut.disableWiFi(getApplicationContext());
-            }
             System.exit(0);
             this.finish();
 
