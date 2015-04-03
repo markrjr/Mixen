@@ -35,6 +35,7 @@ public class SearchSongs extends ActionBarActivity{
     private ProgressBar indeterminateProgress;
     private ListView songsLV;
     private querySongs findSong;
+    private boolean queryIsPending = false;
     public boolean isFirstSong;
 
 
@@ -72,10 +73,14 @@ public class SearchSongs extends ActionBarActivity{
             {
                 indeterminateProgress.setVisibility(View.VISIBLE);
                 songsLV.setVisibility(View.INVISIBLE);
-                findSong = new querySongs(query);
-                //Should not need to cancel, because we instantiate a new one?
-                findSong.execute();
 
+                if(queryIsPending)
+                {
+                    findSong.cancel(true);
+                }
+
+                findSong = new querySongs(query);
+                findSong.execute();
             }
             else
             {
@@ -86,6 +91,7 @@ public class SearchSongs extends ActionBarActivity{
 
     public void postHandleSearchTask(ArrayList foundSongs, Integer requestStatus)
     {
+        queryIsPending = false;
         indeterminateProgress.setVisibility(View.GONE);
 
         if(requestStatus.intValue() == querySongs.REQUEST_FAILED)

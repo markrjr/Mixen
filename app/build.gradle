@@ -7,7 +7,7 @@ android {
         applicationId "com.peak.mixen"
         minSdkVersion 16
         targetSdkVersion 21
-        versionCode 11
+        versionCode 12
         versionName '0.2.2'
     }
     buildTypes {
@@ -46,5 +46,6 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:1.2.2'
     compile 'com.github.lzyzsd:circleprogress:1.1.0'
     compile 'org.apache.commons:commons-lang3:3.3.2'
+    compile 'com.fabiendevos:nanotasks:1.1.0'
     compile project(':salut')
 }

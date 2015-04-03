@@ -28,10 +28,10 @@ import co.arcs.groove.thresher.Song;
 
 public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
-    private static ListView queueLV;
+    public ListView queueLV;
     private FloatingActionButton addSongButton;
     private static TextView infoTV;
-    private RelativeLayout relativeLayout;
+    public RelativeLayout baseLayout;
     private Intent addSong;
     private static ArrayAdapter queueAdapter;
     public static final int ADD_SONG_REQUEST = 5;
@@ -43,7 +43,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         View v = inflater.inflate(R.layout.fragment_song_queue, container, false);
 
-        relativeLayout = (RelativeLayout) v.findViewById(R.id.relativeLayout);
+        baseLayout = (RelativeLayout) v.findViewById(R.id.relativeLayout);
         queueLV = (ListView) v.findViewById(R.id.queueLV);
         addSongButton = (FloatingActionButton) v.findViewById(R.id.fab);
         infoTV = (TextView) v.findViewById(R.id.infoTV);
@@ -62,10 +62,10 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         }
 
-        return relativeLayout;
+        return baseLayout;
     }
 
-    public static void updateHostQueueUI() {
+    public void updateHostQueueUI() {
 
         queueAdapter.notifyDataSetChanged();
 

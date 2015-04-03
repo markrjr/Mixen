@@ -43,7 +43,6 @@ class querySongs extends AsyncTask<Void, Void, Integer> {
     ArrayList<Song> dupesRemoved = new ArrayList<>(10);
     public static final Integer REQUEST_SUCCESSFUL = 0;
     public static final Integer REQUEST_FAILED = -1;
-    Integer requestStatus;
 
     public querySongs(String songName) {
         this.songName = songName;

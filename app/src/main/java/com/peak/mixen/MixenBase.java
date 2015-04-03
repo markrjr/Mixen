@@ -154,7 +154,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         appData.put("isHost", "TRUE");
 
 
-        Mixen.network = new Salut(getApplicationContext(), "_mixen", appData);
+        Mixen.network = new Salut(getApplicationContext(), Mixen.username, "_mixen", appData);
 
         if(Mixen.isHost && !Mixen.network.serviceIsRunning)
         {

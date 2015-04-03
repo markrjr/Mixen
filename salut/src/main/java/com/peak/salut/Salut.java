@@ -25,9 +25,10 @@ public class Salut{
 
     private static boolean wifiWasEnabledBefore = false;
     private static WifiManager wifiManager;
+    private boolean respondersAlreadySet = false;
     private boolean firstDeviceAlreadyFound = false;
 
-    public boolean serviceIsRunning;
+    public boolean serviceIsRunning = false;
 
     //WiFi P2P Objects
     private WifiP2pServiceInfo serviceInfo;
@@ -41,16 +42,18 @@ public class Salut{
 
     //Service Data
     public static String serviceName;
+    public static String instanceName;
     private Map<String, String> serviceData = new HashMap(); //Information other devices will want once they connect to this one.
 
     //Protocol and Transport Layers
     public String TTP = "._tcp";
     private final String SERVER_PORT = "25400"; //TODO Should not be hardcoded, instead should be an available port handed by Android.
 
-    public Salut(Context currentContext, String serviceName, Map<String, String> serviceData)
+    public Salut(Context currentContext, String instanceName, String serviceName, Map<String, String> serviceData)
     {
         this.currentContext = currentContext;
         this.serviceName = serviceName;
+        this.instanceName = instanceName;
         this.serviceData = serviceData;
         TTP = serviceName + TTP;
 
@@ -73,7 +76,7 @@ public class Salut{
         });
     }
 
-    public static void checkIfIsWifiEnabled(Context context)
+    public static void enableWiFi(Context context)
     {
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         if (!wifiManager.isWifiEnabled())
@@ -96,11 +99,18 @@ public class Salut{
     }
 
 
-    public void startNetworkService(SalutCallback function, boolean callContinously) {
-        this.serviceData.put("LISTEN_PORT", String.valueOf(SERVER_PORT));
-        Log.d(TAG, "Starting " + serviceName + " Transport Protocol " + TTP);
-        serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceName, TTP , this.serviceData);
+    private void startNetworkService() {
 
+        Log.d(TAG, "Starting " + serviceName + " Transport Protocol " + TTP);
+
+        //Inject the listening port along with whatever else data is sent.
+        this.serviceData.put("LISTEN_PORT", String.valueOf(SERVER_PORT));
+
+        //Create a service info object will android will actually hand out to the clients.
+        serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(instanceName, TTP , this.serviceData);
+
+        //Register our service. The callbacks here just let us know if the service was registered correctly,
+        //not necessarily whether or not we connected to a device.
         manager.addLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -114,29 +124,52 @@ public class Salut{
             }
         });
 
+
+    }
+
+    public void startNetworkService(final SalutCallback onDeviceFound, boolean callContinously)
+    {
+        startNetworkService();
+
+        //In order to have a service that you create be seen, you must also actively look for other services. This is an Android bug.
+        //For more information, read here. https://code.google.com/p/android/issues/detail?id=37425
+        discoverNetworkServices(onDeviceFound, callContinously);
+    }
+
+    public void startNetworkServiceDeviceCallbacks(final SalutDeviceCallback onDeviceFound, boolean callContinously)
+    {
+        startNetworkService();
+
+        //In order to have a service that you create be seen, you must also actively look for other services. This is an Android bug.
+        //For more information, read here. https://code.google.com/p/android/issues/detail?id=37425
+        discoverNetworkServicesDeviceCallbacks(onDeviceFound, callContinously);
     }
 
 
-    private void setupDNSResponders(final SalutCallback function, final boolean callContinously)
+    private void setupDNSResponders(final SalutCallback onDeviceFound, final boolean callContinously)
     {
-         /*
-         *Here, we register a listener for services. Each time a service is found we simply log.
-         */
+         /*Here, we register a listener for when services are actually found. The WiFi P2P specification notes that we need two types of
+         *listeners, one for a DNS service and one for a TXT record. The DNS service listener is invoked whenever a service is found, regardless
+         *of whether or not it is yours. To that determine if it is, we must compare our service name with the service name. If it is our service,
+         * we simply log.*/
+
         WifiP2pManager.DnsSdServiceResponseListener serviceListener = new WifiP2pManager.DnsSdServiceResponseListener() {
             @Override
-            public void onDnsSdServiceAvailable(String instanceName, String transportProtocol, WifiP2pDevice sourceDevice) {
-                Log.d(TAG, "Found " + instanceName +  " " + transportProtocol);
+            public void onDnsSdServiceAvailable(String instanceName, String serviceNameAndTP, WifiP2pDevice sourceDevice) {
 
+                Log.d(TAG, "Found " + instanceName +  " " + serviceNameAndTP);
 
-                if (instanceName.equalsIgnoreCase(serviceName))
+                if (serviceNameAndTP.equalsIgnoreCase(TTP))
                 {
-                    Log.v(TAG, "Found a service named " + instanceName + " running on " + sourceDevice.deviceName + " registered as " + transportProtocol);
+                    Log.v(TAG, "Found service " + instanceName + " running on " + sourceDevice.deviceName + " registered as " + serviceNameAndTP);
                 }
 
             }
         };
 
-
+        /*The TXT record contains specific information about a service and it's listener can also be invoked regardless of the device. Here, we
+        *double check if the device is ours, and then we go ahead and pull that specific information from it and put it into an Map. The function
+        *that was passed in early is also called.*/
         WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener() {
             @Override
             public void onDnsSdTxtRecordAvailable(String serviceFullDomainName, Map<String, String> record, WifiP2pDevice device) {
@@ -151,20 +184,73 @@ public class Salut{
                     foundDevices.put(username, device);
                     if(!firstDeviceAlreadyFound && !callContinously)
                     {
-                        function.call();
+                        onDeviceFound.call();
                         firstDeviceAlreadyFound = true;
                     }
                     else if(firstDeviceAlreadyFound && callContinously)
                     {
-                        function.call();
+                        onDeviceFound.call();
+                    }
+                }
+            }
+        };
+        
+        manager.setDnsSdResponseListeners(channel, serviceListener, txtRecordListener);
+        respondersAlreadySet = true;
+
+    }
+    
+    private void setupDNSRespondersWithDevice(final SalutDeviceCallback onDeviceFound, final boolean callContinously)
+    {
+                /*Here, we register a listener for when services are actually found. The WiFi P2P specification notes that we need two types of
+         *listeners, one for a DNS service and one for a TXT record. The DNS service listener is invoked whenever a service is found, regardless
+         *of whether or not it is yours. To that determine if it is, we must compare our service name with the service name. If it is our service,
+         * we simply log.*/
+
+        WifiP2pManager.DnsSdServiceResponseListener serviceListener = new WifiP2pManager.DnsSdServiceResponseListener() {
+            @Override
+            public void onDnsSdServiceAvailable(String instanceName, String serviceNameAndTP, WifiP2pDevice sourceDevice) {
+
+                Log.d(TAG, "Found " + instanceName +  " " + serviceNameAndTP);
+
+                if (serviceNameAndTP.equalsIgnoreCase(TTP))
+                {
+                    Log.v(TAG, "Found service " + instanceName + " running on " + sourceDevice.deviceName + " registered as " + serviceNameAndTP);
+                }
+
+            }
+        };
+
+        /*The TXT record contains specific information about a service and it's listener can also be invoked regardless of the device. Here, we
+        *double check if the device is ours, and then we go ahead and pull that specific information from it and put it into an Map. The function
+        *that was passed in early is also called.*/
+        WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener() {
+            @Override
+            public void onDnsSdTxtRecordAvailable(String serviceFullDomainName, Map<String, String> record, WifiP2pDevice device) {
+
+                Log.d(TAG, "Found " + device.deviceName +  " " + record.values().toString());
+
+                String username = record.get("username");
+
+                Toast.makeText(currentContext, "Found " + device.deviceName + "  :  User is " + record.get("username"), Toast.LENGTH_SHORT).show();
+                if (!foundDevices.containsValue(device) && record.get("username") != null)
+                {
+                    foundDevices.put(username, device);
+                    if(!firstDeviceAlreadyFound && !callContinously)
+                    {
+                        onDeviceFound.call(record, device);
+                        firstDeviceAlreadyFound = true;
+                    }
+                    else if(firstDeviceAlreadyFound && callContinously)
+                    {
+                        onDeviceFound.call(record, device);
                     }
                 }
             }
         };
 
-
         manager.setDnsSdResponseListeners(channel, serviceListener, txtRecordListener);
-
+        respondersAlreadySet = true;
     }
 
     public void devicesNotFoundInTime(int timeout, final SalutCallback cleanUpFunction)
@@ -172,8 +258,8 @@ public class Salut{
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(foundDevices.size() == 0)
-                {
+                if (foundDevices.size() == 0) {
+                    disableWiFi(currentContext);
                     disposeServiceRequests();
                     cleanUpFunction.call();
                 }
@@ -182,13 +268,11 @@ public class Salut{
     }
 
 
-    public void discoverNetworkServices(SalutCallback onDevicesFound, boolean callContinously, SalutCallback onDevicesNotFound, int timeout)
+    private void discoverNetworkServices()
     {
-        setupDNSResponders(onDevicesFound, callContinously);
-
         // After attaching listeners, create a service request and initiate
         // discovery.
-        serviceRequest = WifiP2pDnsSdServiceRequest.newInstance(serviceName, TTP);
+        serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
 
         manager.addServiceRequest(channel, serviceRequest,
                 //Look for exactly this service.
@@ -214,8 +298,38 @@ public class Salut{
             }
         });
 
-        devicesNotFoundInTime(timeout, onDevicesNotFound);
+    }
 
+    public void discoverNetworkServicesDeviceCallbacks(SalutDeviceCallback onDeviceFound, boolean callContinously)
+    {
+        if(!respondersAlreadySet)
+        {
+            setupDNSRespondersWithDevice(onDeviceFound, callContinously);
+        }
+
+        discoverNetworkServices();
+    }
+
+    public void discoverNetworkServices(SalutCallback onDeviceFound, boolean callContinously)
+    {
+        if(!respondersAlreadySet)
+        {
+            setupDNSResponders(onDeviceFound, callContinously);
+        }
+
+        discoverNetworkServices();
+    }
+
+
+    public void discoverNetworkServicesWithTimeout(SalutCallback onDeviceFound, boolean callContinously, SalutCallback onDevicesNotFound, int timeout)
+    {
+        if(!respondersAlreadySet)
+        {
+            setupDNSResponders(onDeviceFound, callContinously);
+        }
+
+        discoverNetworkServices();
+        devicesNotFoundInTime(timeout, onDevicesNotFound);
     }
 
     public void disposeNetworkService()
@@ -223,6 +337,7 @@ public class Salut{
         if (manager != null && channel != null && serviceInfo != null) {
 
             manager.setDnsSdResponseListeners(null, null, null);
+            respondersAlreadySet = false;
 
             manager.removeLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
                 @Override
@@ -237,6 +352,8 @@ public class Salut{
                 }
             });
         }
+
+        disposeServiceRequests();
     }
 
     public void disposeServiceRequests()

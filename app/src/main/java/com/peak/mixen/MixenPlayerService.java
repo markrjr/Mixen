@@ -331,6 +331,8 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             player.reset();
             MixenBase.mixenPlayerFrag.cleanUpUI();
             audioManager.abandonAudioFocus(this);
+            setMediaMetaData(PlaybackStateCompat.STATE_STOPPED);
+            mediaSession.setActive(false);
         }
 
         playerHasTrack = false;
@@ -847,12 +849,6 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             }
             isRunning = false;
             resetAndStopPlayer();
-            if(BuildConfig.DEBUG)
-            {
-                setMediaMetaData(PlaybackStateCompat.STATE_STOPPED);
-                mediaSession.setActive(false);
-
-            }
             player.release();
             player = null;
             stopForeground(true);

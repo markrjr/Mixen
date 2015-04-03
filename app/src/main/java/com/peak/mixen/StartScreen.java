@@ -128,7 +128,7 @@ public class StartScreen extends Activity {
 
         if(BuildConfig.DEBUG)
         {
-            Salut.checkIfIsWifiEnabled(getApplicationContext());
+            Salut.enableWiFi(getApplicationContext());
         }
 
         switch (v.getId()) {
@@ -168,15 +168,18 @@ public class StartScreen extends Activity {
 
                     findingMixensProgress.show();
 
+                   hideControls();
+
                     Map appData = new HashMap();
                     appData.put("username", null);
                     appData.put("isHost", "FALSE");
 
-                    Mixen.network = new Salut(getApplicationContext(), "_mixen", appData);
+                    Mixen.network = new Salut(getApplicationContext(), "Client",  "_mixen", appData);
 
-                    Mixen.network.discoverNetworkServices(new SalutCallback() {
+                    Mixen.network.discoverNetworkServicesWithTimeout(new SalutCallback() {
                               @Override
                               public void call() {
+                                  restoreControls();
                                   findingMixensProgress.dismiss();
                                   startActivity(new Intent(StartScreen.this, MixenBase.class));
                               }
@@ -184,12 +187,14 @@ public class StartScreen extends Activity {
                             new SalutCallback() {
                                 @Override
                                 public void call() {
+                                    restoreControls();
                                     findingMixensProgress.dismiss();
                                     cleanUpDialog.show();
                                 }
                             }, 5000);
 
                 } else {
+
                     hideControls();
 
                     new MaterialDialog.Builder(this)
