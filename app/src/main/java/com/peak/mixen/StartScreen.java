@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class StartScreen extends Activity {
+public class StartScreen extends Activity implements View.OnClickListener{
     public TextView progressBarInfoTV;
     public ProgressBar indeterminateProgress;
     public checkNetworkConnection check;
@@ -35,9 +35,12 @@ public class StartScreen extends Activity {
 
     private boolean pressedBefore = false;
     private Intent createNewMixen;
+    private MaterialDialog enableWiFiDiag;
+    private MaterialDialog wiFiFailureDiag;
 
     private Button findMixen;
     private Button createMixen;
+    private TextView appNameTV;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,7 @@ public class StartScreen extends Activity {
         findMixen = (Button)findViewById(R.id.findMixen);
         createMixen = (Button)findViewById(R.id.createMixenButton);
         progressBarInfoTV = (TextView)findViewById(R.id.progressBarInfoTV);
+        appNameTV = (TextView) findViewById(R.id.appNameTV);
         indeterminateProgress = (ProgressBar)findViewById(R.id.progressBar);
 
         Mixen.appColors = getResources().getIntArray(R.array.appcolors);
@@ -57,6 +61,17 @@ public class StartScreen extends Activity {
 
         Mixen.sharedPref = getSharedPreferences(Mixen.MIXEN_PREF_FILE, Context.MODE_PRIVATE);
 
+        enableWiFiDiag = new MaterialDialog.Builder(this)
+                .title("Turning on WiFi...")
+                .content("Please wait...")
+                .progress(true, 0)
+                .build();
+
+        wiFiFailureDiag = new MaterialDialog.Builder(this)
+                .title("Bummer :(")
+                .content("We had trouble turning on WiFi, please double check your settings.")
+                .neutralText("Okay")
+                .build();
 
         if(!isFirstRun())
         {
@@ -71,9 +86,13 @@ public class StartScreen extends Activity {
         indeterminateProgress.getIndeterminateDrawable().setColorFilter(
                 getResources().getColor(R.color.Snow_White),
                 android.graphics.PorterDuff.Mode.SRC_IN);
+
+        createMixen.setOnClickListener(this);
+        findMixen.setOnClickListener(this);
+
     }
 
-    public boolean isFirstRun()
+    private boolean isFirstRun()
     {
         boolean isFirstRun;
 
@@ -114,35 +133,13 @@ public class StartScreen extends Activity {
                 "Removed all settings. Please restart the app.", Toast.LENGTH_SHORT)
                 .show();
 
-        if(BuildConfig.DEBUG)
-        {
-            Salut.disableWiFi(getApplicationContext());
-        }
-
         this.finish();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if(BuildConfig.DEBUG)
-        {
-            Salut.enableWiFi(getApplicationContext());
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if(BuildConfig.DEBUG)
-        {
-            Salut.disableWiFi(getApplicationContext());
-        }
-    }
-
-    public void onBtnClicked(View v) {
-
+    private void handleButtonClicks(View v)
+    {
         switch (v.getId()) {
+
             case R.id.createMixenButton:
 
                 Mixen.isHost = true;
@@ -231,6 +228,30 @@ public class StartScreen extends Activity {
                     return;
                 }
             }
+        }
+    }
+
+
+    public void checkWiFiConfig(final View v) {
+
+        if(!Salut.wiFiIsEnabled(getApplicationContext()) && !Salut.hotspotIsEnabled())
+        {
+            Salut.enableWiFi(getApplicationContext());
+
+            enableWiFiDiag.show();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    enableWiFiDiag.dismiss();
+                    handleButtonClicks(v);
+                }
+            }, 2000);
+
+        }
+        else
+        {
+            wiFiFailureDiag.show();
         }
     }
 
@@ -347,5 +368,18 @@ public class StartScreen extends Activity {
         pressedBefore = true;
         return;
 
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        if(v.getId() == R.id.appNameTV)
+        {
+
+        }
+        else
+        {
+            checkWiFiConfig(v);
+        }
     }
 }

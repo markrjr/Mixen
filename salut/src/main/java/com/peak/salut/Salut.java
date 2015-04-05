@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -13,6 +14,9 @@ import android.net.wifi.p2p.nsd.WifiP2pServiceInfo;
 import android.os.Handler;
 import android.util.Log;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,11 +35,12 @@ public class Salut{
 
     //WiFi P2P Objects
     private WifiP2pServiceInfo serviceInfo;
-    public HashMap<String, WifiP2pDevice> foundDevices;
-    public IntentFilter intentFilter = new IntentFilter();
     private WifiP2pDnsSdServiceRequest serviceRequest;
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
+    public HashMap<String, WifiP2pDevice> foundServiceDevices;
+    private Collection foundDevices;
+    public IntentFilter intentFilter = new IntentFilter();
     public BroadcastReceiver receiver = null;
     private static Context currentContext;
 
@@ -56,7 +61,8 @@ public class Salut{
         this.serviceData = serviceData;
         TTP = serviceName + TTP;
 
-        foundDevices = new HashMap<>();
+        foundServiceDevices = new HashMap<>();
+        foundDevices = new ArrayList();
 
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -69,8 +75,7 @@ public class Salut{
         receiver = new SalutBroadcastReceiver(manager, channel, new WifiP2pManager.PeerListListener() {
             @Override
             public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
-                //Once a general list of devices is discovered.
-                Log.d(TAG, "" + wifiP2pDeviceList.getDeviceList().size());
+                foundDevices = wifiP2pDeviceList.getDeviceList();
             }
         });
     }
@@ -88,6 +93,14 @@ public class Salut{
         }
     }
 
+
+    public static boolean wiFiIsEnabled(Context context)
+    {
+
+            wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            return wifiManager.isWifiEnabled();
+    }
+
     public static void disableWiFi(Context context)
     {
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -97,8 +110,43 @@ public class Salut{
         }
     }
 
+    public void connectToDevice(WifiP2pDevice device, final SalutCallback onSuccess, final SalutCallback onFailure)
+    {
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = device.deviceAddress;
+        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
 
-    private void startNetworkService() {
+            @Override
+            public void onSuccess() {
+                onSuccess.call();
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                onFailure.call();
+            }
+        });
+    }
+
+    public static boolean hotspotIsEnabled()
+    {
+        try
+        {
+            Method method = wifiManager.getClass().getDeclaredMethod("isWifiApEnabled");
+            method.setAccessible(true);
+
+            return (Boolean) method.invoke(wifiManager, (Object[]) null);
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+            Log.d(TAG, "Failed to check tethering state.");
+        }
+
+        return false;
+    }
+
+    private void createService() {
 
         Log.d(TAG, "Starting " + serviceName + " Transport Protocol " + TTP);
 
@@ -126,24 +174,20 @@ public class Salut{
 
     }
 
-    public void startNetworkService(final SalutCallback onDeviceFound, boolean callContinously)
+    public void startNetworkService()
     {
-        startNetworkService();
-
+        createService();
         //In order to have a service that you create be seen, you must also actively look for other services. This is an Android bug.
         //For more information, read here. https://code.google.com/p/android/issues/detail?id=37425
+        //We do not need to setup DNS responders.
+        discoverNetworkServices();
+    }
+
+    public void startNetworkService(SalutCallback onDeviceFound, final boolean callContinously)
+    {
+        createService();
         discoverNetworkServices(onDeviceFound, callContinously);
     }
-
-    public void startNetworkServiceDeviceCallbacks(final SalutDeviceCallback onDeviceFound, boolean callContinously)
-    {
-        startNetworkService();
-
-        //In order to have a service that you create be seen, you must also actively look for other services. This is an Android bug.
-        //For more information, read here. https://code.google.com/p/android/issues/detail?id=37425
-        discoverNetworkServicesDeviceCallbacks(onDeviceFound, callContinously);
-    }
-
 
     private void setupDNSResponders(final SalutCallback onDeviceFound, final boolean callContinously)
     {
@@ -177,9 +221,9 @@ public class Salut{
 
                 String username = record.get("username");
 
-                if (!foundDevices.containsValue(device) && record.get("username") != null)
+                if (!foundServiceDevices.containsValue(device) && record.get("username") != null)
                 {
-                    foundDevices.put(username, device);
+                    foundServiceDevices.put(username, device);
                     if(!firstDeviceAlreadyFound && !callContinously)
                     {
                         onDeviceFound.call();
@@ -195,12 +239,11 @@ public class Salut{
         
         manager.setDnsSdResponseListeners(channel, serviceListener, txtRecordListener);
         respondersAlreadySet = true;
-
     }
     
     private void setupDNSRespondersWithDevice(final SalutDeviceCallback onDeviceFound, final boolean callContinously)
     {
-                /*Here, we register a listener for when services are actually found. The WiFi P2P specification notes that we need two types of
+         /*Here, we register a listener for when services are actually found. The WiFi P2P specification notes that we need two types of
          *listeners, one for a DNS service and one for a TXT record. The DNS service listener is invoked whenever a service is found, regardless
          *of whether or not it is yours. To that determine if it is, we must compare our service name with the service name. If it is our service,
          * we simply log.*/
@@ -230,9 +273,9 @@ public class Salut{
 
                 String username = record.get("username");
 
-                if (!foundDevices.containsValue(device) && record.get("username") != null)
+                if (!foundServiceDevices.containsValue(device) && record.get("username") != null)
                 {
-                    foundDevices.put(username, device);
+                    foundServiceDevices.put(username, device);
                     if(!firstDeviceAlreadyFound && !callContinously)
                     {
                         onDeviceFound.call(record, device);
@@ -255,7 +298,7 @@ public class Salut{
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (foundDevices.size() == 0) {
+                if (!firstDeviceAlreadyFound) {
                     disableWiFi(currentContext);
                     disposeServiceRequests();
                     cleanUpFunction.call();
@@ -372,11 +415,19 @@ public class Salut{
                 @Override
                 public void onSuccess() {
                     Log.d(TAG, "Successfully removed service discovery request.");
+                    if(!serviceIsRunning)
+                    {
+                        disableWiFi(currentContext); //To give time for the requests to be disposed.
+                    }
                 }
 
                 @Override
                 public void onFailure(int reason) {
                     Log.d(TAG, "Failed to remove service discovery request. Reason : " + reason);
+                    if(!serviceIsRunning)
+                    {
+                        disableWiFi(currentContext); //To give time for the requests to be disposed.
+                    }
                 }
             });
         }

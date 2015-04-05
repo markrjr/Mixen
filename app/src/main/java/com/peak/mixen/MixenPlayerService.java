@@ -837,9 +837,8 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         }
     }
 
-    @Override
-    public void onTaskRemoved (Intent rootIntent) {
-
+    public void cleanUpAndShutdown()
+    {
         Log.d(Mixen.TAG, "Ending Mixen Service.");
         if (player != null)
         {
@@ -855,29 +854,20 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         }
 
         Log.d(Mixen.TAG, "Stopped Mixen Service.");
+    }
+
+    @Override
+    public void onTaskRemoved (Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
+        cleanUpAndShutdown();
     }
 
 
 
         @Override
     public void onDestroy() {
-        Log.d(Mixen.TAG, "Ending Mixen Service.");
-        if (player != null)
-        {
-            if(playerHasTrack)
-            {
-                unregisterReceiver(noisyAudioReciever);
-            }
-            isRunning = false;
-            resetAndStopPlayer();
-            player.release();
-            player = null;
-            stopForeground(true);
-        }
-
-        Log.d(Mixen.TAG, "Stopped Mixen Service.");
         super.onDestroy();
+        cleanUpAndShutdown();
     }
 
 

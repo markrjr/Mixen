@@ -123,10 +123,13 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         super.onDestroy();
         if(BuildConfig.DEBUG)
         {
-            Salut.disableWiFi(getApplicationContext());
             if(!Mixen.isHost)
             {
                 Mixen.network.disposeServiceRequests();
+            }
+            else
+            {
+                Mixen.network.disposeNetworkService();
             }
         }
 
@@ -143,14 +146,12 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         if(Mixen.isHost && !Mixen.network.serviceIsRunning)
         {
-            //TODO Move to StartScreen?
-
             Mixen.network.startNetworkService(new SalutCallback() {
                 @Override
                 public void call() {
-                    //mixenUsersFrag.populateNetworkListView();
+                    mixenUsersFrag.populateNetworkListView();
                 }
-            }, false);
+            }, true);
         }
 
     }
@@ -281,14 +282,14 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }
-            if(!Mixen.isHost)
-            {
-                Mixen.network.disposeServiceRequests();
-            }
-            else
-            {
-                Mixen.network.disposeNetworkService();
-            }
+//            if(!Mixen.isHost)
+//            {
+//                Mixen.network.disposeServiceRequests();
+//            }
+//            else
+//            {
+//                Mixen.network.disposeNetworkService();
+//            }
 
             this.finish();
             return;

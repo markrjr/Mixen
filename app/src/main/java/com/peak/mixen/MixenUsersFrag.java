@@ -57,16 +57,16 @@ public class MixenUsersFrag extends Fragment{
 
     public void populateNetworkListView()
     {
-        Log.d(Mixen.TAG, "Updating network queue.");
-
-        if(Mixen.network.foundDevices.isEmpty())
+        if(Mixen.network.foundServiceDevices.isEmpty())
         {
             return;
         }
 
+        Log.d(Mixen.TAG, "Updating network queue.");
+
         infoTV.setVisibility(View.GONE);
 
-        final ArrayList<Object> nearbyUsers = new ArrayList<>(Arrays.asList(Mixen.network.foundDevices.keySet().toArray()));
+        final ArrayList<Object> nearbyUsers = new ArrayList<>(Arrays.asList(Mixen.network.foundServiceDevices.keySet().toArray()));
 
         ArrayAdapter adapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_1, android.R.id.text1, nearbyUsers) {
             @Override
