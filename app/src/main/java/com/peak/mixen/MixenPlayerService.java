@@ -139,7 +139,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             noisyAudioReciever = new NoisyAudioReciever();
         }
 
-        if(BuildConfig.DEBUG)
+        if(Mixen.debugFeaturesEnabled)
         {
             mediaSession = new MediaSessionCompat(getApplicationContext(), "Mixen Player Service");
             mediaSession.setPlaybackToLocal(AudioManager.STREAM_MUSIC);
@@ -331,8 +331,11 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             player.reset();
             MixenBase.mixenPlayerFrag.cleanUpUI();
             audioManager.abandonAudioFocus(this);
-            setMediaMetaData(PlaybackStateCompat.STATE_STOPPED);
-            mediaSession.setActive(false);
+            if(Mixen.debugFeaturesEnabled)
+            {
+                setMediaMetaData(PlaybackStateCompat.STATE_STOPPED);
+                mediaSession.setActive(false);
+            }
         }
 
         playerHasTrack = false;
@@ -539,7 +542,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         if (hasAudioFocus())
         {
             mediaPlayer.start();
-            if(BuildConfig.DEBUG)
+            if(Mixen.debugFeaturesEnabled)
             {
                 setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
             }
@@ -656,7 +659,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                 }
             }, 100);
             MixenBase.mixenPlayerFrag.showSongProgressViews();
-            if(BuildConfig.DEBUG)
+            if(Mixen.debugFeaturesEnabled)
             {
                 setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
             }
@@ -756,7 +759,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                 mNotificationManager.notify(Mixen.MIXEN_NOTIFY_CODE, updateNotification());
                 stopForeground(false);
             }
-            if(BuildConfig.DEBUG)
+            if(Mixen.debugFeaturesEnabled)
             {
                 setMediaMetaData(PlaybackStateCompat.STATE_PAUSED);
             }
@@ -775,7 +778,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                 {
                     startForeground(Mixen.MIXEN_NOTIFY_CODE, updateNotification());
                 }
-                if(BuildConfig.DEBUG)
+                if(Mixen.debugFeaturesEnabled)
                 {
                     setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
                 }

@@ -16,69 +16,6 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-a6dabeaceaf095342d911cf9ec78145c5282b762.jar" />
     </item>
     <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/palette-v7/21.0.3/classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="926692214530f39eaed89159237d26cdc0ae6e48">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-d67740e2a82e691ac257ead1ea8d68922c68dfe3.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.2.2/d20be6a5ddd6f8cfd36ebf6dea329873a1c41f1b/jackson-core-2.2.2.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="d20be6a5ddd6f8cfd36ebf6dea329873a1c41f1b">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-core-2.2.2-7335422656d444660349e64baff95e7560dc1a99.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/it.neokree/MaterialTabs/0.11/classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="fef6aa7ea0bb2d6adf10965d0a5bb8e353517bff">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-771e3e958e6ee5c91f442cc4159adf1ea0fb40a0.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.melnykov/floatingactionbutton/1.1.0/classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="ee9ae2b87d57a33a7381c75d54db12bdf2995656">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-e986891ccb0495a8df42a47405ab0afc2511df4c.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/libs/internal_impl-21.0.3.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-a741a7297a1a4ade6cba8f2525fcfe9146e1695f.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/15.0/ed727a8d9f247e2050281cb083f1c77b09dcb5cd/guava-15.0.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="ed727a8d9f247e2050281cb083f1c77b09dcb5cd">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/guava-15.0-2c1c0d56e37ba5830c6d239d28e8f4fe3f6451e6.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/2.0.2/516c03b21d50a644d538de0f0369c620989cd8f0/jsr305-2.0.2.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="516c03b21d50a644d538de0f0369c620989cd8f0">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jsr305-2.0.2-326a201dfacd77a1d03dd1054c0d06390f5b37d6.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/recyclerview-v7/21.0.3/classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="4b8945fc23a7461c6fdde15753456d64b0a9358b">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-15f9831a2f68aa43cad589471c11bb8244dac732.jar" />
-    </item>
-    <item
-        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/de.hdodenhof/circleimageview/1.2.2/classes.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="803c4c913beac8f7980d680c725a40835d1d7c77">
-        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-8e792ec36562e28aa8edb0319e6a98e1c5a9a9bf.jar" />
-    </item>
-    <item
         jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/cardview-v7/21.0.0/classes.jar"
         jumboMode="false"
         revision="21.1.2"
@@ -100,6 +37,13 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/thresher-1.2.1-f776c8540e662f422b50bc10ef0e60657af7a0bc.jar" />
     </item>
     <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/palette-v7/21.0.3/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="926692214530f39eaed89159237d26cdc0ae6e48">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-d67740e2a82e691ac257ead1ea8d68922c68dfe3.jar" />
+    </item>
+    <item
         jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.2.2/3c8f6018eaa72d43b261181e801e6f8676c16ef6/jackson-databind-2.2.2.jar"
         jumboMode="false"
         revision="21.1.2"
@@ -112,6 +56,13 @@
         revision="21.1.2"
         sha1="e9b63380f3a242dbdbf103a2355ad7e43bad17cb">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/library-2.4.0-5cf783521f28669b68cb57d20c4ac678d6194fec.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.2.2/d20be6a5ddd6f8cfd36ebf6dea329873a1c41f1b/jackson-core-2.2.2.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="d20be6a5ddd6f8cfd36ebf6dea329873a1c41f1b">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jackson-core-2.2.2-7335422656d444660349e64baff95e7560dc1a99.jar" />
     </item>
     <item
         jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.afollestad/material-dialogs/0.6.3.5/classes.jar"
@@ -135,11 +86,25 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-18a550511c5fbfad66fd5f32ad14a83fd4a7157e.jar" />
     </item>
     <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/it.neokree/MaterialTabs/0.11/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="fef6aa7ea0bb2d6adf10965d0a5bb8e353517bff">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-771e3e958e6ee5c91f442cc4159adf1ea0fb40a0.jar" />
+    </item>
+    <item
         jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/Mixen/salut/unspecified/classes.jar"
         jumboMode="false"
         revision="21.1.2"
-        sha1="2cca2808e43988a7422e646c889823fbf9d38e4c">
+        sha1="a5acba334be1fb74cae9abdeff82e53d36c16232">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-a5049e63a76c9205ebfd4b5f81bb99cce41d3c11.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.melnykov/floatingactionbutton/1.1.0/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="ee9ae2b87d57a33a7381c75d54db12bdf2995656">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-e986891ccb0495a8df42a47405ab0afc2511df4c.jar" />
     </item>
     <item
         jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.nispok/snackbar/2.9.1/classes.jar"
@@ -147,6 +112,13 @@
         revision="21.1.2"
         sha1="e616883bd2cc1ee2618d8c9b01346a3afe5e7633">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-57fad3e1ede1722a9fd2bb2835ce85cd96627919.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/libs/internal_impl-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-a741a7297a1a4ade6cba8f2525fcfe9146e1695f.jar" />
     </item>
     <item
         jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.github.markushi/android-ui/1.2/classes.jar"
@@ -163,6 +135,13 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-4d84634b54514ec7a9a5611f09228985131accf7.jar" />
     </item>
     <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/15.0/ed727a8d9f247e2050281cb083f1c77b09dcb5cd/guava-15.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="ed727a8d9f247e2050281cb083f1c77b09dcb5cd">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/guava-15.0-2c1c0d56e37ba5830c6d239d28e8f4fe3f6451e6.jar" />
+    </item>
+    <item
         jar="/Users/markrjr/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/21.0.3/support-annotations-21.0.3.jar"
         jumboMode="false"
         revision="21.1.2"
@@ -170,11 +149,32 @@
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-ede0e28bcbf0f70b969d34f14cf561f674695d67.jar" />
     </item>
     <item
+        jar="/Users/markrjr/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/2.0.2/516c03b21d50a644d538de0f0369c620989cd8f0/jsr305-2.0.2.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="516c03b21d50a644d538de0f0369c620989cd8f0">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/jsr305-2.0.2-326a201dfacd77a1d03dd1054c0d06390f5b37d6.jar" />
+    </item>
+    <item
         jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/support-v4/21.0.3/classes.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
         <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-1f83de80c61fb4e206d7db91f2e91f8529abbaf0.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/com.android.support/recyclerview-v7/21.0.3/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="4b8945fc23a7461c6fdde15753456d64b0a9358b">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-15f9831a2f68aa43cad589471c11bb8244dac732.jar" />
+    </item>
+    <item
+        jar="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/exploded-aar/de.hdodenhof/circleimageview/1.2.2/classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="803c4c913beac8f7980d680c725a40835d1d7c77">
+        <dex dex="/Users/markrjr/AndroidStudioProjects/Mixen/app/build/intermediates/pre-dexed/debug/classes-8e792ec36562e28aa8edb0319e6a98e1c5a9a9bf.jar" />
     </item>
 
 </items>

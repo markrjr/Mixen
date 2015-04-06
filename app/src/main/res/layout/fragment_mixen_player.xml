@@ -5,7 +5,7 @@
     android:id="@+id/baseLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/EXP_2"
+    android:background="#29221F"
     android:visibility="visible"
     tools:context="com.peak.mixen.MixenPlayerFrag">
 
@@ -30,7 +30,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/artistTV"
-        android:background="@color/EXP_2"
         android:textColor="@color/Snow_White"
         android:maxLines="1"
         android:layout_above="@+id/playerControls"
@@ -44,7 +43,7 @@
 
     <com.github.lzyzsd.circleprogress.ArcProgress
         android:id="@+id/arc_progress_bar"
-        android:background="@color/EXP_2"
+        android:background="#29221F"
         android:layout_width="310dp"
         android:layout_height="310dp"
         android:layout_centerHorizontal="true"

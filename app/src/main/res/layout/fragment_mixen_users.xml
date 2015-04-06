@@ -3,7 +3,7 @@
     android:id="@+id/relativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/EXP_2"
+    android:background="#29221F"
     tools:context="com.peak.mixen.MixenUsersFrag">
 
     <ListView
@@ -27,8 +27,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/Snow_White"
         android:textSize="40dp"
-        android:visibility="visible"
-        android:background="@color/EXP_2" />
+        android:visibility="visible" />
 
 
 </RelativeLayout>

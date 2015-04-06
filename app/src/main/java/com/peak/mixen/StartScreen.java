@@ -32,7 +32,6 @@ import java.util.Map;
 public class StartScreen extends Activity implements View.OnClickListener{
     public TextView progressBarInfoTV;
     public ProgressBar indeterminateProgress;
-    public checkNetworkConnection check;
 
 
     private boolean pressedBefore = false;
@@ -87,6 +86,18 @@ public class StartScreen extends Activity implements View.OnClickListener{
         createMixen.setOnClickListener(this);
         findMixen.setOnClickListener(this);
         appNameTV.setOnClickListener(this);
+        appNameTV.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if(v.getId() == R.id.appNameTV)
+                {
+                    Mixen.debugFeaturesEnabled = true;
+                    Toast.makeText(getApplicationContext(), "Debug features are now enabled, only God can help you now.", Toast.LENGTH_SHORT).show();
+                }
+
+                return true;
+            }
+        });
 
     }
 
@@ -170,7 +181,8 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
                 Mixen.isHost = false;
 
-                if (BuildConfig.DEBUG) {
+                if (Mixen.debugFeaturesEnabled) {
+
                     findingMixensProgress.show();
 
                     Map appData = new HashMap();
@@ -270,20 +282,23 @@ public class StartScreen extends Activity implements View.OnClickListener{
     protected void onResume() {
         super.onResume();
 
-        try
+        if(Mixen.debugFeaturesEnabled)
         {
-            beamHelper = new SalutBeam(this);
-            beamHelper.beamPayload("https://plus.google.com/communities/105179969153892633137");
-            beamHelper.onBeamRecieved(getIntent(), new SalutBeamCallback() {
-                @Override
-                public void call(String beamData) {
-                    Log.d(Mixen.TAG, beamData);
-                }
-            });
-        }
-        catch(Exception ex)
-        {
-            Log.d(Mixen.TAG, "NFC sharing will not be available.");
+            try
+            {
+                beamHelper = new SalutBeam(this);
+                beamHelper.beamPayload("https://plus.google.com/communities/105179969153892633137");
+                beamHelper.onBeamRecieved(getIntent(), new SalutBeamCallback() {
+                    @Override
+                    public void call(String beamData) {
+                        Log.d(Mixen.TAG, beamData);
+                    }
+                });
+            }
+            catch(Exception ex)
+            {
+                Log.d(Mixen.TAG, "NFC sharing will not be available.");
+            }
         }
     }
 
@@ -352,8 +367,16 @@ public class StartScreen extends Activity implements View.OnClickListener{
         }
         else
         {
-            hideControls();
-            checkWiFiConfig(v);
+            if(Mixen.debugFeaturesEnabled)
+            {
+                hideControls();
+                checkWiFiConfig(v);
+            }
+            else
+            {
+                handleButtonClicks(v);
+            }
+
         }
     }
 }

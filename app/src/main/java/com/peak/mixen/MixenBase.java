@@ -60,7 +60,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         TabNames.add("Up Next");
         TabNames.add("Now Playing");
 
-        if (BuildConfig.DEBUG && Mixen.isHost) {
+        if (Mixen.debugFeaturesEnabled && Mixen.isHost) {
             TabNames.add("Users");
             mixenUsersFrag = new MixenUsersFrag();
         }
@@ -85,7 +85,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         //Mixen.grooveSharkSession.setDebugLoggingEnabled(true);
 
-        if(BuildConfig.DEBUG)
+        if(Mixen.debugFeaturesEnabled)
         {
             if(Mixen.isHost)
             {
@@ -121,7 +121,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(BuildConfig.DEBUG)
+        if(Mixen.debugFeaturesEnabled)
         {
             if(!Mixen.isHost)
             {
@@ -161,7 +161,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     protected void onPause() {
         super.onPause();
 
-        if(BuildConfig.DEBUG)
+        if(Mixen.debugFeaturesEnabled)
         {
 
             unregisterReceiver(Mixen.network.receiver);
@@ -179,7 +179,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     protected void onResume() {
         super.onResume();
 
-        if(BuildConfig.DEBUG)
+        if(Mixen.debugFeaturesEnabled)
         {
             registerReceiver(Mixen.network.receiver, Mixen.network.intentFilter);
         }

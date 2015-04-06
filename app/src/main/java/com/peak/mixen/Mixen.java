@@ -51,6 +51,7 @@ public class Mixen {
 
     public static String username;
 
+    public static boolean debugFeaturesEnabled = false;
 
     public static boolean isConnected(Context context, int timeout) {
         ConnectivityManager cm = (ConnectivityManager)context
