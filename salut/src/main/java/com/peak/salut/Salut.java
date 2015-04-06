@@ -376,8 +376,11 @@ public class Salut{
         devicesNotFoundInTime(timeout, onDevicesNotFound);
     }
 
-    public void disposeNetworkService()
+    public void disposeNetworkService(final boolean disableWiFi)
     {
+
+        disposeServiceRequests();
+
         if (manager != null && channel != null && serviceInfo != null) {
 
             manager.removeLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
@@ -389,6 +392,10 @@ public class Salut{
                 @Override
                 public void onSuccess() {
                     Log.d(TAG, "Successfully shutdown service.");
+                    if(disableWiFi)
+                    {
+                        disableWiFi(currentContext); //To give time for the requests to be disposed.
+                    }
                     serviceIsRunning = false;
                 }
             });
@@ -396,7 +403,6 @@ public class Salut{
             respondersAlreadySet = false;
         }
 
-        disposeServiceRequests();
     }
 
     public void disposeServiceRequests()
@@ -407,19 +413,11 @@ public class Salut{
                 @Override
                 public void onSuccess() {
                     Log.d(TAG, "Successfully removed service discovery request.");
-                    if(!serviceIsRunning)
-                    {
-                        disableWiFi(currentContext); //To give time for the requests to be disposed.
-                    }
                 }
 
                 @Override
                 public void onFailure(int reason) {
                     Log.d(TAG, "Failed to remove service discovery request. Reason : " + reason);
-                    if(!serviceIsRunning)
-                    {
-                        disableWiFi(currentContext); //To give time for the requests to be disposed.
-                    }
                 }
             });
         }

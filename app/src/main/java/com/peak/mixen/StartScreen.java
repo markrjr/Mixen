@@ -128,9 +128,8 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 .build();
 
         enableWiFiDiag = new MaterialDialog.Builder(this)
-                .title("Turning on WiFi...")
-                .content("Please wait...")
-                .progress(true, 0)
+                .title("This is important.")
+                .content("Please turn on WiFi first.")
                 .build();
 
         wiFiFailureDiag = new MaterialDialog.Builder(this)
@@ -237,18 +236,13 @@ public class StartScreen extends Activity implements View.OnClickListener{
         {
             if(!Salut.isWiFiEnabled(this))
             {
-                Salut.enableWiFi(this);
-
                 enableWiFiDiag.show();
-
-                new Handler().postDelayed(new Runnable() {
+                enableWiFiDiag.setOnDismissListener(new DialogInterface.OnDismissListener() {
                     @Override
-                    public void run() {
-                        enableWiFiDiag.dismiss();
-                        handleButtonClicks(v);
+                    public void onDismiss(DialogInterface dialog) {
+                        restoreControls();
                     }
-                }, 2000);
-
+                });
             }
             else
             {

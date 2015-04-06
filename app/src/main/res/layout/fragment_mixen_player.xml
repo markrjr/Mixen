@@ -5,9 +5,9 @@
     android:id="@+id/baseLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#29221F"
     android:visibility="visible"
-    tools:context="com.peak.mixen.MixenPlayerFrag">
+    tools:context="com.peak.mixen.MixenPlayerFrag"
+    android:background="@color/Cocoa_Brown">
 
 
     <TextView
@@ -15,7 +15,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/titleTV"
         android:textSize="24dp"
-        android:background="@color/EXP_2"
         android:textColor="@color/Snow_White"
         android:textIsSelectable="false"
         android:layout_alignParentTop="true"
@@ -43,7 +42,7 @@
 
     <com.github.lzyzsd.circleprogress.ArcProgress
         android:id="@+id/arc_progress_bar"
-        android:background="#29221F"
+        android:background="@color/Cocoa_Brown"
         android:layout_width="310dp"
         android:layout_height="310dp"
         android:layout_centerHorizontal="true"

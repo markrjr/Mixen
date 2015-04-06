@@ -129,7 +129,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             }
             else
             {
-                Mixen.network.disposeNetworkService();
+                Mixen.network.disposeNetworkService(true);
             }
         }
 
