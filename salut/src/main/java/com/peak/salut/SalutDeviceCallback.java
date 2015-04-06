@@ -5,7 +5,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import java.util.Map;
 
 /**
- * Created by markrjr on 4/3/15.
+ * Created by Mark on 4/5/2015.
  */
 public interface SalutDeviceCallback {
     void call(Map<String, String> serviceData, WifiP2pDevice foundDevice);

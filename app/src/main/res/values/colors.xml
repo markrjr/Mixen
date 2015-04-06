@@ -52,5 +52,15 @@
 
     </integer-array>
 
+    <!-- Theme DEFAULT colors -->
+    <color name="theme_window_background">#303030</color>
+
+    <!-- AboutLibraries DEFAULT colors -->
+    <color name="about_libraries_card">#666666</color>
+    <color name="about_libraries_title_openSource">#ffffffff</color>
+    <color name="about_libraries_text_openSource">#DEDEDE</color>
+    <color name="about_libraries_dividerDark_openSource">#303030</color>
+    <color name="about_libraries_dividerLight_openSource">#303030</color>
+
 
 </resources>

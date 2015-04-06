@@ -250,7 +250,10 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         {
             if (resultCode == Activity.RESULT_OK)
             {
-                updateHostQueueUI();
+                if(Mixen.isHost)
+                {
+                    updateHostQueueUI();
+                }
                 //We really don't care about the Intent data here, we just need some way to know
                 //when the user has come back from searching for songs so that we can update the UI.
             }

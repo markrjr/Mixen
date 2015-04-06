@@ -152,21 +152,24 @@ public class SearchSongs extends ActionBarActivity{
                 // ListView Clicked item value
                 final Song selected = (Song) songsLV.getItemAtPosition(position);
 
-                if(MixenPlayerService.instance.currentSong != null && MixenPlayerService.instance.currentSong == selected)
+                if(Mixen.isHost)
                 {
-                    Toast.makeText(getApplicationContext(), "This song has already been added.", Toast.LENGTH_SHORT).show();
-                    return;
+                    if(MixenPlayerService.instance.currentSong != null && MixenPlayerService.instance.currentSong == selected)
+                    {
+                        Toast.makeText(getApplicationContext(), "This song has already been added.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    addSongToQueue(selected);
+                    //TODO Fix undo action flow.
+
+                    SnackbarManager.show(
+                            Snackbar.with(getApplicationContext())
+                                    .text("Added " + selected.getName())
+                            //.actionLabel("Undo")
+                            //.actionColor(Color.YELLOW)
+                            , SearchSongs.this);
                 }
-
-                addSongToQueue(selected);
-                //TODO Fix undo action flow.
-
-                SnackbarManager.show(
-                        Snackbar.with(getApplicationContext())
-                                .text("Added " + selected.getName())
-                        //.actionLabel("Undo")
-                        //.actionColor(Color.YELLOW)
-                        , SearchSongs.this);
             }
 
         });

@@ -5,6 +5,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="exit_app_string">Quit</string>
     <string name="app_description">Mixen lets you create a playlist and share it with friends nearby.</string>
+    <string name="app_description_long">Mixen lets you create a playlist and share it with friends nearby. \n Peak Digital. 2015. All Rights Reserved.</string>
     <string name="title_activity_create_mixen">CreateMixen</string>
     <string name="title_activity_mixen_stage">MixenStage</string>
     <string name="title_activity_more_info">MoreInfo</string>
@@ -30,8 +31,8 @@
     <string name="empty_queue">The queue is empty! Add a song to get started.</string>
     <string name="title_activity_tabbed_song_queue">TabbedSongQueue</string>
     <string name="mixen_network_search">Searching for nearby Mixens...</string>
-    <string name="revision_number">Revision 22 Patch 1</string>
-    <string name="build_type">Alpha Build</string>
+    <string name="revision_number">Revision 0</string>
+    <string name="build_type">Beta Build</string>
     <string name="title_activity_mixen_base">MixenBase</string>
     <string name="empty_users_queue">There are no users connected yet.</string>
 

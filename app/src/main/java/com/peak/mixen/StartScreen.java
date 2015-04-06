@@ -20,6 +20,8 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.prefs.MaterialEditTextPreference;
 import com.peak.salut.Salut;
+import com.peak.salut.SalutBeam;
+import com.peak.salut.SalutBeamCallback;
 import com.peak.salut.SalutCallback;
 import com.peak.salut.SalutDeviceCallback;
 
@@ -37,10 +39,14 @@ public class StartScreen extends Activity implements View.OnClickListener{
     private Intent createNewMixen;
     private MaterialDialog enableWiFiDiag;
     private MaterialDialog wiFiFailureDiag;
+    private MaterialDialog findingMixensProgress;
+    private MaterialDialog cleanUpDialog;
+    private SalutBeam beamHelper;
 
     private Button findMixen;
     private Button createMixen;
     private TextView appNameTV;
+    private TextView textDivider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,26 +58,17 @@ public class StartScreen extends Activity implements View.OnClickListener{
         createMixen = (Button)findViewById(R.id.createMixenButton);
         progressBarInfoTV = (TextView)findViewById(R.id.progressBarInfoTV);
         appNameTV = (TextView) findViewById(R.id.appNameTV);
+        textDivider = (TextView) findViewById(R.id.textDivider);
         indeterminateProgress = (ProgressBar)findViewById(R.id.progressBar);
 
         Mixen.appColors = getResources().getIntArray(R.array.appcolors);
-
+        //TODO Set background to random color using this?
 
         Mixen.currentContext = getApplicationContext();
 
         Mixen.sharedPref = getSharedPreferences(Mixen.MIXEN_PREF_FILE, Context.MODE_PRIVATE);
 
-        enableWiFiDiag = new MaterialDialog.Builder(this)
-                .title("Turning on WiFi...")
-                .content("Please wait...")
-                .progress(true, 0)
-                .build();
-
-        wiFiFailureDiag = new MaterialDialog.Builder(this)
-                .title("Bummer :(")
-                .content("We had trouble turning on WiFi, please double check your settings.")
-                .neutralText("Okay")
-                .build();
+        createDialogs();
 
         if(!isFirstRun())
         {
@@ -89,6 +86,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         createMixen.setOnClickListener(this);
         findMixen.setOnClickListener(this);
+        appNameTV.setOnClickListener(this);
 
     }
 
@@ -104,26 +102,33 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
     }
 
-
-    public void skipNetworkCheck()
+    private void createDialogs()
     {
-        Log.i(Mixen.TAG, "Skipping network connection check...");
+        findingMixensProgress = new MaterialDialog.Builder(this)
+                .title("Searching for nearby Mixens...")
+                .content("Please wait...")
+                .progress(true, 0)
+                .build();
 
-        if(!isFirstRun())
-        {
-            startActivity(createNewMixen);
-            hideProgress();
-            restoreControls();
-        }
-        else
-        {
-            startActivity(createNewMixen);
-            hideProgress();
-            restoreControls();
-        }
+        cleanUpDialog = new MaterialDialog.Builder(this)
+                .title("Bummer :(")
+                .content(R.string.discover_p2p_error)
+                .neutralText("Okay")
+                .build();
+
+        enableWiFiDiag = new MaterialDialog.Builder(this)
+                .title("Turning on WiFi...")
+                .content("Please wait...")
+                .progress(true, 0)
+                .build();
+
+        wiFiFailureDiag = new MaterialDialog.Builder(this)
+                .title("Bummer :(")
+                .content("We had trouble turning on WiFi, please double check your settings.")
+                .neutralText("Okay")
+                .build();
 
     }
-
     public void clearAppSettings()
     {
         //If the user has pressed the back button twice at this point kill the app.
@@ -145,21 +150,20 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 Mixen.isHost = true;
 
                 //In order to stream down songs, the user must obviously have a connection to the internet.
-                showProgress();
-                hideControls();
-
                 startService(new Intent(this, MixenPlayerService.class).setAction(MixenPlayerService.init));
-                skipNetworkCheck();
 
-//                check = new checkNetworkConnection();
-//                check.execute(new SimpleCallback() {
-//                    @Override
-//                    public void call() {
-//
-//                        validateNetwork();
-//                    }
-//                });
+                Log.i(Mixen.TAG, "Skipping network connection check...");
 
+                if(!isFirstRun())
+                {
+                    startActivity(createNewMixen);
+                }
+                else
+                {
+                    startActivity(createNewMixen);
+                }
+
+                restoreControls();
                 return;
 
             case R.id.findMixen: {
@@ -167,22 +171,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 Mixen.isHost = false;
 
                 if (BuildConfig.DEBUG) {
-                    final MaterialDialog findingMixensProgress = new MaterialDialog.Builder(this)
-                            .title("Searching for nearby Mixens...")
-                            .content("Please wait...")
-                            .progress(true, 0)
-                            .build();
-
-                    final MaterialDialog cleanUpDialog = new MaterialDialog.Builder(this)
-                            .title("Bummer :(")
-                            .content(R.string.discover_p2p_error)
-                            .neutralText("Okay")
-                            .build();
-
-
                     findingMixensProgress.show();
-
-                    hideControls();
 
                     Map appData = new HashMap();
                     appData.put("username", null);
@@ -190,7 +179,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
                     Mixen.network = new Salut(getApplicationContext(), "Client",  "_mixen", appData);
 
-                    Mixen.network.discoverNetworkServicesDeviceCallbacksWithTimeout(new SalutDeviceCallback() {
+                    Mixen.network.discoverNetworkServicesWithTimeout(new SalutDeviceCallback() {
                         @Override
                         public void call(Map<String, String> serviceData, WifiP2pDevice foundDevice) {
                             restoreControls();
@@ -210,8 +199,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
 
                 } else {
-
-                    hideControls();
 
                     new MaterialDialog.Builder(this)
                             .title("Bummer :(")
@@ -234,64 +221,40 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
     public void checkWiFiConfig(final View v) {
 
-        if(!Salut.wiFiIsEnabled(getApplicationContext()) && !Salut.hotspotIsEnabled())
+        if(!Salut.hotspotIsEnabled(this))
         {
-            Salut.enableWiFi(getApplicationContext());
+            if(!Salut.isWiFiEnabled(this))
+            {
+                Salut.enableWiFi(this);
 
-            enableWiFiDiag.show();
+                enableWiFiDiag.show();
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    enableWiFiDiag.dismiss();
-                    handleButtonClicks(v);
-                }
-            }, 2000);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        enableWiFiDiag.dismiss();
+                        handleButtonClicks(v);
+                    }
+                }, 2000);
 
+            }
+            else
+            {
+                handleButtonClicks(v);
+            }
         }
         else
         {
             wiFiFailureDiag.show();
-        }
-    }
-
-
-    public void validateNetwork()
-    {
-        if (Mixen.networkisReachableAsync) {
-
-            Log.i(Mixen.TAG, "An internet connection is available.");
-
-            hideProgress();
-
-            Intent createNewMixen = new Intent(StartScreen.this, CreateMixen.class);
-
-            Mixen.isHost = true; //User will host content for other users.
-
-            startActivity(createNewMixen);
-
-        } else {
-
-            Log.e(Mixen.TAG, "There is no connection to the internet.");
-
-            Intent provideMoreInfo = new Intent(StartScreen.this, MoreInfo.class);
-
-            provideMoreInfo.putExtra("START_REASON", Mixen.NO_NETWORK);
-
-
-            startActivity(provideMoreInfo);
-
-            hideProgress();
             restoreControls();
-
         }
-
     }
 
 
     public void restoreControls()
     {
         findMixen.setVisibility(View.VISIBLE);
+        textDivider.setVisibility(View.VISIBLE);
         createMixen.setVisibility(View.VISIBLE);
 
     }
@@ -299,19 +262,29 @@ public class StartScreen extends Activity implements View.OnClickListener{
     public void hideControls()
     {
         findMixen.setVisibility(View.INVISIBLE);
+        textDivider.setVisibility(View.INVISIBLE);
         createMixen.setVisibility(View.INVISIBLE);
     }
 
-    public void showProgress()
-    {
-        indeterminateProgress.setVisibility(View.VISIBLE);
-        progressBarInfoTV.setVisibility(View.VISIBLE);
-    }
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-    public void hideProgress()
-    {
-        indeterminateProgress.setVisibility(View.GONE);
-        progressBarInfoTV.setVisibility(View.GONE);
+        try
+        {
+            beamHelper = new SalutBeam(this);
+            beamHelper.beamPayload("https://plus.google.com/communities/105179969153892633137");
+            beamHelper.onBeamRecieved(getIntent(), new SalutBeamCallback() {
+                @Override
+                public void call(String beamData) {
+                    Log.d(Mixen.TAG, beamData);
+                }
+            });
+        }
+        catch(Exception ex)
+        {
+            Log.d(Mixen.TAG, "NFC sharing will not be available.");
+        }
     }
 
     @Override
@@ -375,10 +348,11 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         if(v.getId() == R.id.appNameTV)
         {
-
+            Mixen.showAbout(this);
         }
         else
         {
+            hideControls();
             checkWiFiConfig(v);
         }
     }

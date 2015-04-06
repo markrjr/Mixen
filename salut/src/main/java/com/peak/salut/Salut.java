@@ -11,10 +11,13 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.net.wifi.p2p.nsd.WifiP2pServiceInfo;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
 import android.os.Handler;
 import android.util.Log;
 
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,7 +29,6 @@ public class Salut{
 
     private final static String TAG = "Salut";
 
-    private static boolean wifiWasEnabledBefore = false;
     private static WifiManager wifiManager;
     private boolean respondersAlreadySet = false;
     private boolean firstDeviceAlreadyFound = false;
@@ -83,32 +85,21 @@ public class Salut{
     public static void enableWiFi(Context context)
     {
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        if (!wifiManager.isWifiEnabled())
-        {
-            wifiManager.setWifiEnabled(true);
-        }
-        else
-        {
-            wifiWasEnabledBefore = true;
-        }
+        wifiManager.setWifiEnabled(true);
     }
 
-
-    public static boolean wiFiIsEnabled(Context context)
+    public static boolean isWiFiEnabled(Context context)
     {
-
-            wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-            return wifiManager.isWifiEnabled();
+        wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        return wifiManager.isWifiEnabled();
     }
 
     public static void disableWiFi(Context context)
     {
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        if (wifiManager.isWifiEnabled() && !wifiWasEnabledBefore)
-        {
-            wifiManager.setWifiEnabled(false);
-        }
+        wifiManager.setWifiEnabled(false);
     }
+
 
     public void connectToDevice(WifiP2pDevice device, final SalutCallback onSuccess, final SalutCallback onFailure)
     {
@@ -128,10 +119,11 @@ public class Salut{
         });
     }
 
-    public static boolean hotspotIsEnabled()
+    public static boolean hotspotIsEnabled(Context context)
     {
         try
         {
+            wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
             Method method = wifiManager.getClass().getDeclaredMethod("isWifiApEnabled");
             method.setAccessible(true);
 
@@ -140,7 +132,7 @@ public class Salut{
         catch(Exception ex)
         {
             ex.printStackTrace();
-            Log.d(TAG, "Failed to check tethering state.");
+            Log.d(TAG, "Failed to check tethering state, or it is not enabled.");
         }
 
         return false;
@@ -340,7 +332,7 @@ public class Salut{
 
     }
 
-    public void discoverNetworkServicesDeviceCallbacks(SalutDeviceCallback onDeviceFound, boolean callContinously)
+    public void discoverNetworkServices(SalutDeviceCallback onDeviceFound, boolean callContinously)
     {
         if(!respondersAlreadySet)
         {
@@ -350,7 +342,7 @@ public class Salut{
         discoverNetworkServices();
     }
 
-    public void discoverNetworkServicesDeviceCallbacksWithTimeout(SalutDeviceCallback onDeviceFound, boolean callContinously, SalutCallback onDevicesNotFound, int timeout)
+    public void discoverNetworkServicesWithTimeout(SalutDeviceCallback onDeviceFound, boolean callContinously, SalutCallback onDevicesNotFound, int timeout)
     {
         //TODO Use nullable to set flags to reduce method overloading.
         if(!respondersAlreadySet)
