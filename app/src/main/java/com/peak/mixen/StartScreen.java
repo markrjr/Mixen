@@ -86,6 +86,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
         createMixen.setOnClickListener(this);
         findMixen.setOnClickListener(this);
         appNameTV.setOnClickListener(this);
+
         appNameTV.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -130,6 +131,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
         enableWiFiDiag = new MaterialDialog.Builder(this)
                 .title("This is important.")
                 .content("Please turn on WiFi first.")
+                .neutralText("Okay")
                 .build();
 
         wiFiFailureDiag = new MaterialDialog.Builder(this)
@@ -222,7 +224,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
                                 }
                             })
                             .show();
-
                     return;
                 }
             }
