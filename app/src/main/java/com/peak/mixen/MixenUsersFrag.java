@@ -57,7 +57,7 @@ public class MixenUsersFrag extends Fragment{
 
     public void populateNetworkListView()
     {
-        if(Mixen.network.foundServiceDevices.isEmpty())
+        if(Mixen.network.foundDevices.isEmpty())
         {
             return;
         }
@@ -66,7 +66,7 @@ public class MixenUsersFrag extends Fragment{
 
         infoTV.setVisibility(View.GONE);
 
-        final ArrayList<Object> nearbyUsers = new ArrayList<>(Arrays.asList(Mixen.network.foundServiceDevices.keySet().toArray()));
+        final ArrayList<String> nearbyUsers = new ArrayList<>(Arrays.asList(Mixen.network.foundDevices.iterator().next().txtRecord.get("username")));
 
         ArrayAdapter adapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_1, android.R.id.text1, nearbyUsers) {
             @Override
@@ -76,11 +76,11 @@ public class MixenUsersFrag extends Fragment{
 
                 if(position == 0 && !Mixen.isHost)
                 {
-                    text1.setText((String)nearbyUsers.get(position) + " - Host");
+                    text1.setText(nearbyUsers.get(position) + " - Host");
                 }
                 else
                 {
-                    text1.setText((String)nearbyUsers.get(position));
+                    text1.setText(nearbyUsers.get(position));
                 }
 
                 return view;

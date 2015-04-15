@@ -4,30 +4,46 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.arasthel.asyncjob.AsyncJob;
 import com.mikepenz.aboutlibraries.Libs;
 import com.peak.salut.Salut;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import co.arcs.groove.thresher.Client;
+import co.arcs.groove.thresher.Song;
+
 /**
  * Created by markrjr on 11/24/14.
  */
 public class Mixen {
 
     public static final int MIXEN_NOTIFY_CODE = 11;
+
+    public static final int SUCCESSFULLY_HOSTING = 0;
 
     public static final String TAG = "Mixen";
 
@@ -89,6 +105,22 @@ public class Mixen {
                 .start(activity);
     }
 
+    public static MaterialDialog showP2PNotSupported(Context context)
+    {
+        return new MaterialDialog.Builder(context)
+                .title("Bummer ):")
+                .content("Mixen isn't supported on your device.")
+                .neutralText("Okay")
+                .build();
+
+    }
+
+
+    public static boolean isTablet(Context context) {
+        boolean xlarge = ((context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == 4);
+        boolean large = ((context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE);
+        return (xlarge || large);
+    }
 }
 
 
@@ -108,4 +140,90 @@ class checkNetworkConnection extends AsyncTask<Void, Void, Boolean>
     }
 }
 
+//class pushMixenServiceInstance extends AsyncTask<Void, Void, Void>
+//{
+//    WifiP2pDevice pushDevice;
+//
+//    public pushMixenServiceInstance(WifiP2pDevice device)
+//    {
+//        pushDevice = device;
+//    }
+//
+//    @Override
+//    protected Void doInBackground(Void... params) {
+//        try
+//        {
+//            Log.d(Mixen.TAG, "Attempting to send Mixen Service.");
+//
+//            //TODO Create a MixenServiceState object that is serializable.
+//            Map<String, String> songData = new HashMap<>();
+//            Map<String, ArrayList<Song>> songQueues = new HashMap<>();
+//
+//            songData.put("songName", MixenPlayerService.instance.currentSong.getArtistName());
+//            songData.put("songArtist", MixenPlayerService.instance.currentSong.getArtistName());
+//            songData.put("songDuration", "" + MixenPlayerService.instance.currentSong.getDuration());
+//
+//            songQueues.put("queued", MixenPlayerService.instance.queuedSongs);
+//            songQueues.put("proposed", MixenPlayerService.instance.proposedSongs);
+//
+//            Socket client = new Socket();
+//            client.bind(null);
+//            client.connect((new InetSocketAddress(pushDevice.deviceAddress, Mixen.network.SERVER_PORT)));
+//            OutputStream outputStream = client.getOutputStream();
+//
+//            outputStream.write(Pherialize.serialize(songData).getBytes());
+//            outputStream.write(Pherialize.serialize(songQueues).getBytes());
+//
+//            outputStream.close();
+//
+//            Log.d(Mixen.TAG, "Sent data");
+//
+//
+//        }
+//        catch(Exception ex)
+//        {
+//            ex.printStackTrace();
+//            Log.e(Mixen.TAG, "Failed to send data.");
+//        }
+//
+//
+//            return null;
+//    }
+//    @Override
+//    protected void onPostExecute(Void aVoid) {
+//        super.onPostExecute(aVoid);
+//    }
+//}
+
+//class recieveMixenServiceInstance extends AsyncTask<Void, Void, Void>
+//{
+//    byte[] buf = new byte[2048];
+//
+//    @Override
+//    protected Void doInBackground(Void... params) {
+//        try
+//        {
+//            Log.d(Mixen.TAG, "Attempting to recieve Mixen Service.");
+//
+//            ServerSocket server = new ServerSocket(Mixen.network.SERVER_PORT);
+//            Socket client = server.accept();
+//
+//            InputStream inputStream = client.getInputStream();
+//
+//            Log.d(Mixen.TAG, "" + inputStream.read(buf));
+//
+//            Log.d(Mixen.TAG, "Successfully received Mixen Service instance.");
+//        }
+//        catch(Exception ex)
+//        {
+//            Log.e(Mixen.TAG, "Failed to open a socket. One may have to be opened manually.");
+//        }
+//
+//        return null;
+//    }
+//    @Override
+//    protected void onPostExecute(Void aVoid) {
+//        super.onPostExecute(aVoid);
+//    }
+//}
 

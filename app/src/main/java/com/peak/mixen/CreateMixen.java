@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -29,11 +30,18 @@ public class CreateMixen extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_mixen);
 
+        if(Mixen.isTablet(getApplicationContext()))
+        {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }else
+        {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
 
         //Setup the UI buttons.
         userNameET = (EditText)findViewById(R.id.userNameET);
         alertTV = (TextView)findViewById(R.id.alertTV);
-        createMixen = (Button)findViewById(R.id.startCreateService);
+        createMixen = (Button)findViewById(R.id.createMixenButton);
 
         userNameET.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -48,7 +56,7 @@ public class CreateMixen extends Activity {
                     inputManager.hideSoftInputFromWindow(CreateMixen.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
 
-                    onBtnClicked(findViewById(R.id.startCreateService)); //To act as though startCreateService was what actually called the method.
+                    onBtnClicked(findViewById(R.id.createMixenButton)); //To act as though startCreateService was what actually called the method.
                     handled = true;
 
                 }
@@ -64,7 +72,7 @@ public class CreateMixen extends Activity {
     {
         switch(v.getId())
         {
-            case R.id.startCreateService: {
+            case R.id.createMixenButton: {
 
                 if (userNameET.getText().length() != 0 && userNameET.getText().toString().matches("^[a-zA-Z0-9]*$")) {
 
@@ -76,7 +84,7 @@ public class CreateMixen extends Activity {
                     SharedPreferences.Editor prefs = Mixen.sharedPref.edit();
                     prefs.putBoolean("FIRST_RUN", false);
                     prefs.putString("username", Mixen.username);
-                    prefs.apply();
+                    prefs.commit();
 
                     Intent createNewMixen = new Intent(CreateMixen.this, MixenBase.class);
                     createNewMixen.putExtra("userName", userNameET.getText().toString());

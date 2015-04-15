@@ -21,6 +21,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.os.PowerManager;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -32,11 +33,13 @@ import android.view.View;
 import android.widget.RemoteViews;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+
+
 import co.arcs.groove.thresher.Song;
 
-public class MixenPlayerService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
-                                                            MediaPlayer.OnCompletionListener, MediaPlayer.OnInfoListener, 
-                                                            MediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener {
+public class MixenPlayerService extends Service implements  MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
+                                                            MediaPlayer.OnCompletionListener, MediaPlayer.OnInfoListener,
+                                                            MediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener{
 
     public static final String play = "ACTION_PLAY";
     public static final String pause = "ACTION_PAUSE";
@@ -54,17 +57,12 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public static MixenPlayerService instance;
 
-    public MediaPlayer getPlayer() {
-        return player;
-    }
-
     private MediaPlayer player;
     private MediaSessionCompat mediaSession;
 
     private NoisyAudioReciever noisyAudioReciever;
     private IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private AudioManager audioManager;
-    private getStreamURLAsync retrieveURLsAsync;
     private int bufferTimes;
     private int originalMusicVolume;
 
@@ -79,12 +77,9 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     public boolean serviceIsBusy = true;
     //Another catch all boolean for when the service is fetching data, and cannot handle another request.
 
-    public Bitmap currentAlbumArt;
-    public String currentAlbumArtURL;
     public Map<String, Bitmap> previousAlbumArt;
     public Song currentSong;
-    public URL currentStreamURL;
-
+    public MetaSong currentMetaSong;
 
     public ArrayList<Song> queuedSongs;
     public ArrayList<Song> proposedSongs;
@@ -123,7 +118,9 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         context.startService(intent);
     }
 
-
+    public MediaPlayer getPlayer() {
+        return player;
+    }
     public void initService()
     {
 
@@ -148,9 +145,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         isRunning = true;
         instance = this;
 
-        Log.d(Mixen.TAG, "Mixen Player Service successfully initialized.");
     }
-
 
     public void setMediaMetaData(int playbackState)
     {
@@ -158,14 +153,14 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         MediaMetadataCompat mediaData = new MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentSong.getAlbumName())
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, currentSong.getArtistName())
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, currentAlbumArtURL)
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, currentMetaSong.albumArtURL)
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentSong.getArtistName())
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentSong.getName())
 
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentSong.getName())
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, currentSong.getArtistName())
 
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentAlbumArt)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentMetaSong.albumArt)
                 .build();
 
         PlaybackStateCompat.Builder state = new PlaybackStateCompat.Builder();
@@ -242,23 +237,20 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     {
         MixenBase.mixenPlayerFrag.hideUIControls(false);
         currentSong = queuedSongs.get(queueSongPosition);
-        currentAlbumArtURL = Mixen.COVER_ART_URL + currentSong.getCoverArtFilename();
-
+        currentMetaSong = new MetaSong(currentSong, MixenBase.mixenPlayerFrag.albumArtIV);
         serviceIsBusy = true;
-        retrieveURLsAsync = new getStreamURLAsync(currentSong);
-        retrieveURLsAsync.execute();
 
         Log.i(Mixen.TAG, "Grabbing URL for next song and signaling playback, it should begin shortly.");
     }
 
     public int getCurrentSongProgress()
     {
-        return player.getCurrentPosition();
+        return (int)player.getCurrentPosition();
     }
 
     public int getCurrentSongDuration()
     {
-        return player.getDuration();
+        return (int)player.getDuration();
     }
 
     public boolean playerIsPlaying(){
@@ -365,9 +357,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         try
         {
             //Album art should be set here.
-            //Log.i(Mixen.TAG, "Stream URL is " + streamURI.toString());
-            Log.i(Mixen.TAG, "Track ID is " + currentSong.getId());
-            player.setDataSource(getApplicationContext(), Uri.parse(currentStreamURL.toString()));
+            player.setDataSource(currentMetaSong.streamURL);
             player.setAudioStreamType(AudioManager.STREAM_MUSIC);
             player.setLooping(false);
         }
@@ -383,7 +373,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
                     .content(R.string.generic_network_error)
                     .neutralText("Okay")
                     .show();
-            //ex.printStackTrace();
+            ex.printStackTrace();
             MixenBase.mixenPlayerFrag.restoreUIControls();
             return;
         }
@@ -506,7 +496,14 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
     public boolean onInfo(MediaPlayer mediaPlayer, int action, int extra) {
 
         if (action == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
-            MixenBase.mixenPlayerFrag.hideUIControls(true);
+            if(!playerIsPlaying())
+            {
+                MixenBase.mixenPlayerFrag.hideUIControls(false);
+            }
+            else
+            {
+                MixenBase.mixenPlayerFrag.hideUIControls(true);
+            }
 
             bufferTimes++;
             if(bufferTimes >= 3)
@@ -575,9 +572,9 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
             Log.d(Mixen.TAG, "Removed oldest album art");
         }
 
-        if(!previousAlbumArt.containsKey(currentAlbumArtURL))
+        if(!previousAlbumArt.containsKey(currentMetaSong.albumArtURL))
         {
-            previousAlbumArt.put(currentAlbumArtURL, currentAlbumArt);
+            previousAlbumArt.put(currentMetaSong.albumArtURL, currentMetaSong.albumArt);
         }
 
     }
@@ -606,15 +603,6 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int action, int extra) {
-
-
-        if(action == -38 || extra == -38)
-        {
-            //TODO Research
-            //Operation is pending.
-            Log.d(Mixen.TAG, "Suppressed Pending Media Player");
-            return true;
-        }
 
         resetAndStopPlayer();
         serviceIsBusy = false;
@@ -708,7 +696,7 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
 
         if(MixenPlayerFrag.hasAlbumArt())
         {
-            bigContentView.setImageViewBitmap(R.id.status_bar_album_art, currentAlbumArt);
+            bigContentView.setImageViewBitmap(R.id.status_bar_album_art, currentMetaSong.albumArt);
         }
 
         if(player.isPlaying())
@@ -872,7 +860,6 @@ public class MixenPlayerService extends Service implements MediaPlayer.OnPrepare
         super.onDestroy();
         cleanUpAndShutdown();
     }
-
 
     private class NoisyAudioReciever extends BroadcastReceiver {
         @Override

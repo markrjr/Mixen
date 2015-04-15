@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.IBinder;
@@ -21,15 +23,15 @@ public class SalutBroadcastReceiver extends BroadcastReceiver {
 
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
-    private WifiP2pManager.PeerListListener peerListListener;
+    private Salut salutInstance;
 
     final static String TAG = "Salut";
 
-    public SalutBroadcastReceiver(WifiP2pManager manager,  WifiP2pManager.Channel channel, WifiP2pManager.PeerListListener peerListListener) {
+    public SalutBroadcastReceiver(Salut salutInstance, WifiP2pManager manager,  WifiP2pManager.Channel channel) {
         super();
         this.manager = manager;
         this.channel = channel;
-        this.peerListListener = peerListListener;
+        this.salutInstance = salutInstance;
     }
 
     @Override
@@ -44,17 +46,6 @@ public class SalutBroadcastReceiver extends BroadcastReceiver {
             if (state != WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
                 Log.v(TAG, " WiFi P2P is no longer enabled.");
             }
-
-        } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-            // request available peers from the wifi p2p manager. This is an
-            // asynchronous call and the calling activity is notified with a
-            // callback on PeerListListener.onPeersAvailable()
-            if (manager != null) {
-                manager.requestPeers(channel, peerListListener);
-            }
-
-            //The amount of available peers has changed.
-
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
 
             if (manager == null) {
@@ -62,24 +53,19 @@ public class SalutBroadcastReceiver extends BroadcastReceiver {
             }
             NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
             if (networkInfo.isConnected()) {
-
                 //Here, we are connected to another WiFi P2P device, if necessary one can grab some extra information.
-
-                manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
-                    @Override
-                    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-                        Log.v(TAG, "Group has been formed " + wifiP2pInfo.groupFormed);
-                    }
-                });
+                salutInstance.isConnectedToAnotherDevice = true;
+                manager.requestConnectionInfo(channel, salutInstance);
 
             } else {
+
                 Log.v(TAG, "Not connected to another device.");
+                salutInstance.isConnectedToAnotherDevice = false;
             }
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 
-            WifiP2pDevice device = (WifiP2pDevice) intent
-                    .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+            WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
             Log.v(TAG, device.deviceName + " is now using P2P. ");
         }
 

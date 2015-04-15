@@ -1,0 +1,65 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="fill_parent"
+    android:layout_height="60dp"
+    android:background="@color/Madison" >
+
+    <ImageView android:id="@+id/icon"
+        android:layout_width="50dp"
+        android:layout_height="fill_parent"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/mixen_icon"
+        android:scaleType="centerInside"
+        android:paddingLeft="10dp"
+        android:layout_marginLeft="2dp"
+        android:layout_alignParentStart="true" />
+
+    <TextView android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_toRightOf="@id/icon"
+        style="Custom Notification Title"
+        android:textColor="@color/Snow_White"
+        android:src="@drawable/mixen_icon"
+        android:scrollHorizontally="false"
+        android:layout_marginTop="10dp"
+        android:paddingRight="15dp"
+        android:layout_marginRight="5dp"
+        android:paddingLeft="15dp"
+        android:text="akjdkladsj"
+        android:textSize="16dp"
+        android:maxLines="1" />
+
+
+    <TextView android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_toRightOf="@id/icon"
+        style="Custom Notification Title"
+        android:textColor="@color/Snow_White"
+        android:src="@drawable/mixen_icon"
+        android:scrollHorizontally="false"
+        android:layout_marginTop="32dp"
+        android:paddingRight="15dp"
+        android:layout_marginRight="5dp"
+        android:paddingLeft="15dp"
+        android:layout_alignParentBottom="false"
+        android:text="asdasdas"
+        android:maxLines="1" />
+
+    <ImageButton
+        android:id="@+id/playbackState"
+        android:layout_width="30dp"
+        android:layout_height="fill_parent"
+        android:layout_centerHorizontal="true"
+        android:background="@color/Madison"
+        android:scaleType="fitCenter"
+        android:src="@drawable/pause"
+        android:visibility="visible"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="20dp"
+        android:paddingLeft="10dp" />
+
+
+</RelativeLayout>

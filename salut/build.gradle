@@ -21,6 +21,8 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.arasthel:asyncjob-library:1.0.3'
+    compile files('libs/pherialize-1.2.1.jar')
 }
 
 

@@ -7,7 +7,7 @@
     android:layout_height="fill_parent"
     android:visibility="visible"
     tools:context="com.peak.mixen.MixenPlayerFrag"
-    android:background="@color/Outer_Space">
+    android:background="@color/Cocoa_Brown">
 
 
     <TextView
@@ -42,9 +42,9 @@
 
     <com.github.lzyzsd.circleprogress.ArcProgress
         android:id="@+id/arc_progress_bar"
-        android:background="@color/Outer_Space"
-        android:layout_width="310dp"
-        android:layout_height="310dp"
+        android:background="@color/Cocoa_Brown"
+        android:layout_width="460dp"
+        android:layout_height="460dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="55dp"
         custom:arc_text_size="0dp"
@@ -60,14 +60,14 @@
         android:text="Button"
         android:visibility="visible"
         android:background="@android:color/transparent"
+        android:alpha="1.0"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="190dp"
-        android:alpha="1.0" />
+        android:layout_marginTop="275dp" />
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/albumArtIV"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="450dp"
+        android:layout_height="450dp"
         android:src="@drawable/mixen_icon"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
@@ -108,8 +108,8 @@
 
         <ImageButton
             android:id="@+id/previousTrackBtn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_alignParentStart="false"
             android:background="@color/Tundora"
             android:scaleType="fitCenter"
@@ -117,10 +117,10 @@
             android:text="Button"
             android:visibility="visible"
             android:layout_centerVertical="true"
-            android:layout_alignParentLeft="true"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp"
+            android:layout_toLeftOf="@+id/rewindBtn" />
 
         <ImageButton
             android:id="@+id/rewindBtn"
@@ -132,9 +132,10 @@
             android:src="@drawable/rewind"
             android:text="Button"
             android:visibility="visible"
-            android:layout_toRightOf="@+id/previousTrackBtn"
             android:layout_centerVertical="true"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp"
+            android:layout_toLeftOf="@+id/upNextTV"
+            android:layout_marginRight="50dp" />
 
         <ImageButton
             android:id="@+id/fastForwardBtn"
@@ -146,14 +147,15 @@
             android:src="@drawable/fast_forward"
             android:text="Button"
             android:visibility="visible"
-            android:layout_toLeftOf="@+id/skipTrackBtn"
             android:layout_centerVertical="true"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp"
+            android:layout_toRightOf="@+id/upNextTV"
+            android:layout_marginLeft="50dp" />
 
         <ImageButton
             android:id="@+id/skipTrackBtn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_alignParentEnd="false"
             android:background="@color/Tundora"
             android:clickable="true"
@@ -162,10 +164,10 @@
             android:text="Button"
             android:visibility="visible"
             android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
             android:layout_marginRight="30dp"
             android:layout_marginLeft="30dp"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp"
+            android:layout_toRightOf="@+id/fastForwardBtn" />
 
         <TextView
             android:id="@+id/upNextTV"

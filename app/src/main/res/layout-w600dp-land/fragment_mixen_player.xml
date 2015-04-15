@@ -43,10 +43,10 @@
     <com.github.lzyzsd.circleprogress.ArcProgress
         android:id="@+id/arc_progress_bar"
         android:background="@color/Outer_Space"
-        android:layout_width="310dp"
-        android:layout_height="310dp"
+        android:layout_width="230dp"
+        android:layout_height="230dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="55dp"
+        android:layout_marginTop="15dp"
         custom:arc_text_size="0dp"
         custom:arc_suffix_text_size="0dp"
         custom:arc_finished_color="@color/Dodger_Blue"
@@ -66,15 +66,15 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/albumArtIV"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
         android:src="@drawable/mixen_icon"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="60dp"
-        android:backgroundTint="@color/Tundora"
+        android:backgroundTint="@color/Outer_Space"
         android:backgroundTintMode="src_atop"
-        android:alpha="0.3" />
+        android:alpha="0.3"
+        android:layout_marginTop="20dp" />
 
 
     <TextView
@@ -84,11 +84,10 @@
         android:textColor="@color/Snow_White"
         android:visibility="visible"
         android:layout_toStartOf="@+id/artistTV"
-        android:layout_below="@+id/arc_progress_bar"
-        android:layout_toLeftOf="@+id/playPauseButton"
-        android:layout_marginRight="40dp"
+        android:layout_marginRight="100dp"
         android:textSize="16dp"
-        android:layout_marginTop="-5dp" />
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="false" />
 
 
     <RelativeLayout
@@ -202,13 +201,10 @@
         android:layout_height="wrap_content"
         android:textColor="@color/Snow_White"
         android:visibility="visible"
-        android:layout_below="@+id/arc_progress_bar"
-        android:layout_toRightOf="@+id/playPauseButton"
         android:layout_toEndOf="@+id/playPauseButton"
-        android:layout_marginLeft="40dp"
-        android:layout_marginStart="40dp"
+        android:layout_marginLeft="200dp"
         android:textSize="16dp"
-        android:layout_marginTop="-5dp" />
+        android:layout_centerVertical="true" />
 
 
 </RelativeLayout>

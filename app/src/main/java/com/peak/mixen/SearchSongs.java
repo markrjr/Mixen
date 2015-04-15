@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.arasthel.asyncjob.AsyncJob;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
@@ -34,12 +36,10 @@ public class SearchSongs extends ActionBarActivity{
 
     private ProgressBar indeterminateProgress;
     private ListView songsLV;
-    private querySongs findSong;
-    private boolean queryIsPending = false;
+    public boolean queryIsPending = false;
     public boolean isFirstSong;
-
-
     public static SearchSongs instance;
+    public AsyncJob querySongs;
 
 
     @Override
@@ -48,6 +48,14 @@ public class SearchSongs extends ActionBarActivity{
         setContentView(R.layout.activity_search_songs);
 
         getSupportActionBar().setTitle(Mixen.username + "'s Mixen");
+
+        if(Mixen.isTablet(getApplicationContext()))
+        {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }else
+        {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
 
         // Boilerplate.
         songsLV = (ListView) findViewById(R.id.songsLV);
@@ -76,11 +84,12 @@ public class SearchSongs extends ActionBarActivity{
 
                 if(queryIsPending)
                 {
-                    findSong.cancel(true);
+                    querySongs.cancel();
                 }
 
-                findSong = new querySongs(query);
-                findSong.execute();
+                querySongs = GrooveSharkRequests.searchForSong(query);
+                querySongs.start();
+                queryIsPending = true;
             }
             else
             {
@@ -89,19 +98,18 @@ public class SearchSongs extends ActionBarActivity{
         }
     }
 
-    public void postHandleSearchTask(ArrayList foundSongs, Integer requestStatus)
+    public void postHandleSearchTask(ArrayList foundSongs)
     {
         queryIsPending = false;
         indeterminateProgress.setVisibility(View.GONE);
 
-        if(requestStatus.intValue() == querySongs.REQUEST_FAILED)
+        if(foundSongs == null)
         {
-            new MaterialDialog.Builder(this)
+            new MaterialDialog.Builder(SearchSongs.instance)
                     .title("Bummer :(")
                     .content(R.string.generic_network_error)
                     .neutralText("Okay")
                     .show();
-
             return;
         }
         else if(foundSongs.isEmpty())
@@ -185,7 +193,6 @@ public class SearchSongs extends ActionBarActivity{
             Log.i(Mixen.TAG, "First song added to queue.");
             MixenPlayerService.instance.queuedSongs.add(song);
             MixenPlayerService.instance.queueSongPosition = 0;
-            MixenPlayerService.instance.currentSong = MixenPlayerService.instance.queuedSongs.get(MixenPlayerService.instance.queueSongPosition);
             MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.getSongStreamURL);
             isFirstSong = true;
         }
@@ -252,5 +259,10 @@ public class SearchSongs extends ActionBarActivity{
         return super.onOptionsItemSelected(item);
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(queryIsPending)
+            querySongs.cancel();
+    }
 }

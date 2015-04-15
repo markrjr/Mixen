@@ -16,8 +16,8 @@
         android:id="@+id/appNameTV"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="70dp"
-        android:textSize="64dp"
+        android:layout_marginTop="25dp"
+        android:textSize="96dp"
         android:textColor="@color/Snow_White" />
 
     <TextView
@@ -26,16 +26,16 @@
         android:text="@string/createDescript"
         android:id="@+id/moreInfoTV"
         android:textColor="@color/Snow_White"
-        android:textSize="24dp"
+        android:textSize="32dp"
         android:textIsSelectable="true"
         android:textAlignment="center"
         android:gravity="center"
         android:layout_below="@+id/appNameTV"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="65dp"
         android:layout_centerInParent="true" />
 
     <Button
-        android:layout_width="90dp"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:text="Create"
         android:id="@+id/createMixenButton"
@@ -51,24 +51,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/userNameET"
-        android:layout_marginTop="45dp"
+        android:layout_marginTop="60dp"
         android:textColorHint="@color/Silver_Sand"
         android:textColor="@color/Snow_White"
-        android:textSize="16dp"
+        android:textSize="20dp"
         android:hint="@string/username_hint"
         android:layout_below="@+id/moreInfoTV"
-        android:layout_centerHorizontal="true"
-        android:singleLine="true" />
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/alertTV"
+        android:id="@+id/textView"
         android:layout_below="@+id/userNameET"
         android:layout_centerHorizontal="true"
         android:text="@string/username_protocol"
         android:textColor="@color/Snow_White"
-        android:layout_marginTop="30dp"
-        android:gravity="center" />
+        android:layout_marginTop="50dp"
+        android:gravity="center"
+        android:textIsSelectable="false"
+        android:textSize="16dp" />
 
 </RelativeLayout>

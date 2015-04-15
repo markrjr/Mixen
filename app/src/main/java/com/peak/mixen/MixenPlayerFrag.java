@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-import android.support.annotation.Nullable;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageButton;
@@ -30,6 +29,7 @@ import com.github.lzyzsd.circleprogress.ArcProgress;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import java.util.Random;
 
+import javax.annotation.Nullable;
 
 
 public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
@@ -192,16 +192,15 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         if (hasAlbumArt()) {
 
-            if(MixenPlayerService.instance.previousAlbumArt.containsKey(MixenPlayerService.instance.currentAlbumArtURL))
+            if(MixenPlayerService.instance.previousAlbumArt.containsKey(MixenPlayerService.instance.currentMetaSong.albumArtURL))
             {
-                MixenPlayerService.instance.currentAlbumArt = MixenPlayerService.instance.previousAlbumArt.get(MixenPlayerService.instance.currentAlbumArtURL);
-                albumArtIV.setImageBitmap(MixenPlayerService.instance.currentAlbumArt);
+                MixenPlayerService.instance.currentMetaSong.albumArt = MixenPlayerService.instance.previousAlbumArt.get(MixenPlayerService.instance.currentMetaSong.albumArtURL);
+                albumArtIV.setImageBitmap(MixenPlayerService.instance.currentMetaSong.albumArt);
                 generateAlbumArtPalette();
                 Log.d(Mixen.TAG, "Using cached album art.");
             }
             else
             {
-                new DownloadAlbumArt(albumArtIV, currentView).execute();
                 Log.i(Mixen.TAG, "Will download album art.");
             }
 
@@ -260,7 +259,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                         }
                     });
                     try {
-                        Thread.sleep(50);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -277,7 +276,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
     public void generateAlbumArtPalette()
     {
 
-        Palette.generateAsync(MixenPlayerService.instance.currentAlbumArt, new Palette.PaletteAsyncListener() {
+        Palette.generateAsync(MixenPlayerService.instance.currentMetaSong.albumArt, new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
 
@@ -310,8 +309,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         arcProgressBar.setVisibility(View.INVISIBLE);
         songDurationTV.setVisibility(View.INVISIBLE);
         songProgressTV.setVisibility(View.INVISIBLE);
-        MixenPlayerService.instance.currentAlbumArtURL = "";
-        MixenPlayerService.instance.currentAlbumArt = null;
+        //MixenPlayerService.instance.current = "";
+        //MixenPlayerService.instance.currentAlbumArt = null;
         playPauseButton.setImageDrawable(playDrawable);
         playPauseButton.animate()
                 .alpha(1.0f)
@@ -377,7 +376,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         //Show an indeterminate progress bar.
 
         bufferPB.setVisibility(View.VISIBLE);
-        upNextTV.setVisibility(View.GONE);
+        upNextTV.setVisibility(View.INVISIBLE);
         if(changeDrawable)
             showOrHidePlayBtn();
         playPauseButton.setClickable(false);

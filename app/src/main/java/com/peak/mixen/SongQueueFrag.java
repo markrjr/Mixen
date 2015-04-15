@@ -230,15 +230,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
 
-        switch (v.getId())
+        if(v.getId() == R.id.fab || v.getId() == R.id.mixenBaseLayout)
         {
-            case R.id.fab:
-            {
-                startActivityForResult(addSong, 5);
-                addSong.setAction(Intent.ACTION_SEARCH);
-                return;
-            }
-
+            startActivityForResult(addSong, 5);
+            addSong.setAction(Intent.ACTION_SEARCH);
+            return;
         }
     }
 

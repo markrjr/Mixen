@@ -92,6 +92,7 @@
     <orderEntry type="library" exported="" name="httpclientandroidlib-4.3.0" level="project" />
     <orderEntry type="library" exported="" name="support-v4-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="jackson-annotations-2.2.2" level="project" />
+    <orderEntry type="library" exported="" name="asyncjob-library-1.0.3" level="project" />
     <orderEntry type="library" exported="" name="recyclerview-v7-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="commons-lang3-3.3.2" level="project" />
     <orderEntry type="library" exported="" name="palette-v7-21.0.3" level="project" />
