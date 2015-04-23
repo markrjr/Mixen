@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -15,8 +16,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.view.inputmethod.EditorInfo;
 import android.view.KeyEvent;
-
-import com.peak.salut.Salut;
 
 public class CreateMixen extends Activity {
 
@@ -29,14 +28,6 @@ public class CreateMixen extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_mixen);
-
-        if(Mixen.isTablet(getApplicationContext()))
-        {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }else
-        {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
 
         //Setup the UI buttons.
         userNameET = (EditText)findViewById(R.id.userNameET);
@@ -63,8 +54,6 @@ public class CreateMixen extends Activity {
                 return handled;
             }
         });
-
-
     }
 
 
@@ -84,7 +73,7 @@ public class CreateMixen extends Activity {
                     SharedPreferences.Editor prefs = Mixen.sharedPref.edit();
                     prefs.putBoolean("FIRST_RUN", false);
                     prefs.putString("username", Mixen.username);
-                    prefs.commit();
+                    prefs.apply();
 
                     Intent createNewMixen = new Intent(CreateMixen.this, MixenBase.class);
                     createNewMixen.putExtra("userName", userNameET.getText().toString());

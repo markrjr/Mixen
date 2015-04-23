@@ -36,7 +36,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     private static ArrayAdapter queueAdapter;
     public static final int ADD_SONG_REQUEST = 5;
     public boolean snackBarIsVisible = false;
-    public boolean currentSongWasDeleted;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -56,10 +55,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         if(Mixen.isHost)
         {
             setupQueueAdapter();
-        }
-        else
-        {
-
         }
 
         return baseLayout;
@@ -82,11 +77,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     }
 
-    public static void updateClientQueueUI()
-    {
-
-    }
-
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
@@ -104,10 +94,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         if(Mixen.isHost)
         {
             updateHostQueueUI();
-        }
-        else
-        {
-            //updateClientQueueUI();
         }
 
     }

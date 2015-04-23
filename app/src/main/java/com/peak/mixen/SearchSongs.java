@@ -49,14 +49,6 @@ public class SearchSongs extends ActionBarActivity{
 
         getSupportActionBar().setTitle(Mixen.username + "'s Mixen");
 
-        if(Mixen.isTablet(getApplicationContext()))
-        {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }else
-        {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-
         // Boilerplate.
         songsLV = (ListView) findViewById(R.id.songsLV);
         indeterminateProgress = (ProgressBar)findViewById(R.id.progressBar);
@@ -181,17 +173,27 @@ public class SearchSongs extends ActionBarActivity{
             }
 
         });
-
-        //Log.d(Mixen.TAG, "Updating Queue");
     }
 
 
     public void addSongToQueue(Song song)
     {
+        MetaSong metaSong = new MetaSong(song, MetaSong.NOT_YET_PLAYED);
+
+        if(Mixen.isHost)
+        {
+            metaSong.isProposed = false;
+        }
+        else
+        {
+            metaSong.isProposed = true;
+        }
+
         if(MixenPlayerService.instance.queuedSongs.isEmpty())
         {
             Log.i(Mixen.TAG, "First song added to queue.");
             MixenPlayerService.instance.queuedSongs.add(song);
+            MixenPlayerService.instance.proposedSongs.add(metaSong);
             MixenPlayerService.instance.queueSongPosition = 0;
             MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.getSongStreamURL);
             isFirstSong = true;
@@ -200,6 +202,7 @@ public class SearchSongs extends ActionBarActivity{
         {
             isFirstSong = false;
             MixenPlayerService.instance.queuedSongs.add(song);
+            MixenPlayerService.instance.proposedSongs.add(metaSong);
 
             if(!MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack)
             {
@@ -211,7 +214,7 @@ public class SearchSongs extends ActionBarActivity{
         }
 
         MixenBase.mixenPlayerFrag.updateUpNext();
-
+        Mixen.network.sendDataToClients(metaSong);
     }
 
     @Override
@@ -260,8 +263,8 @@ public class SearchSongs extends ActionBarActivity{
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
         if(queryIsPending)
             querySongs.cancel();
     }

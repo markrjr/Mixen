@@ -1,20 +1,13 @@
 package com.peak.salut;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
-import android.net.wifi.p2p.WifiP2pGroup;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.IBinder;
 import android.util.Log;
-
-import java.util.List;
 
 /**
  * Created by markrjr on 2/4/15.
@@ -23,15 +16,15 @@ public class SalutBroadcastReceiver extends BroadcastReceiver {
 
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
-    private Salut salutInstance;
+    private SalutP2P salutP2PInstance;
 
     final static String TAG = "Salut";
 
-    public SalutBroadcastReceiver(Salut salutInstance, WifiP2pManager manager,  WifiP2pManager.Channel channel) {
+    public SalutBroadcastReceiver(SalutP2P salutP2PInstance, WifiP2pManager manager,  WifiP2pManager.Channel channel) {
         super();
         this.manager = manager;
         this.channel = channel;
-        this.salutInstance = salutInstance;
+        this.salutP2PInstance = salutP2PInstance;
     }
 
     @Override
@@ -54,18 +47,25 @@ public class SalutBroadcastReceiver extends BroadcastReceiver {
             NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
             if (networkInfo.isConnected()) {
                 //Here, we are connected to another WiFi P2P device, if necessary one can grab some extra information.
-                salutInstance.isConnectedToAnotherDevice = true;
-                manager.requestConnectionInfo(channel, salutInstance);
+                salutP2PInstance.isConnectedToAnotherDevice = true;
+                manager.requestConnectionInfo(channel, salutP2PInstance);
 
             } else {
 
                 Log.v(TAG, "Not connected to another device.");
-                salutInstance.isConnectedToAnotherDevice = false;
+                salutP2PInstance.isConnectedToAnotherDevice = false;
             }
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 
             WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+            salutP2PInstance.thisDevice = new SalutP2PDevice();
+            salutP2PInstance.thisDevice.txtRecord = salutP2PInstance.serviceData;
+            salutP2PInstance.thisDevice.deviceName = device.deviceName;
+            salutP2PInstance.thisDevice.macAddress = device.deviceAddress;
+            salutP2PInstance.thisDevice.readableName = salutP2PInstance.instanceName;
+            salutP2PInstance.thisDevice.device = device;
+
             Log.v(TAG, device.deviceName + " is now using P2P. ");
         }
 

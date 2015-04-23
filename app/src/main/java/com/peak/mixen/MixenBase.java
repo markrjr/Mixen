@@ -12,19 +12,18 @@ import android.support.v7.app.ActionBarActivity;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.SnackbarManager;
+import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Salut;
-import com.peak.salut.SalutCallback;
+import com.peak.salut.SalutP2P;
+import com.peak.salut.Callbacks.SalutCallback;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,14 +61,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         mPager = (ViewPager) this.findViewById(R.id.viewPager);
         baseLayout = (RelativeLayout)this.findViewById(R.id.mixenBaseLayout);
 
-        if(Mixen.isTablet(getApplicationContext()))
-        {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }else
-        {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-
         TabNames.add("Up Next");
         TabNames.add("Now Playing");
 
@@ -100,10 +91,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         if(Mixen.debugFeaturesEnabled)
         {
-            if(Mixen.isHost)
-            {
-                setupMixenNetwork();
-            }
+            setupMixenNetwork();
         }
 
     }
@@ -130,46 +118,25 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
     }
 
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(Mixen.debugFeaturesEnabled)
-        {
-            if(!Mixen.isHost)
-            {
-                Mixen.network.stopServiceDiscovery();
-            }
-            else
-            {
-                Mixen.network.stopNetworkService(true);
-            }
-        }
-
-    }
-
     public void setupMixenNetwork()
     {
-        Map appData = new HashMap();
-        appData.put("username", Mixen.username);
-        appData.put("isHost", "TRUE");
 
+        Mixen.network = new Salut(this, "_mixen", Mixen.username, Mixen.MIXEN_SERVICE_PORT);
 
-        Mixen.network = new Salut(getApplicationContext(), Mixen.username, "_mixen", appData, new SalutCallback() {
-            @Override
-            public void call() {
-                Mixen.showP2PNotSupported(MixenBase.this);
-            }
-        });
-
-        if(Mixen.isHost && !Mixen.network.serviceIsRunning)
+        if(Mixen.isHost)
         {
-            Mixen.network.startNetworkService(new SalutCallback() {
+            Mixen.network.startNetworkService();
+        }
+        else
+        {
+            Mixen.network.startListeningForData(ArrayList.class, new SalutDataCallback() {
                 @Override
-                public void call() {
-                    mixenUsersFrag.populateNetworkListView();
+                public void call(final Object data) {
+
+                    mixenPlayerFrag.prepareClientUI((MetaSong)data);
+
                 }
-            }, true);
+            });
         }
 
     }
@@ -184,12 +151,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     @Override
     protected void onPause() {
         super.onPause();
-
-        if(Mixen.debugFeaturesEnabled)
-        {
-            unregisterReceiver(Mixen.network.receiver);
-        }
-
         userHasLeftApp = true;
         if(MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying())
         {
@@ -201,12 +162,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     @Override
     protected void onResume() {
         super.onResume();
-
-        if(Mixen.debugFeaturesEnabled)
-        {
-            registerReceiver(Mixen.network.receiver, Mixen.network.intentFilter);
-        }
-
         userHasLeftApp = false;
         if(MixenPlayerService.instance != null && MixenPlayerService.instance.playerHasTrack)
         {
@@ -305,14 +260,10 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }
-//            if(!Mixen.isHost)
-//            {
-//                Mixen.network.disposeServiceRequests();
-//            }
-//            else
-//            {
-//                Mixen.network.stopNetworkService();
-//            }
+            if(Mixen.network.thisService.isRegistered)
+            {
+                Mixen.network.unregisterClient();
+            }
 
             this.finish();
             return;

@@ -40,13 +40,16 @@ public class MixenUsersFrag extends Fragment{
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isAdded() && isVisibleToUser) {
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        if(Mixen.isHost)
+        {
             populateNetworkListView();
         }
 
     }
+
 
     public void setColors(int bgColor)
     {
@@ -57,7 +60,7 @@ public class MixenUsersFrag extends Fragment{
 
     public void populateNetworkListView()
     {
-        if(Mixen.network.foundDevices.isEmpty())
+        if(Mixen.network.registeredClients.isEmpty())
         {
             return;
         }
@@ -66,7 +69,7 @@ public class MixenUsersFrag extends Fragment{
 
         infoTV.setVisibility(View.GONE);
 
-        final ArrayList<String> nearbyUsers = new ArrayList<>(Arrays.asList(Mixen.network.foundDevices.iterator().next().txtRecord.get("username")));
+        final ArrayList<String> nearbyUsers = Mixen.network.getReadableRegisteredNames();
 
         ArrayAdapter adapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_1, android.R.id.text1, nearbyUsers) {
             @Override

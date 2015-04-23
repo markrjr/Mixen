@@ -1,7 +1,6 @@
 package com.peak.mixen;
 
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -18,10 +17,8 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Parcelable;
 import android.os.PowerManager;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -34,12 +31,12 @@ import android.widget.RemoteViews;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
-
 import co.arcs.groove.thresher.Song;
+import wseemann.media.FFmpegMediaPlayer;
 
-public class MixenPlayerService extends Service implements  MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
-                                                            MediaPlayer.OnCompletionListener, MediaPlayer.OnInfoListener,
-                                                            MediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener{
+public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.OnPreparedListener, FFmpegMediaPlayer.OnErrorListener,
+                                                            FFmpegMediaPlayer.OnCompletionListener, FFmpegMediaPlayer.OnInfoListener,
+                                                            FFmpegMediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener{
 
     public static final String play = "ACTION_PLAY";
     public static final String pause = "ACTION_PAUSE";
@@ -57,7 +54,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
 
     public static MixenPlayerService instance;
 
-    private MediaPlayer player;
+    private FFmpegMediaPlayer player;
     private MediaSessionCompat mediaSession;
 
     private NoisyAudioReciever noisyAudioReciever;
@@ -82,7 +79,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     public MetaSong currentMetaSong;
 
     public ArrayList<Song> queuedSongs;
-    public ArrayList<Song> proposedSongs;
+    public ArrayList<MetaSong> proposedSongs;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -118,14 +115,14 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
         context.startService(intent);
     }
 
-    public MediaPlayer getPlayer() {
+    public FFmpegMediaPlayer getPlayer() {
         return player;
     }
     public void initService()
     {
 
         queuedSongs = new ArrayList<Song>();
-        proposedSongs = new ArrayList<Song>();
+        proposedSongs = new ArrayList<MetaSong>();
         previousAlbumArt = new LinkedHashMap<>(10);
 
         if(Mixen.isHost)
@@ -183,7 +180,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
 
     public void initMusicPlayer(){
 
-        player = new MediaPlayer();
+        player = new FFmpegMediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
@@ -237,9 +234,9 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     {
         MixenBase.mixenPlayerFrag.hideUIControls(false);
         currentSong = queuedSongs.get(queueSongPosition);
-        currentMetaSong = new MetaSong(currentSong, MixenBase.mixenPlayerFrag.albumArtIV);
+        currentMetaSong = proposedSongs.get(queueSongPosition);
         serviceIsBusy = true;
-
+        currentMetaSong.getStreamURLForService();
         Log.i(Mixen.TAG, "Grabbing URL for next song and signaling playback, it should begin shortly.");
     }
 
@@ -319,7 +316,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
                 player.stop();
                 stopForeground(true);
             }
-
+            currentMetaSong.setAlreadyPlayed();
             player.reset();
             MixenBase.mixenPlayerFrag.cleanUpUI();
             audioManager.abandonAudioFocus(this);
@@ -358,6 +355,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
         {
             //Album art should be set here.
             player.setDataSource(currentMetaSong.streamURL);
+            currentMetaSong.downloadAlbumArtForService(true);
             player.setAudioStreamType(AudioManager.STREAM_MUSIC);
             player.setLooping(false);
         }
@@ -378,7 +376,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
             return;
         }
 
-        MixenBase.mixenPlayerFrag.prepareUI();
+        MixenBase.mixenPlayerFrag.prepareHostUI();
         player.prepareAsync();
     }
 
@@ -493,7 +491,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     }
 
     @Override
-    public boolean onInfo(MediaPlayer mediaPlayer, int action, int extra) {
+    public boolean onInfo(FFmpegMediaPlayer mediaPlayer, int action, int extra) {
 
         if (action == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
             if(!playerIsPlaying())
@@ -531,7 +529,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     }
 
     @Override
-    public void onSeekComplete(MediaPlayer mediaPlayer) {
+    public void onSeekComplete(FFmpegMediaPlayer mediaPlayer) {
         //If the user fast forwards on rewinds, after the required seeking operating completes, restart the media player at
         //the seek-ed to position.
 
@@ -581,7 +579,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
 
 
     @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
+    public void onCompletion(FFmpegMediaPlayer mediaPlayer) {
 
             unregisterReceiver(noisyAudioReciever);
 
@@ -602,7 +600,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     }
 
     @Override
-    public boolean onError(MediaPlayer mediaPlayer, int action, int extra) {
+    public boolean onError(FFmpegMediaPlayer mediaPlayer, int action, int extra) {
 
         resetAndStopPlayer();
         serviceIsBusy = false;
@@ -630,7 +628,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     }
 
     @Override
-    public void onPrepared(MediaPlayer mediaPlayer) {
+    public void onPrepared(FFmpegMediaPlayer mediaPlayer) {
         //After the music player is ready to go, restore UI controls to the user,
         //setup some nice UI stuff, and finally, start playing music.
 
@@ -652,6 +650,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
                 setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
             }
             playerHasTrack = true;
+            currentMetaSong.setNowPlaying();
             registerReceiver(noisyAudioReciever, intentFilter);
             if(MixenBase.userHasLeftApp)
             {
@@ -843,7 +842,13 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
             player = null;
             stopForeground(true);
         }
-
+        if(Mixen.debugFeaturesEnabled)
+        {
+            if(Mixen.isHost)
+            {
+                Mixen.network.stopNetworkService();
+            }
+        }
         Log.d(Mixen.TAG, "Stopped Mixen Service.");
     }
 

@@ -185,7 +185,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         }
     }
 
-    public void prepareUI()
+    public void prepareHostUI()
     {
         titleTV.setText(MixenPlayerService.instance.currentSong.getName());
         artistTV.setText(MixenPlayerService.instance.currentSong.getArtistName());
@@ -196,7 +196,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
             {
                 MixenPlayerService.instance.currentMetaSong.albumArt = MixenPlayerService.instance.previousAlbumArt.get(MixenPlayerService.instance.currentMetaSong.albumArtURL);
                 albumArtIV.setImageBitmap(MixenPlayerService.instance.currentMetaSong.albumArt);
-                generateAlbumArtPalette();
+                generateAlbumArtPalette(MixenPlayerService.instance.currentMetaSong);
                 Log.d(Mixen.TAG, "Using cached album art.");
             }
             else
@@ -215,6 +215,14 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         startRotateAnimation();
         updateUpNext();
 
+    }
+
+    public void prepareClientUI(MetaSong song)
+    {
+        titleTV.setText(song.name);
+        artistTV.setText(song.artist);
+        song.downloadAlbumArtForService(false);
+        startRotateAnimation();
     }
 
     public void updateUpNext()
@@ -273,10 +281,10 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     }
 
-    public void generateAlbumArtPalette()
+    public void generateAlbumArtPalette(MetaSong song)
     {
 
-        Palette.generateAsync(MixenPlayerService.instance.currentMetaSong.albumArt, new Palette.PaletteAsyncListener() {
+        Palette.generateAsync(song.albumArt, new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
 

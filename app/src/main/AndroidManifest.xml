@@ -23,6 +23,7 @@
             android:name=".MixenPlayerService">
         </service>
         <activity
+            android:screenOrientation="nosensor"
             android:name=".StartScreen"
             android:label="@string/app_name">
             <intent-filter>
@@ -31,10 +32,12 @@
             </intent-filter>
         </activity>
         <activity
+            android:screenOrientation="nosensor"
             android:name=".CreateMixen"
             android:label="@string/title_activity_create_mixen">
         </activity>
         <activity
+            android:screenOrientation="nosensor"
             android:name=".SearchSongs"
             android:label="@string/title_activity_search_songs"
             android:launchMode="singleTop">
@@ -43,12 +46,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
-
         </activity>
         <activity
+            android:screenOrientation="nosensor"
             android:name=".MixenBase"
-            android:label="@string/title_activity_mixen_base"
-            android:launchMode="singleTop">
+            android:label="@string/title_activity_mixen_base">
         </activity>
     </application>
 
