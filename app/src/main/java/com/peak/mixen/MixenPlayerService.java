@@ -32,11 +32,10 @@ import android.widget.RemoteViews;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import co.arcs.groove.thresher.Song;
-import wseemann.media.FFmpegMediaPlayer;
 
-public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.OnPreparedListener, FFmpegMediaPlayer.OnErrorListener,
-                                                            FFmpegMediaPlayer.OnCompletionListener, FFmpegMediaPlayer.OnInfoListener,
-                                                            FFmpegMediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener{
+public class MixenPlayerService extends Service implements  MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
+                                                            MediaPlayer.OnCompletionListener, MediaPlayer.OnInfoListener,
+                                                            MediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener{
 
     public static final String play = "ACTION_PLAY";
     public static final String pause = "ACTION_PAUSE";
@@ -54,7 +53,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
 
     public static MixenPlayerService instance;
 
-    private FFmpegMediaPlayer player;
+    private MediaPlayer player;
     private MediaSessionCompat mediaSession;
 
     private NoisyAudioReciever noisyAudioReciever;
@@ -115,7 +114,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
         context.startService(intent);
     }
 
-    public FFmpegMediaPlayer getPlayer() {
+    public MediaPlayer getPlayer() {
         return player;
     }
     public void initService()
@@ -180,7 +179,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
 
     public void initMusicPlayer(){
 
-        player = new FFmpegMediaPlayer();
+        player = new MediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
@@ -394,9 +393,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
             {
                 player.seekTo(player.getCurrentPosition() - 30000);
             }
-            //Log.i(Mixen.TAG, "Seeking backwards 30 seconds.");
         }
-
     }
 
     private void restartTrackFromBeginning()
@@ -491,7 +488,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
-    public boolean onInfo(FFmpegMediaPlayer mediaPlayer, int action, int extra) {
+    public boolean onInfo(MediaPlayer mediaPlayer, int action, int extra) {
 
         if (action == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
             if(!playerIsPlaying())
@@ -529,7 +526,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
-    public void onSeekComplete(FFmpegMediaPlayer mediaPlayer) {
+    public void onSeekComplete(MediaPlayer mediaPlayer) {
         //If the user fast forwards on rewinds, after the required seeking operating completes, restart the media player at
         //the seek-ed to position.
 
@@ -579,7 +576,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
 
 
     @Override
-    public void onCompletion(FFmpegMediaPlayer mediaPlayer) {
+    public void onCompletion(MediaPlayer mediaPlayer) {
 
             unregisterReceiver(noisyAudioReciever);
 
@@ -600,7 +597,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
-    public boolean onError(FFmpegMediaPlayer mediaPlayer, int action, int extra) {
+    public boolean onError(MediaPlayer mediaPlayer, int action, int extra) {
 
         resetAndStopPlayer();
         serviceIsBusy = false;
@@ -628,7 +625,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
-    public void onPrepared(FFmpegMediaPlayer mediaPlayer) {
+    public void onPrepared(MediaPlayer mediaPlayer) {
         //After the music player is ready to go, restore UI controls to the user,
         //setup some nice UI stuff, and finally, start playing music.
 

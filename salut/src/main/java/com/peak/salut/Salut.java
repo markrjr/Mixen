@@ -204,7 +204,7 @@ public class Salut{
                             Log.d(TAG, "A device is sending data...");
                             InputStream inputStream = listeningSocket.getInputStream();
                             final Object data = LoganSquare.parse(inputStream, classType);
-
+                            inputStream.close();
                             currentActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {

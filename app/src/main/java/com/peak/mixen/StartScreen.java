@@ -92,10 +92,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
             }
         });
 
-        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
-                .build());
     }
 
     private boolean isFirstRun()
