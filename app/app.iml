@@ -87,6 +87,7 @@
     <orderEntry type="jdk" jdkName="Android API 21 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="snackbar-2.9.1" level="project" />
+    <orderEntry type="library" exported="" name="fmp" level="project" />
     <orderEntry type="library" exported="" name="cardview-v7-21.0.0" level="project" />
     <orderEntry type="library" exported="" name="guava-15.0" level="project" />
     <orderEntry type="library" exported="" name="thresher-1.2.1" level="project" />
@@ -103,8 +104,8 @@
     <orderEntry type="library" exported="" name="httpclientandroidlib-4.3.0" level="project" />
     <orderEntry type="library" exported="" name="logansquare-1.0.6" level="project" />
     <orderEntry type="library" exported="" name="jackson-annotations-2.2.2" level="project" />
-    <orderEntry type="library" exported="" name="recyclerview-v7-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="asyncjob-library-1.0.3" level="project" />
+    <orderEntry type="library" exported="" name="recyclerview-v7-21.0.3" level="project" />
     <orderEntry type="library" exported="" name="commons-lang3-3.3.2" level="project" />
     <orderEntry type="library" exported="" name="floatingactionbutton-1.1.0" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-21.0.3" level="project" />

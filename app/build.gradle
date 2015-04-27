@@ -64,4 +64,5 @@ dependencies {
     apt 'com.bluelinelabs:logansquare-compiler:1.0.6'
     compile 'com.bluelinelabs:logansquare:1.0.6'
     compile project(':salut')
+    compile files('libs/fmp.jar')
 }

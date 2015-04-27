@@ -16,7 +16,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -32,10 +31,11 @@ import android.widget.RemoteViews;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import co.arcs.groove.thresher.Song;
+import wseemann.media.FFmpegMediaPlayer;
 
-public class MixenPlayerService extends Service implements  MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
-                                                            MediaPlayer.OnCompletionListener, MediaPlayer.OnInfoListener,
-                                                            MediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener{
+public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.OnPreparedListener, FFmpegMediaPlayer.OnErrorListener,
+                                                            FFmpegMediaPlayer.OnCompletionListener, FFmpegMediaPlayer.OnInfoListener,
+                                                            FFmpegMediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener{
 
     public static final String play = "ACTION_PLAY";
     public static final String pause = "ACTION_PAUSE";
@@ -53,7 +53,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
 
     public static MixenPlayerService instance;
 
-    private MediaPlayer player;
+    private FFmpegMediaPlayer player;
     private MediaSessionCompat mediaSession;
 
     private NoisyAudioReciever noisyAudioReciever;
@@ -114,7 +114,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
         context.startService(intent);
     }
 
-    public MediaPlayer getPlayer() {
+    public FFmpegMediaPlayer getPlayer() {
         return player;
     }
     public void initService()
@@ -179,7 +179,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
 
     public void initMusicPlayer(){
 
-        player = new MediaPlayer();
+        player = new FFmpegMediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
@@ -488,9 +488,9 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     }
 
     @Override
-    public boolean onInfo(MediaPlayer mediaPlayer, int action, int extra) {
+    public boolean onInfo(FFmpegMediaPlayer mediaPlayer, int action, int extra) {
 
-        if (action == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
+        if (action == FFmpegMediaPlayer.MEDIA_INFO_BUFFERING_START) {
             if(!playerIsPlaying())
             {
                 MixenBase.mixenPlayerFrag.hideUIControls(false);
@@ -517,7 +517,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
 
             Log.i(Mixen.TAG, "Buffering of media has begun.");
 
-        } else if (action == MediaPlayer.MEDIA_INFO_BUFFERING_END && player.isPlaying()) {
+        } else if (action == FFmpegMediaPlayer.MEDIA_INFO_BUFFERING_END && player.isPlaying()) {
             MixenBase.mixenPlayerFrag.restoreUIControls();
 
             Log.i(Mixen.TAG, "Buffering has stopped, and playback should have resumed.");
@@ -526,7 +526,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     }
 
     @Override
-    public void onSeekComplete(MediaPlayer mediaPlayer) {
+    public void onSeekComplete(FFmpegMediaPlayer mediaPlayer) {
         //If the user fast forwards on rewinds, after the required seeking operating completes, restart the media player at
         //the seek-ed to position.
 
@@ -576,7 +576,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
 
 
     @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
+    public void onCompletion(FFmpegMediaPlayer mediaPlayer) {
 
             unregisterReceiver(noisyAudioReciever);
 
@@ -597,7 +597,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     }
 
     @Override
-    public boolean onError(MediaPlayer mediaPlayer, int action, int extra) {
+    public boolean onError(FFmpegMediaPlayer mediaPlayer, int action, int extra) {
 
         resetAndStopPlayer();
         serviceIsBusy = false;
@@ -625,7 +625,7 @@ public class MixenPlayerService extends Service implements  MediaPlayer.OnPrepar
     }
 
     @Override
-    public void onPrepared(MediaPlayer mediaPlayer) {
+    public void onPrepared(FFmpegMediaPlayer mediaPlayer) {
         //After the music player is ready to go, restore UI controls to the user,
         //setup some nice UI stuff, and finally, start playing music.
 
