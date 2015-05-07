@@ -1,45 +1,54 @@
 package com.peak.mixen;
 
 
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.arasthel.asyncjob.AsyncJob;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
-import com.nispok.snackbar.listeners.ActionClickListener;
+import com.peak.mixen.Utils.HeaderListAdapter;
+import com.peak.mixen.Utils.HeaderListCell;
+
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import co.arcs.groove.thresher.Song;
+import kaaes.spotify.webapi.android.SpotifyCallback;
+import kaaes.spotify.webapi.android.SpotifyError;
+import kaaes.spotify.webapi.android.models.AlbumSimple;
+import kaaes.spotify.webapi.android.models.AlbumsPager;
+import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.TrackSimple;
+import kaaes.spotify.webapi.android.models.TracksPager;
+import retrofit.client.Response;
 
 
 public class SearchSongs extends ActionBarActivity{
 
     private ProgressBar indeterminateProgress;
     private ListView songsLV;
-    public boolean queryIsPending = false;
     public boolean isFirstSong;
     public static SearchSongs instance;
-    public AsyncJob querySongs;
+    private ArrayList<HeaderListCell> cellLists;
+    private List<AlbumSimple> foundAlbums;
+    private List<Track> foundTracks;
+    private HeaderListAdapter headerListAdapter;
+    private boolean fullListIsVisible = true;
+    private ArrayList<HeaderListCell> fullCellList;
+
 
 
     @Override
@@ -58,10 +67,84 @@ public class SearchSongs extends ActionBarActivity{
                 getResources().getColor(R.color.Snow_White),
                 android.graphics.PorterDuff.Mode.SRC_IN);
 
-        this.setResult(Activity.RESULT_OK);
+        setupListAdapter();
 
         instance = this;
+    }
 
+    private void searchSpotify(String query)
+    {
+        cellLists.removeAll(cellLists);
+        fullCellList.removeAll(fullCellList);
+
+        Mixen.spotify.searchTracks(query, new SpotifyCallback<TracksPager>() {
+
+            @Override
+            public void failure(SpotifyError spotifyError) {
+
+                new MaterialDialog.Builder(SearchSongs.instance)
+                        .title("Bummer :(")
+                        .showListener(new DialogInterface.OnShowListener() {
+                            @Override
+                            public void onShow(DialogInterface dialog) {
+                                indeterminateProgress.setVisibility(View.GONE);
+                            }
+                        })
+                        .content(R.string.generic_network_error)
+                        .neutralText("Okay")
+                        .show();
+                return;
+            }
+
+            @Override
+            public void success(final TracksPager tracksPager, Response response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        indeterminateProgress.setVisibility(View.GONE);
+                        populateListView(tracksPager);
+                        songsLV.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+        });
+
+        Mixen.spotify.searchAlbums(query, new SpotifyCallback<AlbumsPager>() {
+
+            @Override
+            public void failure(SpotifyError spotifyError) {
+
+                new MaterialDialog.Builder(SearchSongs.instance)
+                        .title("Bummer :(")
+                        .showListener(new DialogInterface.OnShowListener() {
+                            @Override
+                            public void onShow(DialogInterface dialog) {
+                                indeterminateProgress.setVisibility(View.GONE);
+                            }
+                        })
+                        .content(R.string.generic_network_error)
+                        .neutralText("Okay")
+                        .show();
+                return;
+            }
+
+            @Override
+            public void success(final AlbumsPager albumsPager, Response response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        indeterminateProgress.setVisibility(View.GONE);
+                        populateListView(albumsPager);
+                        songsLV.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+        });
+    }
+
+    public static String humanReadableTimeString(long timeInMilliseconds)
+    {
+        return DurationFormatUtils.formatDuration(timeInMilliseconds, "m:ss");
     }
 
     private void handleIntent(Intent intent)
@@ -74,14 +157,8 @@ public class SearchSongs extends ActionBarActivity{
                 indeterminateProgress.setVisibility(View.VISIBLE);
                 songsLV.setVisibility(View.INVISIBLE);
 
-                if(queryIsPending)
-                {
-                    querySongs.cancel();
-                }
+                searchSpotify(query);
 
-                querySongs = GrooveSharkRequests.searchForSong(query);
-                querySongs.start();
-                queryIsPending = true;
             }
             else
             {
@@ -90,59 +167,103 @@ public class SearchSongs extends ActionBarActivity{
         }
     }
 
-    public void postHandleSearchTask(ArrayList foundSongs)
+
+
+    private void populateListView(final Object searchResults)
     {
-        queryIsPending = false;
-        indeterminateProgress.setVisibility(View.GONE);
-
-        if(foundSongs == null)
+        if(searchResults instanceof TracksPager)
         {
-            new MaterialDialog.Builder(SearchSongs.instance)
-                    .title("Bummer :(")
-                    .content(R.string.generic_network_error)
-                    .neutralText("Okay")
-                    .show();
-            return;
+            HeaderListCell sectionCell = new HeaderListCell("SONGS", null);
+            sectionCell.setToSectionHeader();
+            cellLists.add(sectionCell);
+            foundTracks = ((TracksPager) searchResults).tracks.items;
+            int added = 0;
+            for(Object track : foundTracks)
+            {
+                cellLists.add(new HeaderListCell(((Track) track).name, humanReadableTimeString(((Track) track).duration_ms)));
+                added++;
+
+                if(added == 4)
+                {
+                    break;
+                }
+            }
+
+            HeaderListCell moreItemsCell = new HeaderListCell(((TracksPager) searchResults).tracks.items.size() + " MORE...", null);
+            moreItemsCell.hiddenCategory = "EXTRA_SONGS";
+            cellLists.add(moreItemsCell);
         }
-        else if(foundSongs.isEmpty())
+        else if(searchResults instanceof AlbumsPager)
         {
-            new MaterialDialog.Builder(this)
-                    .title("Bummer :(")
-                    .content(R.string.song_not_found)
-                    .neutralText("Okay")
-                    .show();
+            HeaderListCell sectionCell = new HeaderListCell("ALBUMS", null);
+            sectionCell.setToSectionHeader();
+            cellLists.add(sectionCell);
+            foundAlbums = ((AlbumsPager) searchResults).albums.items;
+            int added = 0;
+            for(Object album : foundAlbums)
+            {
+                cellLists.add(new HeaderListCell(((AlbumSimple) album).name, null));
+                added++;
 
-            return;
+                if(added == 4)
+                {
+                    break;
+                }
+            }
+
+            HeaderListCell moreItemsCell = new HeaderListCell(((AlbumsPager) searchResults).albums.items.size() + " MORE...", null);
+            moreItemsCell.hiddenCategory = "EXTRA_ALBUMS";
+            cellLists.add(moreItemsCell);
+
+        headerListAdapter.notifyDataSetChanged();
+
         }
 
-        populateListView(foundSongs);
-        songsLV.setVisibility(View.VISIBLE);
-
-
+        fullListIsVisible = true;
+        fullCellList = cellLists;
     }
 
-    private void populateListView(final ArrayList<Song> listOfSongs)
+    private void populateSpecificListView(String typeOfResults)
     {
-        ArrayAdapter adapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, listOfSongs) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+        cellLists.removeAll(cellLists);
 
-                text1.setText(listOfSongs.get(position).getName());
-                text2.setText(listOfSongs.get(position).getArtistName());
-                //text1.setTextSize(24);
-                //text2.setTextSize(18);
-                return view;
+        HeaderListCell sectionCell = new HeaderListCell("FOUND " + typeOfResults, null);
+        sectionCell.setToSectionHeader();
+        cellLists.add(sectionCell);
+        if(typeOfResults.equals("ALBUM"))
+        {
+            for(Object album : foundAlbums)
+            {
+                cellLists.add(new HeaderListCell(((AlbumSimple) album).name, null));
             }
-        };
+        }
+        else if(typeOfResults.equals("SONGS"))
+        {
+            for(Object track : foundTracks)
+            {
+                cellLists.add(new HeaderListCell(((TrackSimple) track).name, null));
+            }
+        }
 
+        fullListIsVisible = false;
+        headerListAdapter.notifyDataSetChanged();
+    }
+
+
+    private void setupListAdapter()
+    {
+        if(cellLists == null)
+        {
+            cellLists = new ArrayList<>();
+            fullCellList = new ArrayList<>();
+        }
+
+        headerListAdapter = new HeaderListAdapter(getApplicationContext(), cellLists);
 
         // Assign adapter to ListView
-        songsLV.setAdapter(adapter);
+        songsLV.setAdapter(headerListAdapter);
 
-        // ListView Item Click Listener
+//         ListView Item Click Listener
         songsLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -150,31 +271,60 @@ public class SearchSongs extends ActionBarActivity{
                                     final int position, long id) {
 
                 // ListView Clicked item value
-                final Song selected = (Song) songsLV.getItemAtPosition(position);
+                HeaderListCell selected = (HeaderListCell) songsLV.getItemAtPosition(position);
+                Intent viewAlbumInfo = new Intent(SearchSongs.this, AlbumView.class);
 
-                if(Mixen.isHost)
-                {
-                    if(MixenPlayerService.instance.currentSong != null && MixenPlayerService.instance.currentSong == selected)
-                    {
-                        Toast.makeText(getApplicationContext(), "This song has already been added.", Toast.LENGTH_SHORT).show();
-                        return;
+                if (selected.getCategory() == null) {
+                    //Show the rest of the search results.
+                    if (selected.getName().contains("MORE")) {
+                        if(selected.hiddenCategory.equals("EXTRA_SONGS"))
+                        {
+                            populateSpecificListView("SONGS");
+                        }
+                        else if(selected.hiddenCategory.equals("EXTRA_ALBUMS"))
+                        {
+                            populateSpecificListView("ALBUMS");
+                        }
+                    } else {
+                        //Show a single album view.
+                        for (AlbumSimple foundAlbum : foundAlbums) {
+                            if (selected.getName().equals(foundAlbum.name)) {
+                                viewAlbumInfo.putExtra("REQUESTED_ALBUM_ID", foundAlbum.id);
+                                startActivity(viewAlbumInfo);
+                            }
+                        }
                     }
-
-                    addSongToQueue(selected);
-                    //TODO Fix undo action flow.
-
-                    SnackbarManager.show(
-                            Snackbar.with(getApplicationContext())
-                                    .text("Added " + selected.getName())
-                            //.actionLabel("Undo")
-                            //.actionColor(Color.YELLOW)
-                            , SearchSongs.this);
+                } else {
+                    //This is a song.
+                    signalPlaybackOrSendData();
                 }
             }
 
         });
+
     }
 
+    private void signalPlaybackOrSendData()
+    {
+        if(Mixen.isHost)
+        {
+//                    if(MixenPlayerService.instance.currentSong != null && MixenPlayerService.instance.currentSong == selected)
+//                    {
+//                        Toast.makeText(getApplicationContext(), "This song has already been added.", Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
+
+            //addSongToQueue(selected);
+            //TODO Fix undo action flow.
+
+//                    SnackbarManager.show(
+//                            Snackbar.with(getApplicationContext())
+//                                    .text("Added " + selected.name)
+//                            //.actionLabel("Undo")
+//                            //.actionColor(Color.YELLOW)
+//                            , SearchSongs.this);
+        }
+    }
 
     public void addSongToQueue(Song song)
     {
@@ -239,33 +389,32 @@ public class SearchSongs extends ActionBarActivity{
 
         menu.findItem(R.id.search).expandActionView();
 
-        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                if(!hasFocus)
-                {
-                    SearchSongs.this.finish();
-                }
-            }
-        });
+//        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View view, boolean hasFocus) {
+//                if(!hasFocus)
+//                {
+//                    SearchSongs.this.finish();
+//                }
+//            }
+//        });
 
         return true;
 
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+    public void onBackPressed() {
+        super.onBackPressed();
 
-        return super.onOptionsItemSelected(item);
+        if(!fullListIsVisible)
+        {
+            populateListView(fullCellList);
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(queryIsPending)
-            querySongs.cancel();
     }
 }

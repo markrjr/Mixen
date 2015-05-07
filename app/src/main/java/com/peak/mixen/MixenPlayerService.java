@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -29,13 +30,17 @@ import android.view.View;
 import android.widget.RemoteViews;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.spotify.sdk.android.player.ConnectionStateCallback;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.PlayerNotificationCallback;
+import com.spotify.sdk.android.player.PlayerState;
 
 import co.arcs.groove.thresher.Song;
-import wseemann.media.FFmpegMediaPlayer;
 
-public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.OnPreparedListener, FFmpegMediaPlayer.OnErrorListener,
-                                                            FFmpegMediaPlayer.OnCompletionListener, FFmpegMediaPlayer.OnInfoListener,
-                                                            FFmpegMediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener{
+public class MixenPlayerService extends Service implements  MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
+                                                            MediaPlayer.OnCompletionListener, MediaPlayer.OnInfoListener,
+                                                            MediaPlayer.OnSeekCompleteListener, AudioManager.OnAudioFocusChangeListener,
+                                                            ConnectionStateCallback, PlayerNotificationCallback{
 
     public static final String play = "ACTION_PLAY";
     public static final String pause = "ACTION_PAUSE";
@@ -53,7 +58,8 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
 
     public static MixenPlayerService instance;
 
-    private FFmpegMediaPlayer player;
+    private MediaPlayer player;
+    public Player spotifyPlayer;
     private MediaSessionCompat mediaSession;
 
     private NoisyAudioReciever noisyAudioReciever;
@@ -61,6 +67,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     private AudioManager audioManager;
     private int bufferTimes;
     private int originalMusicVolume;
+    private boolean isBuffering = false;
 
     public boolean playerHasTrack = false;
     //A catch all boolean for when the player may not actually be playing, but still has a track loaded.
@@ -114,7 +121,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
         context.startService(intent);
     }
 
-    public FFmpegMediaPlayer getPlayer() {
+    public MediaPlayer getPlayer() {
         return player;
     }
     public void initService()
@@ -179,7 +186,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
 
     public void initMusicPlayer(){
 
-        player = new FFmpegMediaPlayer();
+        player = new MediaPlayer();
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
@@ -315,6 +322,10 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
                 player.stop();
                 stopForeground(true);
             }
+            if(isBuffering)
+            {
+                MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
+            }
             currentMetaSong.setAlreadyPlayed();
             player.reset();
             MixenBase.mixenPlayerFrag.cleanUpUI();
@@ -445,6 +456,59 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
+    public void onLoggedIn() {
+        Log.d(Mixen.TAG, "Successfully logged in user.");
+        StartScreen.instance.enableWiFiDiag.dismiss();
+        StartScreen.instance.restoreControls();
+        StartScreen.instance.startActivity(StartScreen.createNewMixen);
+    }
+
+    @Override
+    public void onLoggedOut() {
+        Log.d(Mixen.TAG, "User has logged out.");
+    }
+
+    @Override
+    public void onLoginFailed(Throwable throwable) {
+        Log.e(Mixen.TAG, "Failed to authenticate user.");
+
+        StartScreen.instance.enableWiFiDiag.dismiss();
+        StartScreen.instance.restoreControls();
+
+        if(Mixen.debugFeaturesEnabled)
+        {
+            StartScreen.instance.startActivity(StartScreen.createNewMixen);
+            return;
+        }
+
+        String content = "We had trouble logging into Mixen, please check your username and password and try again later";
+
+        if(throwable.getMessage().contains("Premium"))
+        {
+            content = "Right now you need a Spotify Premium account to stream songs with Mixen.";
+        }
+
+        new MaterialDialog.Builder(StartScreen.instance)
+                .title("Bummer :(")
+                .neutralText("Okay")
+                .content(content)
+                .build()
+                .show();
+    }
+
+    @Override
+    public void onTemporaryError() {
+        Log.d(Mixen.TAG, "Failed to authenticate user, this is a temporary error.");
+        StartScreen.instance.enableWiFiDiag.dismiss();
+        StartScreen.instance.showSpotifyErrorDiag();
+    }
+
+    @Override
+    public void onConnectionMessage(String s) {
+        Log.d(Mixen.TAG, "Received connection message: " + s);
+    }
+
+    @Override
     public void onAudioFocusChange(int audioChange) {
         if(MixenPlayerService.instance.playerIsPlaying())
         {
@@ -488,9 +552,10 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
-    public boolean onInfo(FFmpegMediaPlayer mediaPlayer, int action, int extra) {
+    public boolean onInfo(MediaPlayer mediaPlayer, int action, int extra) {
 
-        if (action == FFmpegMediaPlayer.MEDIA_INFO_BUFFERING_START) {
+        if (action == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
+            isBuffering = true;
             if(!playerIsPlaying())
             {
                 MixenBase.mixenPlayerFrag.hideUIControls(false);
@@ -517,7 +582,8 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
 
             Log.i(Mixen.TAG, "Buffering of media has begun.");
 
-        } else if (action == FFmpegMediaPlayer.MEDIA_INFO_BUFFERING_END && player.isPlaying()) {
+        } else if (action == MediaPlayer.MEDIA_INFO_BUFFERING_END && player.isPlaying()) {
+            isBuffering = false;
             MixenBase.mixenPlayerFrag.restoreUIControls();
 
             Log.i(Mixen.TAG, "Buffering has stopped, and playback should have resumed.");
@@ -526,7 +592,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
-    public void onSeekComplete(FFmpegMediaPlayer mediaPlayer) {
+    public void onSeekComplete(MediaPlayer mediaPlayer) {
         //If the user fast forwards on rewinds, after the required seeking operating completes, restart the media player at
         //the seek-ed to position.
 
@@ -576,7 +642,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
 
 
     @Override
-    public void onCompletion(FFmpegMediaPlayer mediaPlayer) {
+    public void onCompletion(MediaPlayer mediaPlayer) {
 
             unregisterReceiver(noisyAudioReciever);
 
@@ -597,7 +663,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
-    public boolean onError(FFmpegMediaPlayer mediaPlayer, int action, int extra) {
+    public boolean onError(MediaPlayer mediaPlayer, int action, int extra) {
 
         resetAndStopPlayer();
         serviceIsBusy = false;
@@ -625,7 +691,7 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     }
 
     @Override
-    public void onPrepared(FFmpegMediaPlayer mediaPlayer) {
+    public void onPrepared(MediaPlayer mediaPlayer) {
         //After the music player is ready to go, restore UI controls to the user,
         //setup some nice UI stuff, and finally, start playing music.
 
@@ -736,7 +802,6 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
         {
             player.pause();
             MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
-
             if(MixenBase.userHasLeftApp)
             {
                 NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -747,6 +812,11 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
             {
                 setMediaMetaData(PlaybackStateCompat.STATE_PAUSED);
             }
+            if(Mixen.isHost)
+            {
+                currentMetaSong.playback_state = MetaSong.NOW_PLAYING_PAUSED;
+                Mixen.network.sendDataToClients(currentMetaSong);
+            }
         }
         else if(playerHasTrack)
         {
@@ -754,10 +824,8 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
             if (hasAudioFocus())
             {
                 player.start();
-
                 MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
                 MixenBase.mixenPlayerFrag.updateProgressBar();
-
                 if(MixenBase.userHasLeftApp)
                 {
                     startForeground(Mixen.MIXEN_NOTIFY_CODE, updateNotification());
@@ -765,6 +833,11 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
                 if(Mixen.debugFeaturesEnabled)
                 {
                     setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
+                }
+                if(Mixen.isHost)
+                {
+                    currentMetaSong.playback_state = MetaSong.NOW_PLAYING;
+                    Mixen.network.sendDataToClients(currentMetaSong);
                 }
             }
         }
@@ -861,6 +934,15 @@ public class MixenPlayerService extends Service implements  FFmpegMediaPlayer.On
     public void onDestroy() {
         super.onDestroy();
         cleanUpAndShutdown();
+    }
+
+    @Override
+    public void onPlaybackEvent(EventType eventType, PlayerState playerState) {
+    }
+
+    @Override
+    public void onPlaybackError(ErrorType errorType, String s) {
+
     }
 
     private class NoisyAudioReciever extends BroadcastReceiver {

@@ -31,9 +31,10 @@
     <string name="empty_queue">The queue is empty! Add a song to get started.</string>
     <string name="title_activity_tabbed_song_queue">TabbedSongQueue</string>
     <string name="mixen_network_search">Searching for nearby Mixens...</string>
-    <string name="revision_number">Revision 23</string>
-    <string name="build_type">Alpha Build</string>
+    <string name="revision_number">Revision 0 (Spotify)</string>
+    <string name="build_type">Beta Build</string>
     <string name="title_activity_mixen_base">MixenBase</string>
     <string name="empty_users_queue">There are no users connected yet.</string>
+    <string name="title_activity_album_view">AlbumView</string>
 
 </resources>

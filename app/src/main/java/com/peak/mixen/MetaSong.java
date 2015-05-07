@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import com.arasthel.asyncjob.AsyncJob;
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
+import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
 
@@ -41,6 +42,8 @@ public class MetaSong {
     public static final int NOW_PLAYING = 0;
     public static final int NOT_YET_PLAYED = 1;
     public static final int ALREADY_PLAYED = 2;
+    public static final int NOW_PLAYING_PAUSED = 3;
+
 
     public MetaSong(){}
 

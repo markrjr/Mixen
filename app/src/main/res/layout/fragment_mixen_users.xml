@@ -3,18 +3,18 @@
     android:id="@+id/relativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#29221F"
+    android:background="@color/Outer_Space"
     tools:context="com.peak.mixen.MixenUsersFrag">
 
-    <ListView
-        android:id="@+id/queueLV"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentStart="false"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:visibility="invisible"
-        android:background="@color/EXP_2" />
+    <!--<ListView-->
+        <!--android:id="@+id/queueLV"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="fill_parent"-->
+        <!--android:layout_alignParentStart="false"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:layout_centerVertical="true"-->
+        <!--android:visibility="invisible"-->
+        <!--android:background="@color/EXP_2" />-->
 
     <TextView
         android:id="@+id/infoTV"
@@ -28,7 +28,6 @@
         android:textColor="@color/Snow_White"
         android:textSize="40dp"
         android:visibility="visible" />
-
 
 </RelativeLayout>
 

@@ -46,7 +46,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
     public boolean progressBarThreadIsRunning = false;
 
     private boolean pressedPreviousBefore = false;
-    private RotateAnimation recordPlayerAnim;
+    public RotateAnimation recordPlayerAnim;
     private Drawable playDrawable;
     private Drawable pauseDrawable;
     private Thread progressBarUpdateThread;
@@ -129,7 +129,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     public String humanReadableTimeString(int timeInMilliseconds)
     {
-        return DurationFormatUtils.formatDuration(timeInMilliseconds, "m:ss");
+        return DurationFormatUtils.formatDuration(timeInMilliseconds, "mm:ss");
     }
 
     public void hideSongProgressViews()

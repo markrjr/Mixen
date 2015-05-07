@@ -19,6 +19,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import co.arcs.groove.thresher.Client;
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
 
 /**
  * Created by markrjr on 11/24/14.
@@ -28,8 +30,6 @@ public class Mixen {
     public static final int MIXEN_SERVICE_PORT = 35700;
 
     public static final int MIXEN_NOTIFY_CODE = 11;
-
-    public static final int SUCCESSFULLY_HOSTING = 0;
 
     public static final String TAG = "Mixen";
 
@@ -48,6 +48,16 @@ public class Mixen {
     //Song and current session related data.
 
     public static Client grooveSharkSession;
+
+    public static SpotifyApi spotifyAPI;
+
+    public static SpotifyService spotify;
+
+    protected static String spotifyToken;
+
+    protected static final String CLIENT_ID = "fb5c429de70a4aa184ea97dbaa5e8b98";
+
+    protected static final String REDIRECT_URI = "mixen://spotify-auth-callback";
 
     public static Context currentContext;
 

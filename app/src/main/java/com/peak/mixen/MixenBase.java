@@ -20,8 +20,7 @@ import android.widget.Toast;
 import com.nispok.snackbar.SnackbarManager;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Salut;
-import com.peak.salut.SalutP2P;
-import com.peak.salut.Callbacks.SalutCallback;
+
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -32,6 +31,7 @@ import co.arcs.groove.thresher.Client;
 import it.neokree.materialtabs.MaterialTab;
 import it.neokree.materialtabs.MaterialTabHost;
 import it.neokree.materialtabs.MaterialTabListener;
+import kaaes.spotify.webapi.android.SpotifyApi;
 
 
 
@@ -76,7 +76,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         initMixen();
 
-        Log.d(Mixen.TAG, "Mixen UI sucessfully initialized.");
+        Log.d(Mixen.TAG, "Mixen UI sucessfully initialized, will now attempt to authenticate user.");
 
     }
 
@@ -87,7 +87,8 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         Mixen.currentContext = getApplicationContext();
 
         Mixen.grooveSharkSession = new Client();
-        Mixen.grooveSharkSession.setDebugLoggingEnabled(false);
+        Mixen.spotifyAPI = new SpotifyApi();
+        Mixen.spotify = Mixen.spotifyAPI.getService();
 
         if(Mixen.debugFeaturesEnabled)
         {
@@ -95,6 +96,8 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         }
 
     }
+
+
     public void setupTabbedView()
     {
 
@@ -129,7 +132,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         }
         else
         {
-            Mixen.network.startListeningForData(ArrayList.class, new SalutDataCallback() {
+            Mixen.network.startListeningForData(MetaSong.class, new SalutDataCallback() {
                 @Override
                 public void call(final Object data) {
 
@@ -205,6 +208,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
     }
 
+
     private class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
         public ViewPagerAdapter(FragmentManager fm) {
@@ -260,7 +264,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }
-            if(Mixen.network.thisService.isRegistered)
+            if(Mixen.network != null && Mixen.network.thisService.isRegistered)
             {
                 Mixen.network.unregisterClient();
             }

@@ -1,0 +1,43 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.peak.mixen.AlbumView"
+    android:background="@color/Tundora"
+    android:id="@+id/albumViewLayout">
+
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/artistArtBG"
+        android:layout_centerInParent="true" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:visibility="invisible"
+        android:indeterminate="true"
+        android:layout_centerInParent="true" />
+
+    <view
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        class="de.hdodenhof.circleimageview.CircleImageView"
+        android:id="@+id/albumArt"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="15dp" />
+
+    <ListView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/songsLV"
+        android:visibility="invisible"
+        android:layout_below="@+id/albumArt"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentStart="false"
+        android:layout_marginTop="10dp"
+        android:layout_margin="15dp" />
+
+</RelativeLayout>

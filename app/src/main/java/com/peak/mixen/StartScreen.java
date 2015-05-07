@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
@@ -18,19 +18,25 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
-import com.peak.salut.Callbacks.SalutServiceCallback;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutDevice;
 import com.peak.salut.SalutP2P;
 import com.peak.salut.Callbacks.SalutCallback;
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
+import com.spotify.sdk.android.player.Config;
+import com.spotify.sdk.android.player.Player;
+import com.spotify.sdk.android.player.Spotify;
 
 import java.util.ArrayList;
 
 
 public class StartScreen extends Activity implements View.OnClickListener{
     private boolean pressedBefore = false;
-    private Intent createNewMixen;
-    private MaterialDialog enableWiFiDiag;
+    public static Intent createNewMixen;
+    public static StartScreen instance;
+    public MaterialDialog enableWiFiDiag;
     private MaterialDialog wiFiFailureDiag;
     private MaterialDialog findingMixensProgress;
     private MaterialDialog cleanUpDialog;
@@ -92,6 +98,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
             }
         });
 
+        instance = this;
     }
 
     private boolean isFirstRun()
@@ -99,6 +106,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
         boolean isFirstRun = true;
 
         Mixen.username = Mixen.sharedPref.getString("username", "Anonymous");
+        Mixen.spotifyToken = Mixen.sharedPref.getString("SESSION_TOKEN", "NotYetAuthenticated");
 
         if(!Mixen.username.equals("Anonymous"))
             isFirstRun = false;
@@ -107,10 +115,43 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
     }
 
+    public void startMixen()
+    {
+        Config playerConfig = new Config(this, Mixen.spotifyToken, Mixen.CLIENT_ID);
+        MixenPlayerService.instance.spotifyPlayer = Spotify.getPlayer(playerConfig, MixenPlayerService.instance, new Player.InitializationObserver() {
+            @Override
+            public void onInitialized(Player player) {
+                MixenPlayerService.instance.spotifyPlayer.addConnectionStateCallback(MixenPlayerService.instance);
+                MixenPlayerService.instance.spotifyPlayer.addPlayerNotificationCallback(MixenPlayerService.instance);
+                //mPlayer.play("spotify:track:2TpxZ7JUBn3uw46aR7qd6V");
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.e(Mixen.TAG, "An error occurred while attempting to start some part of the Spotify framework. " + throwable.getMessage());
+                showSpotifyErrorDiag();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    private void authenticateSpotifyUser()
+    {
+        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(Mixen.CLIENT_ID,
+                AuthenticationResponse.Type.TOKEN,
+                Mixen.REDIRECT_URI);
+        builder.setScopes(new String[]{"user-read-private", "streaming"});
+        AuthenticationRequest request = builder.build();
+        AuthenticationClient.openLoginActivity(this, Mixen.MIXEN_SERVICE_PORT, request);
+    }
+
     private void createDialogs()
     {
         findingMixensProgress = new MaterialDialog.Builder(this)
-                .autoDismiss(false)
                 .title("Searching for nearby Mixens...")
                 .content("Please wait...")
                 .theme(Theme.DARK)
@@ -125,14 +166,14 @@ public class StartScreen extends Activity implements View.OnClickListener{
                     @Override
                     public void onDismiss(DialogInterface dialog) {
                         restoreControls();
+                        enableWiFiDiag.dismiss();
                     }
                 })
                 .build();
 
         enableWiFiDiag = new MaterialDialog.Builder(this)
-                .autoDismiss(false)
                 .title("Just a sec...")
-                .content("We're turning on WiFi...")
+                .content("We're setting up a few things.")
                 .progress(true, 0)
                 .dismissListener(new DialogInterface.OnDismissListener() {
                     @Override
@@ -140,6 +181,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
                         restoreControls();
                     }
                 })
+                .cancelable(false)
                 .build();
 
         wiFiFailureDiag = new MaterialDialog.Builder(this)
@@ -150,8 +192,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
     }
     public void clearAppSettings()
     {
-        //If the user has pressed the back button twice at this point kill the app.
-
         Mixen.sharedPref.edit().clear().apply();
         Toast.makeText(getApplicationContext(),
                 "Removed all settings. Please restart the app.", Toast.LENGTH_SHORT)
@@ -170,14 +210,10 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
                 Mixen.isHost = true;
 
-                //In order to stream down songs, the user must obviously have a connection to the internet.
-                startService(new Intent(this, MixenPlayerService.class).setAction(MixenPlayerService.init));
+                hideControls();
 
-                Log.i(Mixen.TAG, "Skipping network connection check...");
+                authenticateSpotifyUser();
 
-                startActivity(createNewMixen);
-
-                restoreControls();
                 return;
 
             case R.id.findMixen: {
@@ -292,18 +328,33 @@ public class StartScreen extends Activity implements View.OnClickListener{
         }
     }
 
+    public void showSpotifyErrorDiag()
+    {
+        new MaterialDialog.Builder(this)
+                .dismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        restoreControls();
+                    }
+                })
+                .neutralText("Okay")
+                .title("Bummer :(")
+                .content("We had a problem connecting to Spotify, please double check your network connection and try again.")
+                .build()
+                .show();
+    }
+
 
     public void checkWiFiConfig(final View v) {
 
         if(!SalutP2P.isWiFiEnabled(this))
         {
             enableWiFiDiag.show();
-            SalutP2P.enableWiFi(getApplicationContext());
+            //SalutP2P.enableWiFi(getApplicationContext());
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     handleButtonClicks(v);
-                    enableWiFiDiag.dismiss();
                 }
             }, 2500);
         }
@@ -388,6 +439,11 @@ public class StartScreen extends Activity implements View.OnClickListener{
         }
         else
         {
+            if(MixenPlayerService.instance == null)
+            {
+                startService(new Intent(this, MixenPlayerService.class).setAction(MixenPlayerService.init));
+            }
+
             if(Mixen.debugFeaturesEnabled)
             {
                 hideControls();
@@ -398,6 +454,30 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 handleButtonClicks(v);
             }
 
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Mixen.MIXEN_SERVICE_PORT) {
+            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, data);
+
+            switch (response.getType()) {
+                // Response was successful and contains auth token
+                case TOKEN:
+                    Mixen.spotifyToken = response.getAccessToken();
+                    Mixen.sharedPref.edit().putString("SESSION_TOKEN", Mixen.spotifyToken);
+                    Mixen.sharedPref.edit().apply();
+                    startMixen();
+                    break;
+
+                default:
+                    StartScreen.instance.enableWiFiDiag.dismiss();
+                    showSpotifyErrorDiag();
+                    break;
+            }
         }
     }
 }
