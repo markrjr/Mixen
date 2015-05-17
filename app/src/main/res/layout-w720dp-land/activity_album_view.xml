@@ -1,0 +1,54 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    tools:context="com.peak.mixen.AlbumView"
+    android:background="@color/Tundora"
+    android:id="@+id/albumViewLayout">
+
+
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/albumArtHeader"
+        android:layout_alignParentTop="true"
+        android:visibility="invisible"
+        android:layout_toRightOf="@+id/songsLV"
+        android:layout_toEndOf="@+id/songsLV" />
+
+    <view
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        class="de.hdodenhof.circleimageview.CircleImageView"
+        android:id="@+id/artistArtHeader"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/progressBar"
+        android:layout_toStartOf="@+id/progressBar"
+        android:layout_marginTop="-75dp"
+        android:layout_marginBottom="-75dp"
+        android:layout_marginRight="-20dp" />
+
+    <ListView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/songsLV"
+        android:visibility="invisible"
+        android:scrollingCache="false"
+        android:headerDividersEnabled="true"
+        android:footerDividersEnabled="false"
+        android:overScrollMode="never"
+        android:background="@color/Tundora"
+        android:layout_alignRight="@+id/progressBar"
+        android:layout_alignEnd="@+id/progressBar"
+        android:layout_marginTop="250dp" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:visibility="visible"
+        android:indeterminate="true"
+        android:layout_centerInParent="true" />
+
+</RelativeLayout>

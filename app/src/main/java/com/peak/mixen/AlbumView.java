@@ -1,46 +1,53 @@
 package com.peak.mixen;
 
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.melnykov.fab.FloatingActionButton;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
 import com.peak.mixen.Utils.HeaderListAdapter;
 import com.peak.mixen.Utils.HeaderListCell;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 
-import app.majestylabs.helpers.ImageBlurrer;
 import de.hdodenhof.circleimageview.CircleImageView;
 import kaaes.spotify.webapi.android.SpotifyCallback;
 import kaaes.spotify.webapi.android.SpotifyError;
 import kaaes.spotify.webapi.android.models.Album;
+import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistSimple;
 import kaaes.spotify.webapi.android.models.TrackSimple;
 import retrofit.client.Response;
 
 
-public class AlbumView extends ActionBarActivity {
+public class AlbumView extends ActionBarActivity implements View.OnClickListener {
 
-    private ImageView artistArtBackgroundIV;
-    private CircleImageView albumArtIV;
     private ListView songsLV;
     private String albumID;
+    private Album foundAlbum;
     private ProgressBar progressBar;
+    private ImageView albumArtHeader;
+    private CircleImageView artistArtHeader;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,19 +56,33 @@ public class AlbumView extends ActionBarActivity {
 
         getSupportActionBar().setTitle("");
 
-        artistArtBackgroundIV = (ImageView) findViewById(R.id.artistArtBG);
-        albumArtIV = (CircleImageView) findViewById(R.id.albumArt);
         songsLV = (ListView) findViewById(R.id.songsLV);
+        albumArtHeader = (ImageView) findViewById(R.id.albumArtHeader);
+        artistArtHeader = (CircleImageView) findViewById(R.id.artistArtHeader);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        fab = (FloatingActionButton) findViewById(R.id.playAlbumBtn);
+
+        fab.setOnClickListener(this);
 
         progressBar.getIndeterminateDrawable().setColorFilter(
                 getResources().getColor(R.color.Snow_White),
                 android.graphics.PorterDuff.Mode.SRC_IN);
 
-        progressBar.setVisibility(View.VISIBLE);
+        onNewIntent(getIntent());
+    }
 
-        if(getIntent().getExtras() == null)
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        handleIntent(intent);
+    }
+
+    public void handleIntent(Intent intent)
+    {
+        if(intent.getExtras() == null)
         {
+            this.finish();
             return;
         }
         else
@@ -70,7 +91,6 @@ public class AlbumView extends ActionBarActivity {
         }
 
         getAlbum();
-
     }
 
     public void getAlbum()
@@ -92,6 +112,10 @@ public class AlbumView extends ActionBarActivity {
 
             @Override
             public void success(final Album album, Response response) {
+
+                foundAlbum = album;
+
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -99,7 +123,20 @@ public class AlbumView extends ActionBarActivity {
                     }
                 });
 
-                getArtistArt(album.artists.get(0).id);
+                if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+                {
+                    //If we're on a tablet, we're in landscape and the album view has a slightly different layout to take advantage of the extra space.
+                    getArtistArt(album.artists.get(0).id);
+                }
+                else
+                {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            fab.setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
             }
         });
     }
@@ -125,24 +162,7 @@ public class AlbumView extends ActionBarActivity {
                     public void run() {
                         Picasso.with(getApplicationContext())
                                 .load(artist.images.get(0).url)
-                                .into(new Target() {
-                                    @Override
-                                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                        Bitmap blurredArtistArt = ImageBlurrer.blurImage(getApplicationContext(), bitmap, 12.5f, 1.25f);
-                                        artistArtBackgroundIV.setImageBitmap(blurredArtistArt);
-                                        artistArtBackgroundIV.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                                    }
-
-                                    @Override
-                                    public void onBitmapFailed(Drawable errorDrawable) {
-
-                                    }
-
-                                    @Override
-                                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                    }
-                                });
+                                .into(artistArtHeader);
                     }
                 });
             }
@@ -158,14 +178,18 @@ public class AlbumView extends ActionBarActivity {
             String albumArtURL = album.images.get(0).url;
             Picasso.with(getApplicationContext())
                     .load(albumArtURL)
-                    .placeholder(R.drawable.mixen_icon)
-                    .fit()
-                    .into(albumArtIV);
-            albumArtIV.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            albumArtIV.setVisibility(View.INVISIBLE);
+                    .into(albumArtHeader, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            albumArtHeader.setVisibility(View.VISIBLE);
+                        }
+
+                        @Override
+                        public void onError() {
+
+                        }
+                    });
+
         }
 
         if(album.artists.size() == 1)
@@ -194,12 +218,27 @@ public class AlbumView extends ActionBarActivity {
         cellLists.add(sectionCell);
         for(TrackSimple track : albumTracks)
         {
-            cellLists.add(new HeaderListCell(track.name, SearchSongs.humanReadableTimeString(track.duration_ms)));
+            cellLists.add(new HeaderListCell(track));
         }
 
         HeaderListAdapter headerListAdapter = new HeaderListAdapter(getApplicationContext(), cellLists);
 
+        songsLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // ListView Clicked item value
+                HeaderListCell selected = (HeaderListCell) songsLV.getItemAtPosition(position);
+
+
+                if (selected.hiddenCategory.equals("SONG")) {
+                    SearchSongs.addTrackToQueue(AlbumView.this, selected.trackSimple, true);
+                }
+
+            }
+        });
+
         // Assign adapter to ListView
+
         songsLV.setAdapter(headerListAdapter);
 
         progressBar.setVisibility(View.INVISIBLE);
@@ -210,7 +249,28 @@ public class AlbumView extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_mixen_base, menu);
+        getMenuInflater().inflate(R.menu.menu_album_view, menu);
         return true;
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        if(v.getId() == R.id.playAlbumBtn)
+        {
+            if(foundAlbum != null)
+            {
+                for(TrackSimple track : foundAlbum.tracks.items)
+                {
+                    SearchSongs.addTrackToQueue(AlbumView.this, track, false);
+                    SnackbarManager.show(
+                            Snackbar.with(this)
+                                    .text("Added " + foundAlbum.name)
+                            //.actionLabel("Undo")
+                            //.actionColor(Color.YELLOW)
+                            , this);
+                }
+            }
+        }
     }
 }

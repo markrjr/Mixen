@@ -63,7 +63,8 @@
         <activity
             android:name=".MixenBase"
             android:label="@string/title_activity_mixen_base"
-            android:screenOrientation="nosensor" >
+            android:screenOrientation="nosensor"
+            android:launchMode="singleTask">
         </activity>
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
@@ -71,7 +72,8 @@
         <activity
             android:name=".AlbumView"
             android:label="@string/title_activity_album_view"
-            android:screenOrientation="nosensor" >
+            android:screenOrientation="nosensor"
+            android:launchMode="singleTop">
         </activity>
     </application>
 

@@ -1,7 +1,6 @@
 package com.peak.mixen;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,12 +21,7 @@ import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Salut;
 
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import co.arcs.groove.thresher.Client;
 import it.neokree.materialtabs.MaterialTab;
 import it.neokree.materialtabs.MaterialTabHost;
 import it.neokree.materialtabs.MaterialTabListener;
@@ -64,7 +58,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         TabNames.add("Up Next");
         TabNames.add("Now Playing");
 
-        if (Mixen.debugFeaturesEnabled && Mixen.isHost) {
+        if (Mixen.isHost) {
             TabNames.add("Users");
             mixenUsersFrag = new MixenUsersFrag();
         }
@@ -76,25 +70,17 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
         initMixen();
 
-        Log.d(Mixen.TAG, "Mixen UI sucessfully initialized, will now attempt to authenticate user.");
+        Log.d(Mixen.TAG, "Mixen UI sucessfully initialized.");
 
     }
 
 
     public void initMixen()
     {
-
         Mixen.currentContext = getApplicationContext();
-
-        Mixen.grooveSharkSession = new Client();
         Mixen.spotifyAPI = new SpotifyApi();
         Mixen.spotify = Mixen.spotifyAPI.getService();
-
-        if(Mixen.debugFeaturesEnabled)
-        {
-            setupMixenNetwork();
-        }
-
+        setupMixenNetwork();
     }
 
 
@@ -132,11 +118,11 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         }
         else
         {
-            Mixen.network.startListeningForData(MetaSong.class, new SalutDataCallback() {
+            Mixen.network.startListeningForData(MetaTrack.class, new SalutDataCallback() {
                 @Override
                 public void call(final Object data) {
 
-                    mixenPlayerFrag.prepareClientUI((MetaSong)data);
+                    mixenPlayerFrag.prepareClientUI((MetaTrack)data);
 
                 }
             });
@@ -155,9 +141,9 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     protected void onPause() {
         super.onPause();
         userHasLeftApp = true;
-        if(MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying())
+        if(MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying)
         {
-            MixenPlayerService.instance.startForeground(Mixen.MIXEN_NOTIFY_CODE, MixenPlayerService.instance.updateNotification());
+            MixenPlayerService.instance.startForeground(Mixen.MIXEN_NOTIFY_CODE, MixenPlayerService.instance.updateNotification(true));
             //Checking for pressedBefore fixes some illegal state exception caused by calling playerIsPlaying as the app is exiting.
         }
     }
@@ -269,7 +255,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
                 Mixen.network.unregisterClient();
             }
 
-            this.finish();
+            super.onBackPressed();
             return;
 
         }

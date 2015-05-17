@@ -1,9 +1,9 @@
 package com.peak.mixen;
 
 
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
 import android.text.TextUtils;
@@ -25,11 +25,12 @@ import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.lzyzsd.circleprogress.ArcProgress;
+import com.spotify.sdk.android.player.PlayerState;
+import com.spotify.sdk.android.player.PlayerStateCallback;
+import com.squareup.picasso.Picasso;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import java.util.Random;
-
-import javax.annotation.Nullable;
 
 
 public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
@@ -99,8 +100,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         skipTrackBtn.setOnClickListener(this);
         previousTrackBtn.setOnClickListener(this);
 
-        //setupSkipControlListeners();
-
 
         bufferPB.getIndeterminateDrawable().setColorFilter(
                 getResources().getColor(R.color.Snow_White),
@@ -154,12 +153,12 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
             setupProgressBarThread();
         }
 
-        if(MixenPlayerService.instance.isRunning && MixenPlayerFrag.this.isRunning && MixenPlayerService.instance.playerIsPlaying())
+        if(MixenPlayerService.instance.isRunning && MixenPlayerFrag.this.isRunning && MixenPlayerService.instance.playerIsPlaying)
         {
-            String songDuration = humanReadableTimeString(MixenPlayerService.instance.getCurrentSongDuration());
+            String songDuration = humanReadableTimeString(MixenPlayerService.instance.currentMetaTrack.duration);
 
             songDurationTV.setText("" + songDuration);
-            arcProgressBar.setMax(MixenPlayerService.instance.getCurrentSongDuration());
+            arcProgressBar.setMax(MixenPlayerService.instance.currentMetaTrack.duration);
 
             if(!progressBarThreadIsRunning)
             {
@@ -187,41 +186,28 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     public void prepareHostUI()
     {
-        titleTV.setText(MixenPlayerService.instance.currentSong.getName());
-        artistTV.setText(MixenPlayerService.instance.currentSong.getArtistName());
+        titleTV.setText(MixenPlayerService.instance.currentMetaTrack.name);
+        artistTV.setText(MixenPlayerService.instance.currentMetaTrack.artist);
 
-        if (hasAlbumArt()) {
+        Picasso.with(getActivity().getApplicationContext())
+                .load(MixenPlayerService.instance.currentMetaTrack.albumArtURL)
+                .into(albumArtIV);
 
-            if(MixenPlayerService.instance.previousAlbumArt.containsKey(MixenPlayerService.instance.currentMetaSong.albumArtURL))
-            {
-                MixenPlayerService.instance.currentMetaSong.albumArt = MixenPlayerService.instance.previousAlbumArt.get(MixenPlayerService.instance.currentMetaSong.albumArtURL);
-                albumArtIV.setImageBitmap(MixenPlayerService.instance.currentMetaSong.albumArt);
-                generateAlbumArtPalette(MixenPlayerService.instance.currentMetaSong);
-                Log.d(Mixen.TAG, "Using cached album art.");
-            }
-            else
-            {
-                Log.i(Mixen.TAG, "Will download album art.");
-            }
 
-        } else {
+        Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentMetaTrack.name + " : " + MixenPlayerService.instance.currentMetaTrack.artist);
 
-            Log.i(Mixen.TAG, "The current song does not have album art, will set a random color.");
-
+        if(albumArtIV.getAnimation() != null && !albumArtIV.getAnimation().hasStarted() && albumArtIV.getAnimation().hasEnded())
+        {
+            startRotateAnimation();
         }
-
-        Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentSong.getName() + " : " + MixenPlayerService.instance.currentSong.getArtistName());
-
-        startRotateAnimation();
         updateUpNext();
 
     }
 
-    public void prepareClientUI(MetaSong song)
+    public void prepareClientUI(MetaTrack song)
     {
         titleTV.setText(song.name);
         artistTV.setText(song.artist);
-        song.downloadAlbumArtForService(false);
         startRotateAnimation();
     }
 
@@ -234,13 +220,12 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         }
         else if(MixenPlayerService.instance.getNextTrack() != null)
         {
-            MixenBase.mixenPlayerFrag.upNextTV.setText("Next: \n" + MixenPlayerService.instance.getNextTrack().getName());
+            MixenBase.mixenPlayerFrag.upNextTV.setText("Next: \n" + MixenPlayerService.instance.getNextTrack().name);
         }
         else
         {
             upNextTV.setText("");
         }
-
     }
 
     public void setupProgressBarThread()
@@ -252,20 +237,28 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                 progressBarThreadIsRunning = true;
                 while(MixenPlayerService.instance.isRunning && MixenPlayerFrag.this.isRunning)
                 {
-                    MixenBase.mixenPlayerFrag.getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
 
-                            if(MixenPlayerService.instance.playerIsPlaying())
-                            {
-                                String songProgress = humanReadableTimeString(MixenPlayerService.instance.getCurrentSongProgress());
+                    if(MixenPlayerService.instance.playerIsPlaying)
+                    {
 
-                                MixenBase.mixenPlayerFrag.songProgressTV.setText("" + songProgress);
-                                MixenBase.mixenPlayerFrag.arcProgressBar.setProgress(MixenPlayerService.instance.getCurrentSongProgress());
+                        MixenPlayerService.instance.spotifyPlayer.getPlayerState(new PlayerStateCallback() {
+                            @Override
+                            public void onPlayerState(final PlayerState playerState) {
+                                MixenBase.mixenPlayerFrag.getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                        String songProgress = humanReadableTimeString(playerState.positionInMs);
+
+                                        MixenBase.mixenPlayerFrag.songProgressTV.setText("" + songProgress);
+                                        MixenBase.mixenPlayerFrag.arcProgressBar.setProgress(playerState.positionInMs);
+
+                                    }
+                                });
                             }
+                        });
 
-                        }
-                    });
+                    }
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
@@ -281,7 +274,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     }
 
-    public void generateAlbumArtPalette(MetaSong song)
+    public void generateAlbumArtPalette(MetaTrack song)
     {
 
         Palette.generateAsync(song.albumArt, new Palette.PaletteAsyncListener() {
@@ -395,16 +388,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     }
 
-    public static boolean hasAlbumArt()
-    {
-        if(MixenPlayerService.instance.currentSong.getCoverArtFilename().equals("") || MixenPlayerService.instance.currentSong.getCoverArtFilename() == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     public void restoreUIControls()
     {
         //Show the media controls.
@@ -419,29 +402,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         previousTrackBtn.setClickable(true);
     }
 
-    public void setupSkipControlListeners()
-    {
-        fastForwardIB.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, final MotionEvent event) {
-                v.setClickable(false);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerHasTrack)
-                        {
-                            MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.pause);
-                            MixenPlayerService.instance.getPlayer().seekTo(MixenPlayerService.instance.getCurrentSongProgress() + (int)event.getEventTime()/100000);
-                            Log.d(Mixen.TAG, "Attempting to skip forward " + event.getEventTime()/100000 + " seconds");
-                        }
-
-                    }
-                }).start();
-                v.setClickable(true);
-                return true;
-            }
-        });
-    }
 
     @Override
     public void onClick(View v)
@@ -450,44 +410,20 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         {
             case R.id.playPauseButton:
             {
-                if(MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerIsPlaying())
-                {
-                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.pause);
-
-                }
-                else if (MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerHasTrack)
-                {
-                    //To fix a fringe bug.
-                    if(MixenPlayerService.instance.getCurrentSongDuration() == 0)
-                    {
-                        MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
-                        new MaterialDialog.Builder(MixenBase.mixenPlayerFrag.getActivity())
-                                .title("Bummer :(")
-                                .content(R.string.generic_streaming_error)
-                                .neutralText("Okay")
-                                .show();
-
-                    }
-
-                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.play);
-
-                }
-
+                MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.changePlayBackState);
                 return;
             }
 
             case R.id.fastForwardBtn:
             {
-                if(MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerIsPlaying())
-                {
-                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.fastForward);
-                }
+
+                MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.fastForward);
                 return;
             }
 
             case R.id.rewindBtn:
             {
-                if(MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerIsPlaying())
+                if(MixenPlayerService.instance.isRunning && MixenPlayerService.instance.playerIsPlaying)
                 {
                     MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.rewind);
                 }

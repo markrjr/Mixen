@@ -56,7 +56,6 @@ dependencies {
     compile 'com.spotify.sdk:spotify-player:1.0.0-beta10@aar'
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.squareup.okhttp:okhttp:2.2.0'
-    compile 'co.arcs.groove:thresher:1.2.1'
     //Misc
     compile 'com.arasthel:asyncjob-library:1.0.3'
     apt 'com.bluelinelabs:logansquare-compiler:1.0.6'
@@ -77,5 +76,4 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:21.0.0'
     compile 'com.android.support:support-v4:21.0.0'
     compile 'com.android.support:appcompat-v7:21.0.0'
-    compile files('libs/imageblurrer.jar')
 }

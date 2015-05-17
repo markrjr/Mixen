@@ -35,8 +35,6 @@ public class Salut{
     private static final int MAX_CLIENT_CONNECTIONS = 5;
     private static final int MAX_SERVER_CONNECTIONS = 25;
     private Activity currentActivity;
-    private boolean foundDeviceInTime = false;
-    private boolean timeoutDiscoveryUsed;
 
     //Service Objects
     public SalutDevice thisService;
@@ -44,6 +42,8 @@ public class Salut{
     public ArrayList<SalutDevice> foundHostServices;
     public ArrayList<Object> newDataForClients;
     private boolean isRunningAsHost = false;
+    private boolean foundDeviceInTime = false;
+    private boolean timeoutDiscoveryUsed;
 
 
     //Connection Objects
@@ -80,6 +80,12 @@ public class Salut{
         thisService.instanceName = instanceName + "-" + thisService.macAddress.hashCode();
         thisService.TTP = thisService.serviceName + thisService.TTP;
         thisService.servicePort = servicePort;
+    }
+
+    public static boolean isWiFiEnabled(Context context)
+    {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        return wifiManager.isWifiEnabled();
     }
 
     private void findRandomOpenPort()
@@ -279,7 +285,6 @@ public class Salut{
 
 
     }
-
     private void updateNewClient(SalutDevice newlyRegisteredDevice)
     {
         if(!newDataForClients.isEmpty())
@@ -356,6 +361,8 @@ public class Salut{
                     }
                 }
         };
+
+        AsyncJob.doInBackground(serviceServer);
     }
 
     private void startRegistrationForClient(final NsdServiceInfo hostService)
@@ -478,6 +485,7 @@ public class Salut{
                 {
                     serverSocket.close();
                     clientSocket.close();
+                    //TODO Notify all clients of disconnect.
                 }
                 catch(Exception ex)
                 {

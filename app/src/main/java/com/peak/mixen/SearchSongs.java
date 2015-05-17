@@ -1,18 +1,23 @@
 package com.peak.mixen;
 
 
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.ActionMenuView;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
@@ -25,7 +30,6 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import co.arcs.groove.thresher.Song;
 import kaaes.spotify.webapi.android.SpotifyCallback;
 import kaaes.spotify.webapi.android.SpotifyError;
 import kaaes.spotify.webapi.android.models.AlbumSimple;
@@ -33,6 +37,8 @@ import kaaes.spotify.webapi.android.models.AlbumsPager;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TrackSimple;
 import kaaes.spotify.webapi.android.models.TracksPager;
+import retrofit.Callback;
+import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 
@@ -42,12 +48,13 @@ public class SearchSongs extends ActionBarActivity{
     private ListView songsLV;
     public boolean isFirstSong;
     public static SearchSongs instance;
-    private ArrayList<HeaderListCell> cellLists;
+    private ArrayList<HeaderListCell> fullCellList;
+    private ArrayList<HeaderListCell> specificCellList;
     private List<AlbumSimple> foundAlbums;
     private List<Track> foundTracks;
     private HeaderListAdapter headerListAdapter;
     private boolean fullListIsVisible = true;
-    private ArrayList<HeaderListCell> fullCellList;
+    private MenuItem searchField;
 
 
 
@@ -67,14 +74,16 @@ public class SearchSongs extends ActionBarActivity{
                 getResources().getColor(R.color.Snow_White),
                 android.graphics.PorterDuff.Mode.SRC_IN);
 
-        setupListAdapter();
+        fullCellList = new ArrayList<>();
+        specificCellList = new ArrayList<>();
+
+        setupListAdapter(fullCellList);
 
         instance = this;
     }
 
     private void searchSpotify(String query)
     {
-        cellLists.removeAll(cellLists);
         fullCellList.removeAll(fullCellList);
 
         Mixen.spotify.searchTracks(query, new SpotifyCallback<TracksPager>() {
@@ -113,19 +122,7 @@ public class SearchSongs extends ActionBarActivity{
 
             @Override
             public void failure(SpotifyError spotifyError) {
-
-                new MaterialDialog.Builder(SearchSongs.instance)
-                        .title("Bummer :(")
-                        .showListener(new DialogInterface.OnShowListener() {
-                            @Override
-                            public void onShow(DialogInterface dialog) {
-                                indeterminateProgress.setVisibility(View.GONE);
-                            }
-                        })
-                        .content(R.string.generic_network_error)
-                        .neutralText("Okay")
-                        .show();
-                return;
+                Log.d(Mixen.TAG, "Failed to get albums.");
             }
 
             @Override
@@ -175,12 +172,12 @@ public class SearchSongs extends ActionBarActivity{
         {
             HeaderListCell sectionCell = new HeaderListCell("SONGS", null);
             sectionCell.setToSectionHeader();
-            cellLists.add(sectionCell);
+            fullCellList.add(sectionCell);
             foundTracks = ((TracksPager) searchResults).tracks.items;
             int added = 0;
             for(Object track : foundTracks)
             {
-                cellLists.add(new HeaderListCell(((Track) track).name, humanReadableTimeString(((Track) track).duration_ms)));
+                fullCellList.add(new HeaderListCell(((Track) track)));
                 added++;
 
                 if(added == 4)
@@ -191,18 +188,18 @@ public class SearchSongs extends ActionBarActivity{
 
             HeaderListCell moreItemsCell = new HeaderListCell(((TracksPager) searchResults).tracks.items.size() + " MORE...", null);
             moreItemsCell.hiddenCategory = "EXTRA_SONGS";
-            cellLists.add(moreItemsCell);
+            fullCellList.add(moreItemsCell);
         }
         else if(searchResults instanceof AlbumsPager)
         {
             HeaderListCell sectionCell = new HeaderListCell("ALBUMS", null);
             sectionCell.setToSectionHeader();
-            cellLists.add(sectionCell);
+            fullCellList.add(sectionCell);
             foundAlbums = ((AlbumsPager) searchResults).albums.items;
             int added = 0;
             for(Object album : foundAlbums)
             {
-                cellLists.add(new HeaderListCell(((AlbumSimple) album).name, null));
+                fullCellList.add(new HeaderListCell(((AlbumSimple) album).name, null, "ALBUM"));
                 added++;
 
                 if(added == 4)
@@ -213,52 +210,43 @@ public class SearchSongs extends ActionBarActivity{
 
             HeaderListCell moreItemsCell = new HeaderListCell(((AlbumsPager) searchResults).albums.items.size() + " MORE...", null);
             moreItemsCell.hiddenCategory = "EXTRA_ALBUMS";
-            cellLists.add(moreItemsCell);
+            fullCellList.add(moreItemsCell);
 
         headerListAdapter.notifyDataSetChanged();
-
         }
-
         fullListIsVisible = true;
-        fullCellList = cellLists;
     }
 
     private void populateSpecificListView(String typeOfResults)
     {
-        cellLists.removeAll(cellLists);
+        setupListAdapter(specificCellList);
+        specificCellList.removeAll(specificCellList);
 
         HeaderListCell sectionCell = new HeaderListCell("FOUND " + typeOfResults, null);
         sectionCell.setToSectionHeader();
-        cellLists.add(sectionCell);
-        if(typeOfResults.equals("ALBUM"))
+        specificCellList.add(sectionCell);
+        if(typeOfResults.equals("ALBUMS"))
         {
             for(Object album : foundAlbums)
             {
-                cellLists.add(new HeaderListCell(((AlbumSimple) album).name, null));
+                specificCellList.add(new HeaderListCell(((AlbumSimple) album).name, null, "ALBUM"));
             }
         }
         else if(typeOfResults.equals("SONGS"))
         {
             for(Object track : foundTracks)
             {
-                cellLists.add(new HeaderListCell(((TrackSimple) track).name, null));
+                specificCellList.add(new HeaderListCell(((TrackSimple) track)));
             }
         }
 
         fullListIsVisible = false;
-        headerListAdapter.notifyDataSetChanged();
     }
 
 
-    private void setupListAdapter()
+    private void setupListAdapter(ArrayList<HeaderListCell> listOfCells)
     {
-        if(cellLists == null)
-        {
-            cellLists = new ArrayList<>();
-            fullCellList = new ArrayList<>();
-        }
-
-        headerListAdapter = new HeaderListAdapter(getApplicationContext(), cellLists);
+        headerListAdapter = new HeaderListAdapter(getApplicationContext(), listOfCells);
 
         // Assign adapter to ListView
         songsLV.setAdapter(headerListAdapter);
@@ -271,101 +259,105 @@ public class SearchSongs extends ActionBarActivity{
                                     final int position, long id) {
 
                 // ListView Clicked item value
-                HeaderListCell selected = (HeaderListCell) songsLV.getItemAtPosition(position);
+                final HeaderListCell selected = (HeaderListCell) songsLV.getItemAtPosition(position);
                 Intent viewAlbumInfo = new Intent(SearchSongs.this, AlbumView.class);
 
-                if (selected.getCategory() == null) {
-                    //Show the rest of the search results.
-                    if (selected.getName().contains("MORE")) {
-                        if(selected.hiddenCategory.equals("EXTRA_SONGS"))
-                        {
-                            populateSpecificListView("SONGS");
-                        }
-                        else if(selected.hiddenCategory.equals("EXTRA_ALBUMS"))
-                        {
-                            populateSpecificListView("ALBUMS");
-                        }
-                    } else {
+
+                    if(selected.hiddenCategory.equals("EXTRA_SONGS"))
+                    {
+                        populateSpecificListView("SONGS");
+                    }
+                    else if(selected.hiddenCategory.equals("EXTRA_ALBUMS"))
+                    {
+                        populateSpecificListView("ALBUMS");
+                    }
+                    else if(selected.hiddenCategory.equals("SONG"))
+                    {
+                        addTrackToQueue(SearchSongs.this, selected.trackSimple, true);
+
+                    } else if(selected.hiddenCategory.equals("ALBUM"))
+                    {
                         //Show a single album view.
                         for (AlbumSimple foundAlbum : foundAlbums) {
                             if (selected.getName().equals(foundAlbum.name)) {
                                 viewAlbumInfo.putExtra("REQUESTED_ALBUM_ID", foundAlbum.id);
                                 startActivity(viewAlbumInfo);
                             }
-                        }
                     }
-                } else {
-                    //This is a song.
-                    signalPlaybackOrSendData();
                 }
             }
-
         });
 
     }
-
-    private void signalPlaybackOrSendData()
+    public static void addTrackToQueue(final Activity activity, final TrackSimple track, boolean showSnackBar)
     {
         if(Mixen.isHost)
         {
-//                    if(MixenPlayerService.instance.currentSong != null && MixenPlayerService.instance.currentSong == selected)
-//                    {
-//                        Toast.makeText(getApplicationContext(), "This song has already been added.", Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
 
-            //addSongToQueue(selected);
-            //TODO Fix undo action flow.
-
-//                    SnackbarManager.show(
-//                            Snackbar.with(getApplicationContext())
-//                                    .text("Added " + selected.name)
-//                            //.actionLabel("Undo")
-//                            //.actionColor(Color.YELLOW)
-//                            , SearchSongs.this);
-        }
-    }
-
-    public void addSongToQueue(Song song)
-    {
-        MetaSong metaSong = new MetaSong(song, MetaSong.NOT_YET_PLAYED);
-
-        if(Mixen.isHost)
-        {
-            metaSong.isProposed = false;
-        }
-        else
-        {
-            metaSong.isProposed = true;
-        }
-
-        if(MixenPlayerService.instance.queuedSongs.isEmpty())
-        {
-            Log.i(Mixen.TAG, "First song added to queue.");
-            MixenPlayerService.instance.queuedSongs.add(song);
-            MixenPlayerService.instance.proposedSongs.add(metaSong);
-            MixenPlayerService.instance.queueSongPosition = 0;
-            MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.getSongStreamURL);
-            isFirstSong = true;
-        }
-        else
-        {
-            isFirstSong = false;
-            MixenPlayerService.instance.queuedSongs.add(song);
-            MixenPlayerService.instance.proposedSongs.add(metaSong);
-
-            if(!MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack)
+            for(TrackSimple queuedTrack : MixenPlayerService.instance.spotifyQueue)
             {
-                //If songs are in the queue, but have completed playback and a new one is suddenly added.
-                MixenPlayerService.instance.queueSongPosition++;
-                MixenPlayerService.doAction(getApplicationContext(), MixenPlayerService.getSongStreamURL);
+                if(track.id.equals(queuedTrack.id))
+                {
+                    SnackbarManager.show(
+                            Snackbar.with(activity)
+                                    .text("This song has already been added to the queue. ")
+                            , activity);
+                    return;
+                }
             }
 
         }
 
-        MixenBase.mixenPlayerFrag.updateUpNext();
-        Mixen.network.sendDataToClients(metaSong);
+        if(showSnackBar)
+        {
+            SnackbarManager.show(
+                    Snackbar.with(activity)
+                            .text("Added " + track.name)
+                    //.actionLabel("Undo")
+                    //.actionColor(Color.YELLOW)
+                    , activity);
+        }
+
+        Mixen.spotify.getTrack(track.id, new Callback<Track>() {
+            @Override
+            public void success(Track track, Response response) {
+
+                if (MixenPlayerService.instance.spotifyQueue.isEmpty()) {
+                    Log.i(Mixen.TAG, "First song added to queue.");
+
+                    MixenPlayerService.instance.spotifyQueue.add(track);
+                    MixenPlayerService.instance.queueSongPosition = 0;
+                    MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
+                    instance.isFirstSong = true;
+                } else {
+                    instance.isFirstSong = false;
+                    MixenPlayerService.instance.spotifyQueue.add(track);
+
+                    if (!MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack) {
+                        //If songs are in the queue, but have completed playback and a new one is suddenly added.
+                        MixenPlayerService.instance.queueSongPosition++;
+                        MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
+                    }
+
+                }
+
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MixenBase.mixenPlayerFrag.updateUpNext();
+                    }
+                });
+
+                //Mixen.network.sendDataToClients(metaSong);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
     }
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -387,17 +379,8 @@ public class SearchSongs extends ActionBarActivity{
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getComponentName()));
 
-        menu.findItem(R.id.search).expandActionView();
-
-//        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View view, boolean hasFocus) {
-//                if(!hasFocus)
-//                {
-//                    SearchSongs.this.finish();
-//                }
-//            }
-//        });
+        searchField = menu.findItem(R.id.search);
+        searchField.expandActionView();
 
         return true;
 
@@ -405,11 +388,20 @@ public class SearchSongs extends ActionBarActivity{
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+
+        if(searchField.isActionViewExpanded())
+        {
+            searchField.collapseActionView();
+        }
 
         if(!fullListIsVisible)
         {
-            populateListView(fullCellList);
+            setupListAdapter(fullCellList);
+            fullListIsVisible = true;
+        }
+        else
+        {
+            super.onBackPressed();
         }
     }
 

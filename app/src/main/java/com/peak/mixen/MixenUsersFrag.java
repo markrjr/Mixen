@@ -26,6 +26,7 @@ public class MixenUsersFrag extends Fragment{
     private ListView queueLV;
     private TextView infoTV;
     private RelativeLayout relativeLayout;
+    private ArrayAdapter queueAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -36,20 +37,19 @@ public class MixenUsersFrag extends Fragment{
         queueLV = (ListView)v.findViewById(R.id.queueLV);
         infoTV = (TextView)v.findViewById(R.id.infoTV);
 
-        return relativeLayout;
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        if(Mixen.isHost)
+        if(!Mixen.network.registeredClients.isEmpty())
         {
             populateNetworkListView();
         }
 
+        return relativeLayout;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        queueLV.invalidate();
+    }
 
     public void setColors(int bgColor)
     {
@@ -60,10 +60,6 @@ public class MixenUsersFrag extends Fragment{
 
     public void populateNetworkListView()
     {
-        if(Mixen.network.registeredClients.isEmpty())
-        {
-            return;
-        }
 
         Log.d(Mixen.TAG, "Updating network queue.");
 
@@ -71,7 +67,7 @@ public class MixenUsersFrag extends Fragment{
 
         final ArrayList<String> nearbyUsers = Mixen.network.getReadableRegisteredNames();
 
-        ArrayAdapter adapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_1, android.R.id.text1, nearbyUsers) {
+        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_1, android.R.id.text1, nearbyUsers) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
@@ -90,11 +86,8 @@ public class MixenUsersFrag extends Fragment{
             }
         };
 
-
-
-
         // Assign adapter to ListView
-        queueLV.setAdapter(adapter);
+        queueLV.setAdapter(queueAdapter);
 
         // ListView Item Click Listener
         queueLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -103,10 +96,6 @@ public class MixenUsersFrag extends Fragment{
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
 
-                // ListView Clicked item value
-                //Song userSelection = (Song) songsLV.getItemAtPosition(position);
-
-                //Log.i(Mixen.TAG, "Adding " + userSelection.getName() + " to song queue.");
 
             }
 

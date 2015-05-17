@@ -3,7 +3,6 @@ package com.peak.mixen;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -12,13 +11,11 @@ import android.util.Log;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.mikepenz.aboutlibraries.Libs;
 import com.peak.salut.Salut;
-import com.peak.salut.SalutP2P;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import co.arcs.groove.thresher.Client;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 
@@ -47,13 +44,13 @@ public class Mixen {
 
     //Song and current session related data.
 
-    public static Client grooveSharkSession;
-
     public static SpotifyApi spotifyAPI;
 
     public static SpotifyService spotify;
 
-    protected static String spotifyToken;
+    public static String spotifyToken;
+
+    public static long spotifyTokenExpiry;
 
     protected static final String CLIENT_ID = "fb5c429de70a4aa184ea97dbaa5e8b98";
 
@@ -62,8 +59,6 @@ public class Mixen {
     public static Context currentContext;
 
     public static String username;
-
-    public static boolean debugFeaturesEnabled = false;
 
     public static boolean isConnected(Context context, int timeout) {
         ConnectivityManager cm = (ConnectivityManager)context
@@ -78,11 +73,7 @@ public class Mixen {
                 urlc.setRequestProperty("Connection", "close");
                 urlc.setConnectTimeout(timeout); // mTimeout is in seconds
                 urlc.connect();
-                if (urlc.getResponseCode() == 200) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return urlc.getResponseCode() == 200;
             } catch (IOException e) {
                 Log.i("warning", "Error checking internet connection", e);
                 return false;

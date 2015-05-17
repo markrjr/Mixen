@@ -71,9 +71,7 @@ public class CreateMixen extends Activity {
                     Mixen.username = userNameET.getText().toString();
 
                     SharedPreferences.Editor prefs = Mixen.sharedPref.edit();
-                    prefs.putBoolean("FIRST_RUN", false);
-                    prefs.putString("username", Mixen.username);
-                    prefs.apply();
+                    prefs.putString("username", Mixen.username).apply();
 
                     Intent createNewMixen = new Intent(CreateMixen.this, MixenBase.class);
                     createNewMixen.putExtra("userName", userNameET.getText().toString());
@@ -88,8 +86,6 @@ public class CreateMixen extends Activity {
                 }
 
             }
-
-
         }
     }
 

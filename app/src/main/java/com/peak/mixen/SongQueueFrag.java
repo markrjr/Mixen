@@ -23,8 +23,7 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
 import com.nispok.snackbar.listeners.EventListener;
-
-import co.arcs.groove.thresher.Song;
+import kaaes.spotify.webapi.android.models.TrackSimple;
 
 public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
@@ -52,12 +51,21 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         addSong = new Intent(getActivity(), SearchSongs.class);
 
-        if(Mixen.isHost)
+        setupQueueAdapter();
+
+        return baseLayout;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(queueAdapter == null && Mixen.isHost)
         {
             setupQueueAdapter();
         }
 
-        return baseLayout;
+        updateHostQueueUI();
     }
 
     public void updateHostQueueUI() {
@@ -100,15 +108,20 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     private void setupQueueAdapter() {
 
-        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.queuedSongs) {
+        if(MixenPlayerService.instance == null)
+        {
+            return;
+        }
+
+        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.spotifyQueue) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 TextView text2 = (TextView) view.findViewById(android.R.id.text2);
 
-                text1.setText(MixenPlayerService.instance.queuedSongs.get(position).getName());
-                text2.setText(MixenPlayerService.instance.queuedSongs.get(position).getArtistName());
+                text1.setText(MixenPlayerService.instance.spotifyQueue.get(position).name);
+                text2.setText(MixenPlayerService.instance.spotifyQueue.get(position).artists.get(0).name);
                 //text1.setTextSize(24);
                 //text2.setTextSize(18);
                 return view;
@@ -126,7 +139,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     final int position, long id) {
 
                 // ListView Clicked item value
-                final Song selected = (Song) queueLV.getItemAtPosition(position);
+                final TrackSimple selected = (TrackSimple) queueLV.getItemAtPosition(position);
 
                 if(!snackBarIsVisible)
                 {
@@ -135,7 +148,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                     SnackbarManager.show(
                             Snackbar.with(getActivity().getApplicationContext())
-                                    .text("Selected: " + selected.getName())
+                                    .text("Selected: " + selected.name)
                                     .actionColor(Color.YELLOW)
                                     .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
                                     .actionLabel("Remove")
@@ -143,10 +156,10 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         @Override
                                         public void onActionClicked(Snackbar snackbar) {
 
-                                            MixenPlayerService.instance.queuedSongs.remove(position);
+                                            MixenPlayerService.instance.spotifyQueue.remove(position);
                                             updateHostQueueUI();
 
-                                            if(MixenPlayerService.instance.currentSong == selected)
+                                            if(MixenPlayerService.instance.currentTrack.id.equals(selected.id))
                                             {
                                                 //If someone wants to delete the currently playing song, stop everything.
                                                 MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
@@ -158,8 +171,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                                     {
                                                         MixenPlayerService.instance.queueSongPosition = 0;
                                                     }
-                                                    //We use getSongStreamURL here because we don't need to modify the counter, because the ArrayList will move around the counter.
-                                                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.getSongStreamURL);
+                                                    //We use preparePlayback here because we don't need to modify the counter, because the ArrayList will move around the counter.
+                                                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.preparePlayback);
                                                 }
 
                                             }

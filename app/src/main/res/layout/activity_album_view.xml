@@ -1,5 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     tools:context="com.peak.mixen.AlbumView"
     android:background="@color/Tundora"
@@ -7,37 +9,63 @@
 
 
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/artistArtBG"
-        android:layout_centerInParent="true" />
-
-    <ProgressBar
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
-        android:visibility="invisible"
-        android:indeterminate="true"
-        android:layout_centerInParent="true" />
-
-    <view
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        class="de.hdodenhof.circleimageview.CircleImageView"
-        android:id="@+id/albumArt"
+        android:layout_width="fill_parent"
+        android:layout_height="400dp"
+        android:id="@+id/albumArtHeader"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_margin="15dp" />
+        android:layout_marginRight="-5dp"
+        android:layout_marginLeft="-5dp"
+        android:layout_marginTop="-15dp"
+        android:visibility="invisible" />
 
     <ListView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/songsLV"
         android:visibility="invisible"
-        android:layout_below="@+id/albumArt"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentStart="false"
-        android:layout_marginTop="10dp"
-        android:layout_margin="15dp" />
+        android:scrollingCache="false"
+        android:headerDividersEnabled="true"
+        android:footerDividersEnabled="false"
+        android:overScrollMode="never"
+        android:layout_marginTop="200dp"
+        android:background="@color/Tundora" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:visibility="visible"
+        android:indeterminate="true"
+        android:layout_centerInParent="true" />
+
+    <view
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        class="de.hdodenhof.circleimageview.CircleImageView"
+        android:id="@+id/artistArtHeader"
+        android:layout_above="@+id/progressBar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dp"
+        app:border_width="2dp"
+        app:border_color="@color/EXP_4"/>
+
+    <view
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        class="com.melnykov.fab.FloatingActionButton"
+        android:id="@+id/playAlbumBtn"
+        android:src="@drawable/ic_action_add"
+        fab:fab_colorNormal="@color/EXP_4"
+        fab:fab_colorPressed="@color/EXP_4"
+        fab:fab_colorRipple="@color/EXP_4"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="170dp"
+        android:visibility="invisible"
+        android:layout_marginRight="10dp" />
+
+
 
 </RelativeLayout>
