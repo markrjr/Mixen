@@ -118,11 +118,11 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         }
         else
         {
-            Mixen.network.startListeningForData(MetaTrack.class, new SalutDataCallback() {
+            Mixen.network.startListeningForData(ArrayList.class, new SalutDataCallback() {
                 @Override
                 public void call(final Object data) {
 
-                    mixenPlayerFrag.prepareClientUI((MetaTrack)data);
+                    MixenPlayerService.instance.clientQueue = (ArrayList<MetaTrack>) data;
 
                 }
             });

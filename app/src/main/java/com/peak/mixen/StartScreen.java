@@ -254,7 +254,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
                                 }, new SalutCallback() {
                                     @Override
                                     public void call() {
-                                        cleanUpDialog.setContent("We had a problem connection to " + Mixen.network.foundHostServices.get(0).readableName + " 's Mixen. Please try again momentarily.");
+                                        cleanUpDialog.setContent("We had a problem connection to " + Mixen.network.foundHostServices.get(0).readableName + "'s Mixen. Please try again momentarily.");
                                         cleanUpDialog.show();
                                     }
                                 });

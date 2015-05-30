@@ -194,13 +194,12 @@ public class Salut{
         AsyncJob.OnBackgroundJob serviceServer = new AsyncJob.OnBackgroundJob() {
             @Override
             public void doOnBackground() {
-                Log.d(TAG, "Listening for data...");
+                Log.d(TAG, "Listening for data on port: " + thisService.servicePort);
                     try
                     {
                         //Create a server socket and wait for client connections. This
                         //call blocks until a connection is accepted from a client.
                         ServerSocket listenerServiceSocket = new ServerSocket(thisService.servicePort, MAX_CLIENT_CONNECTIONS);
-
 
                         while(isRunningAsHost) {
 
@@ -392,7 +391,6 @@ public class Salut{
                     client.close();
                     Log.d(TAG, "This service has been successfully registered with the host.");
                     thisService.isRegistered = true;
-                    Log.d(TAG, "" + thisService.isRegistered);
                     currentActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

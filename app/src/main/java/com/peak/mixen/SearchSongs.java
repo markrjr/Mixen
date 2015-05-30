@@ -55,6 +55,7 @@ public class SearchSongs extends ActionBarActivity{
     private HeaderListAdapter headerListAdapter;
     private boolean fullListIsVisible = true;
     private MenuItem searchField;
+    private MaterialDialog spotifyErrorDiag;
 
 
 
@@ -77,6 +78,18 @@ public class SearchSongs extends ActionBarActivity{
         fullCellList = new ArrayList<>();
         specificCellList = new ArrayList<>();
 
+        spotifyErrorDiag = new MaterialDialog.Builder(this)
+                .title("Bummer :(")
+                .showListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialog) {
+                        indeterminateProgress.setVisibility(View.GONE);
+                    }
+                })
+                .content(R.string.generic_network_error)
+                .neutralText("Okay")
+                .build();
+
         setupListAdapter(fullCellList);
 
         instance = this;
@@ -91,17 +104,12 @@ public class SearchSongs extends ActionBarActivity{
             @Override
             public void failure(SpotifyError spotifyError) {
 
-                new MaterialDialog.Builder(SearchSongs.instance)
-                        .title("Bummer :(")
-                        .showListener(new DialogInterface.OnShowListener() {
-                            @Override
-                            public void onShow(DialogInterface dialog) {
-                                indeterminateProgress.setVisibility(View.GONE);
-                            }
-                        })
-                        .content(R.string.generic_network_error)
-                        .neutralText("Okay")
-                        .show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SearchSongs.this.spotifyErrorDiag.show();
+                    }
+                });
                 return;
             }
 
@@ -170,7 +178,7 @@ public class SearchSongs extends ActionBarActivity{
     {
         if(searchResults instanceof TracksPager)
         {
-            HeaderListCell sectionCell = new HeaderListCell("SONGS", null);
+            HeaderListCell sectionCell = new HeaderListCell("SONGS", "HEADER");
             sectionCell.setToSectionHeader();
             fullCellList.add(sectionCell);
             foundTracks = ((TracksPager) searchResults).tracks.items;
@@ -186,20 +194,19 @@ public class SearchSongs extends ActionBarActivity{
                 }
             }
 
-            HeaderListCell moreItemsCell = new HeaderListCell(((TracksPager) searchResults).tracks.items.size() + " MORE...", null);
-            moreItemsCell.hiddenCategory = "EXTRA_SONGS";
+            HeaderListCell moreItemsCell = new HeaderListCell(((TracksPager) searchResults).tracks.items.size() + " MORE...", "EXTRA_SONGS");
             fullCellList.add(moreItemsCell);
         }
         else if(searchResults instanceof AlbumsPager)
         {
-            HeaderListCell sectionCell = new HeaderListCell("ALBUMS", null);
+            HeaderListCell sectionCell = new HeaderListCell("ALBUMS", "HEADER");
             sectionCell.setToSectionHeader();
             fullCellList.add(sectionCell);
             foundAlbums = ((AlbumsPager) searchResults).albums.items;
             int added = 0;
             for(Object album : foundAlbums)
             {
-                fullCellList.add(new HeaderListCell(((AlbumSimple) album).name, null, "ALBUM"));
+                fullCellList.add(new HeaderListCell(((AlbumSimple) album)));
                 added++;
 
                 if(added == 4)
@@ -208,8 +215,7 @@ public class SearchSongs extends ActionBarActivity{
                 }
             }
 
-            HeaderListCell moreItemsCell = new HeaderListCell(((AlbumsPager) searchResults).albums.items.size() + " MORE...", null);
-            moreItemsCell.hiddenCategory = "EXTRA_ALBUMS";
+            HeaderListCell moreItemsCell = new HeaderListCell(((AlbumsPager) searchResults).albums.items.size() + " MORE...", "EXTRA_ALBUMS");
             fullCellList.add(moreItemsCell);
 
         headerListAdapter.notifyDataSetChanged();
@@ -222,14 +228,14 @@ public class SearchSongs extends ActionBarActivity{
         setupListAdapter(specificCellList);
         specificCellList.removeAll(specificCellList);
 
-        HeaderListCell sectionCell = new HeaderListCell("FOUND " + typeOfResults, null);
+        HeaderListCell sectionCell = new HeaderListCell("FOUND " + typeOfResults, "HEADER");
         sectionCell.setToSectionHeader();
         specificCellList.add(sectionCell);
         if(typeOfResults.equals("ALBUMS"))
         {
             for(Object album : foundAlbums)
             {
-                specificCellList.add(new HeaderListCell(((AlbumSimple) album).name, null, "ALBUM"));
+                specificCellList.add(new HeaderListCell(((AlbumSimple) album)));
             }
         }
         else if(typeOfResults.equals("SONGS"))
@@ -277,14 +283,9 @@ public class SearchSongs extends ActionBarActivity{
 
                     } else if(selected.hiddenCategory.equals("ALBUM"))
                     {
-                        //Show a single album view.
-                        for (AlbumSimple foundAlbum : foundAlbums) {
-                            if (selected.getName().equals(foundAlbum.name)) {
-                                viewAlbumInfo.putExtra("REQUESTED_ALBUM_ID", foundAlbum.id);
-                                startActivity(viewAlbumInfo);
-                            }
+                        viewAlbumInfo.putExtra("REQUESTED_ALBUM_ID", selected.albumSimple.id);
+                        startActivity(viewAlbumInfo);
                     }
-                }
             }
         });
 
@@ -318,6 +319,13 @@ public class SearchSongs extends ActionBarActivity{
                     , activity);
         }
 
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.VISIBLE);
+            }
+        });
+
         Mixen.spotify.getTrack(track.id, new Callback<Track>() {
             @Override
             public void success(Track track, Response response) {
@@ -344,16 +352,16 @@ public class SearchSongs extends ActionBarActivity{
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
                         MixenBase.mixenPlayerFrag.updateUpNext();
                     }
                 });
 
-                //Mixen.network.sendDataToClients(metaSong);
             }
 
             @Override
             public void failure(RetrofitError error) {
-
+                MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
             }
         });
     }

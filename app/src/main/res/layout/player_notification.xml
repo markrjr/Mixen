@@ -2,7 +2,8 @@
     android:id="@+id/layout"
     android:layout_width="fill_parent"
     android:layout_height="60dp"
-    android:background="@color/Madison" >
+    android:background="@color/Madison"
+    android:alpha="0.90">
 
     <ImageView android:id="@+id/icon"
         android:layout_width="50dp"
@@ -49,7 +50,7 @@
 
     <ImageButton
         android:id="@+id/playbackState"
-        android:layout_width="30dp"
+        android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_centerHorizontal="true"
         android:background="@color/Madison"
@@ -58,8 +59,7 @@
         android:visibility="visible"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginRight="20dp"
-        android:paddingLeft="10dp" />
+        android:padding="5dp" />
 
 
 </RelativeLayout>

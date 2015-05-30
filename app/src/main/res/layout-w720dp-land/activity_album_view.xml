@@ -1,6 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     tools:context="com.peak.mixen.AlbumView"
     android:background="@color/Tundora"
@@ -22,11 +22,9 @@
         class="de.hdodenhof.circleimageview.CircleImageView"
         android:id="@+id/artistArtHeader"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/progressBar"
-        android:layout_toStartOf="@+id/progressBar"
-        android:layout_marginTop="-75dp"
-        android:layout_marginBottom="-75dp"
-        android:layout_marginRight="-20dp" />
+        android:layout_toStartOf="@+id/albumArtHeader"
+        android:layout_above="@+id/playAlbumBtn"
+        android:layout_toLeftOf="@+id/albumArtHeader" />
 
     <ListView
         android:layout_width="fill_parent"
@@ -50,5 +48,23 @@
         android:visibility="visible"
         android:indeterminate="true"
         android:layout_centerInParent="true" />
+
+    <view
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        class="com.melnykov.fab.FloatingActionButton"
+        android:id="@+id/playAlbumBtn"
+        android:src="@drawable/play"
+        fab:fab_colorNormal="@color/EXP_4"
+        fab:fab_colorPressed="@color/EXP_4"
+        fab:fab_colorRipple="@color/EXP_4"
+        android:visibility="visible"
+        android:scaleType="center"
+        android:layout_alignTop="@+id/songsLV"
+        android:layout_alignRight="@+id/songsLV"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="-30dp" />
+
+
 
 </RelativeLayout>
