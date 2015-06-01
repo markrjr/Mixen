@@ -196,7 +196,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentMetaTrack.name + " : " + MixenPlayerService.instance.currentMetaTrack.artist);
 
-        if(albumArtIV.getAnimation() != null && !albumArtIV.getAnimation().hasStarted() && albumArtIV.getAnimation().hasEnded())
+        if(albumArtIV.getAnimation() != null)
         {
             startRotateAnimation();
         }

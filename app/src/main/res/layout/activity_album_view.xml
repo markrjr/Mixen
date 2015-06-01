@@ -56,15 +56,16 @@
         android:layout_height="wrap_content"
         class="com.melnykov.fab.FloatingActionButton"
         android:id="@+id/playAlbumBtn"
-        android:src="@drawable/ic_action_add"
+        android:src="@drawable/play"
         fab:fab_colorNormal="@color/EXP_4"
         fab:fab_colorPressed="@color/EXP_4"
         fab:fab_colorRipple="@color/EXP_4"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="170dp"
-        android:visibility="invisible"
-        android:layout_marginRight="10dp" />
+        android:visibility="visible"
+        android:layout_marginRight="10dp"
+        android:scaleType="center" />
 
 
 

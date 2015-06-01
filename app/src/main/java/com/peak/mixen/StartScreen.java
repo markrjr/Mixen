@@ -18,6 +18,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
 import com.peak.salut.Salut;
 import com.peak.salut.Callbacks.SalutCallback;
+import com.peak.salut.SalutP2P;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
@@ -25,16 +26,15 @@ import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.Spotify;
 
+import java.util.HashMap;
+
 
 public class StartScreen extends Activity implements View.OnClickListener{
     private boolean pressedBefore = false;
     public static Intent createNewMixen;
     public static StartScreen instance;
     public MaterialDialog indeterminateProgressDiag;
-    private MaterialDialog wiFiFailureDiag;
-    private MaterialDialog findingMixensProgress;
-    private MaterialDialog cleanUpDialog;
-    private MaterialDialog foundMixensDialog;
+    private MaterialDialog explanationDiag;
     private boolean isActuallyFirstRun;
     public static boolean hasSpotifyToken;
 
@@ -61,16 +61,13 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         Mixen.sharedPref = getSharedPreferences(Mixen.MIXEN_PREF_FILE, Context.MODE_PRIVATE);
 
+        createNewMixen = new Intent(StartScreen.this, MixenBase.class);
+
+
         createDialogs();
 
-        if(!isFirstRun())
-        {
-            createNewMixen = new Intent(StartScreen.this, MixenBase.class);
-        }
-        else
-        {
-            createNewMixen = new Intent(StartScreen.this, CreateMixen.class);
-        }
+        checkifFirstRun();
+
 
         startService(new Intent(this, MixenPlayerService.class).setAction(MixenPlayerService.init));
 
@@ -80,7 +77,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
         instance = this;
     }
 
-    private boolean isFirstRun()
+    private void checkifFirstRun()
     {
         isActuallyFirstRun = true;
 
@@ -88,8 +85,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         if(!Mixen.username.equals("Anonymous"))
             isActuallyFirstRun = false;
-
-        return isActuallyFirstRun;
     }
 
     public static boolean hasSpotifyToken()
@@ -147,24 +142,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
     private void createDialogs()
     {
-        findingMixensProgress = new MaterialDialog.Builder(this)
-                .title("Searching for nearby Mixens...")
-                .content("Please wait...")
-                .theme(Theme.DARK)
-                .progress(true, 0)
-                .build();
-
-        cleanUpDialog = new MaterialDialog.Builder(this)
-                .title("Bummer :(")
-                .content(R.string.discover_p2p_error)
-                .neutralText("Okay")
-                .dismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        restoreControls();
-                    }
-                })
-                .build();
 
         indeterminateProgressDiag = new MaterialDialog.Builder(this)
                 .title("Just a sec...")
@@ -179,12 +156,27 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 .cancelable(false)
                 .build();
 
-        wiFiFailureDiag = new MaterialDialog.Builder(this)
-                .title("Bummer :(")
-                .content("We had trouble checking if WiFi was on, please double check your settings.")
-                .neutralText("Okay")
+        explanationDiag = new MaterialDialog.Builder(this)
+                .title("Spotify Premium")
+                .content("Creating a Mixen requires a Spotify premium account, joining one does not. Do you have Spotify Premium?")
+                .positiveText("Yes")
+                .negativeText("No")
+                .callback(new MaterialDialog.ButtonCallback() {
+                    @Override
+                    public void onPositive(MaterialDialog dialog) {
+                        super.onPositive(dialog);
+                        createMixen();
+                    }
+
+                    @Override
+                    public void onNegative(MaterialDialog dialog) {
+                        super.onNegative(dialog);
+                        restoreControls();
+                    }
+                })
                 .build();
     }
+
     public void clearAppSettings()
     {
         Mixen.sharedPref.edit().clear().apply();
@@ -195,117 +187,29 @@ public class StartScreen extends Activity implements View.OnClickListener{
         this.finish();
     }
 
-
-    private void handleButtonClicks(View v)
+    private void createMixen()
     {
-        switch (v.getId()) {
-
-            case R.id.createMixenButton:
+        indeterminateProgressDiag.show();
+        SalutP2P.enableWiFi(getApplicationContext());
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
 
                 Mixen.isHost = true;
-                startService(new Intent(this, MixenPlayerService.class).setAction(MixenPlayerService.init));
+                startService(new Intent(StartScreen.instance, MixenPlayerService.class).setAction(MixenPlayerService.init));
 
                 hideControls();
 
-                if(!hasSpotifyToken())
+                if (!hasSpotifyToken())
                     authenticateSpotifyUser();
-                else
-                {
+                else {
                     Log.d(Mixen.TAG, "Token already established.");
                     startMixen();
                 }
 
-                return;
-
-            case R.id.findMixen: {
-
-                Mixen.isHost = false;
-
-                    findingMixensProgress.show();
-                    findingMixensProgress.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            restoreControls();
-                        }
-                    });
-
-                    if(isActuallyFirstRun) {
-                        //TODO Make it so that the create screen comes up before discovering the service.
-                        Mixen.network = new Salut(this, "_mixen", "Anonymous", Mixen.MIXEN_SERVICE_PORT);
-                    }
-                    else
-                    {
-                        Mixen.network = new Salut(this, "_mixen", Mixen.username, Mixen.MIXEN_SERVICE_PORT);
-                    }
-
-                    Mixen.network.discoverNetworkServicesWithTimeOut(new SalutCallback() {
-                        @Override
-                        public void call() {
-                            findingMixensProgress.dismiss();
-
-                            if (Mixen.network.foundHostServices.size() == 1) {
-
-                                Mixen.network.connectToHostService(Mixen.network.foundHostServices.get(0), new SalutCallback() {
-                                    @Override
-                                    public void call() {
-                                        StartScreen.this.startActivity(createNewMixen);
-                                        Toast.makeText(getApplicationContext(), "You're now connected to " + Mixen.network.foundHostServices.get(0).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
-                                    }
-                                }, new SalutCallback() {
-                                    @Override
-                                    public void call() {
-                                        cleanUpDialog.setContent("We had a problem connection to " + Mixen.network.foundHostServices.get(0).readableName + " 's Mixen. Please try again momentarily.");
-                                        cleanUpDialog.show();
-                                    }
-                                });
-                            } else {
-
-                                String[] foundNames = Mixen.network.getReadableFoundNames().toArray(new String[Mixen.network.foundHostServices.size()]);
-
-                                foundMixensDialog = new MaterialDialog.Builder(StartScreen.this)
-                                        .title("We found a few people nearby.")
-                                        .theme(Theme.DARK)
-                                        .items(foundNames)
-                                        .dismissListener(new DialogInterface.OnDismissListener() {
-                                            @Override
-                                            public void onDismiss(DialogInterface dialog) {
-                                                restoreControls();
-                                            }
-                                        })
-                                        .itemsCallback(new MaterialDialog.ListCallback() {
-                                            @Override
-                                            public void onSelection(MaterialDialog materialDialog, View view, final int i, CharSequence charSequence) {
-
-                                                Mixen.network.connectToHostService(Mixen.network.foundHostServices.get(i), new SalutCallback() {
-                                                    @Override
-                                                    public void call() {
-                                                        StartScreen.this.startActivity(createNewMixen);
-                                                        Toast.makeText(getApplicationContext(), "You're now connected to " + Mixen.network.foundHostServices.get(i).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
-                                                    }
-                                                }, new SalutCallback() {
-                                                    @Override
-                                                    public void call() {
-                                                        cleanUpDialog.setContent("We had a problem connection to " + Mixen.network.foundHostServices.get(i).readableName + " 's Mixen. Please try again momentarily.");
-                                                        cleanUpDialog.show();
-                                                    }
-                                                });
-                                            }
-                                        })
-                                        .build();
-                                foundMixensDialog.show();
-                            }
-
-                        }
-                    }, new SalutCallback() {
-                        @Override
-                        public void call() {
-                            findingMixensProgress.dismiss();
-                            cleanUpDialog.show();
-                        }
-                    }, 3000);
-                return;
             }
-        }
+        }, 2000);
+
     }
 
     public void showSpotifyErrorDiag()
@@ -323,27 +227,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 .build()
                 .show();
     }
-
-
-    public void checkWiFiConfig(final View v) {
-
-        if(!Salut.isWiFiEnabled(this))
-        {
-            //SalutP2P.enableWiFi(getApplicationContext());
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    handleButtonClicks(v);
-                }
-            }, 2500);
-        }
-        else
-        {
-            handleButtonClicks(v);
-        }
-
-    }
-
 
     public void restoreControls()
     {
@@ -417,10 +300,27 @@ public class StartScreen extends Activity implements View.OnClickListener{
         {
             Mixen.showAbout(this);
         }
-        else
+        else if(v.getId() == R.id.findMixen)
         {
             hideControls();
-            checkWiFiConfig(v);
+            Mixen.isHost = false;
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(createNewMixen);
+                    restoreControls();
+                }
+            }, 1500);
+        }
+        else if(v.getId() == R.id.createMixenButton)
+        {
+            if(isActuallyFirstRun)
+            {
+                explanationDiag.show();
+            }
+            else{
+                createMixen();
+            }
         }
     }
 

@@ -16,12 +16,17 @@ import android.view.MenuItem;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.SnackbarManager;
+import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Salut;
+import com.peak.salut.SalutP2P;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import it.neokree.materialtabs.MaterialTab;
 import it.neokree.materialtabs.MaterialTabHost;
 import it.neokree.materialtabs.MaterialTabListener;
@@ -80,7 +85,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         Mixen.currentContext = getApplicationContext();
         Mixen.spotifyAPI = new SpotifyApi();
         Mixen.spotify = Mixen.spotifyAPI.getService();
-        setupMixenNetwork();
     }
 
 
@@ -103,29 +107,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
                             .setTabListener(this)
                             .setText(TabNames.get(i));
             mixenTabs.addTab(tab);
-        }
-
-    }
-
-    public void setupMixenNetwork()
-    {
-
-        Mixen.network = new Salut(this, "_mixen", Mixen.username, Mixen.MIXEN_SERVICE_PORT);
-
-        if(Mixen.isHost)
-        {
-            Mixen.network.startNetworkService();
-        }
-        else
-        {
-            Mixen.network.startListeningForData(MetaTrack.class, new SalutDataCallback() {
-                @Override
-                public void call(final Object data) {
-
-                    mixenPlayerFrag.prepareClientUI((MetaTrack)data);
-
-                }
-            });
         }
 
     }
@@ -250,9 +231,9 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }
-            if(Mixen.network != null && Mixen.network.thisService.isRegistered)
+            if(Mixen.network != null && Mixen.network.thisDevice.isRegistered)
             {
-                Mixen.network.unregisterClient();
+//                Mixen.network.unregisterClient();
             }
 
             super.onBackPressed();

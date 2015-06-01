@@ -1,18 +1,28 @@
 package com.peak.salut;
 
 import android.net.nsd.NsdServiceInfo;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.util.Log;
 
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 import java.net.InetAddress;
+import java.util.Map;
 
 /**
  * Created by markrjr on 4/17/15.
  */
 @JsonObject
 public class SalutDevice {
+
+    public WifiP2pDevice device;
+
+    @JsonField
+    public Map<String, String> txtRecord;
+    @JsonField
+    public String deviceName;
     @JsonField
     public String serviceName;
     @JsonField
@@ -27,8 +37,10 @@ public class SalutDevice {
     protected int servicePort;
     @JsonField
     protected String TTP = "._tcp.";
-    protected InetAddress serviceAddress;
+    protected InetAddress deviceAddress;
     protected String macAddress;
+
+
 
     public SalutDevice(){}
 
@@ -38,7 +50,7 @@ public class SalutDevice {
         this.readableName = otherService.getServiceName().split("-")[0];
         this.servicePort = otherService.getPort();
         this.TTP = otherService.getServiceType();
-        this.serviceAddress = otherService.getHost(); //Assuming the service has been resolved.
+        this.deviceAddress = otherService.getHost(); //Assuming the service has been resolved.
     }
 
     protected NsdServiceInfo getAsServiceInfo()
@@ -49,6 +61,11 @@ public class SalutDevice {
         thisDevice.setServiceType(this.TTP);
 
         return thisDevice;
+    }
+
+    public SalutDevice(WifiP2pDevice device, Map<String, String> txtRecord) {
+        this.device = device;
+        this.txtRecord = txtRecord;
     }
 
     @Override

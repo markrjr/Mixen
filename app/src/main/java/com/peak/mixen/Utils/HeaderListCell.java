@@ -1,7 +1,10 @@
 package com.peak.mixen.Utils;
 
+import android.support.annotation.Nullable;
+
 import com.peak.mixen.SearchSongs;
 
+import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.TrackSimple;
 
 public class HeaderListCell implements Comparable<HeaderListCell> {
@@ -10,27 +13,13 @@ public class HeaderListCell implements Comparable<HeaderListCell> {
 	private String category;
 	private boolean isSectionHeader;
 	public TrackSimple trackSimple;
+	public AlbumSimple albumSimple;
 	public String hiddenCategory;
-	
-	public HeaderListCell(String name, String category)
-	{
-		this.name = name;
-		this.category = category;
-		isSectionHeader = false;
-	}
 
-	public HeaderListCell(String name, String category, String hiddenCategory)
+	public HeaderListCell(String name, String hiddenCategory)
 	{
 		this.name = name;
-		this.category = category;
-		if(hiddenCategory == null)
-		{
-			this.hiddenCategory = "HEADER_OR_OTHER";
-		}
-		else
-		{
-			this.hiddenCategory = hiddenCategory;
-		}
+		this.hiddenCategory= hiddenCategory;
 		isSectionHeader = false;
 	}
 
@@ -40,6 +29,14 @@ public class HeaderListCell implements Comparable<HeaderListCell> {
 		this.category = SearchSongs.humanReadableTimeString(track.duration_ms);
 		this.hiddenCategory = "SONG";
 		this.trackSimple = track;
+		isSectionHeader = false;
+	}
+
+	public HeaderListCell(AlbumSimple album)
+	{
+		this.name = album.name;
+		this.hiddenCategory = "ALBUM";
+		this.albumSimple = album;
 		isSectionHeader = false;
 	}
 	

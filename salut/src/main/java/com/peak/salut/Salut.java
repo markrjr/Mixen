@@ -194,13 +194,12 @@ public class Salut{
         AsyncJob.OnBackgroundJob serviceServer = new AsyncJob.OnBackgroundJob() {
             @Override
             public void doOnBackground() {
-                Log.d(TAG, "Listening for data...");
+                Log.d(TAG, "Listening for data on port: " + thisService.servicePort);
                     try
                     {
                         //Create a server socket and wait for client connections. This
                         //call blocks until a connection is accepted from a client.
                         ServerSocket listenerServiceSocket = new ServerSocket(thisService.servicePort, MAX_CLIENT_CONNECTIONS);
-
 
                         while(isRunningAsHost) {
 
@@ -247,7 +246,7 @@ public class Salut{
 
                     Socket socket = new Socket();
                     socket.bind(null);
-                    socket.connect(new InetSocketAddress(device.serviceAddress, device.servicePort));
+                    //socket.connect(new InetSocketAddress(device.serviceAddress, device.servicePort));
 
 
                     //If this code is reached, a client has connected and transferred data.
@@ -324,41 +323,41 @@ public class Salut{
         AsyncJob.OnBackgroundJob serviceServer = new AsyncJob.OnBackgroundJob() {
             @Override
             public void doOnBackground() {
-                Log.d(TAG, "Creating a server thread.");
-                    try
-                    {
-                        //Create a server socket and wait for client connections. This
-                        //call blocks until a connection is accepted from a client.
-
-                        while(isRunningAsHost)
-                        {
-                            clientSocket = serverSocket.accept();
-
-                            //If this code is reached, a client has connected and transferred data.
-                            Log.d(TAG, "A device has connected to the server, transferring data...");
-                            InputStream inputStream = clientSocket.getInputStream();
-                            SalutDevice clientDevice = LoganSquare.parse(inputStream, SalutDevice.class);
-                            clientDevice.serviceAddress = clientSocket.getInetAddress();
-                            if(!clientDevice.isRegistered)
-                            {
-                                Log.d(TAG, "Registered device and user: " + clientDevice.instanceName);
-                                registeredClients.add(clientDevice);
-                                updateNewClient(clientDevice);
-                            }
-                            else
-                            {
-                                Log.d(TAG, "Unregistering device and user: " + clientDevice.instanceName);
-                                clientDevice.serviceAddress = clientSocket.getInetAddress();
-                                registeredClients.remove(clientDevice);
-                            }
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.d(TAG, "An error occurred while executing a server thread.");
-                        ex.printStackTrace();
-                    }
+//                Log.d(TAG, "Creating a server thread.");
+//                    try
+//                    {
+//                        //Create a server socket and wait for client connections. This
+//                        //call blocks until a connection is accepted from a client.
+//
+//                        while(isRunningAsHost)
+//                        {
+//                            clientSocket = serverSocket.accept();
+//
+//                            //If this code is reached, a client has connected and transferred data.
+//                            Log.d(TAG, "A device has connected to the server, transferring data...");
+//                            InputStream inputStream = clientSocket.getInputStream();
+//                            SalutDevice clientDevice = LoganSquare.parse(inputStream, SalutDevice.class);
+//                            clientDevice.serviceAddress = clientSocket.getInetAddress();
+//                            if(!clientDevice.isRegistered)
+//                            {
+//                                Log.d(TAG, "Registered device and user: " + clientDevice.instanceName);
+//                                registeredClients.add(clientDevice);
+//                                updateNewClient(clientDevice);
+//                            }
+//                            else
+//                            {
+//                                Log.d(TAG, "Unregistering device and user: " + clientDevice.instanceName);
+//                                clientDevice.serviceAddress = clientSocket.getInetAddress();
+//                                registeredClients.remove(clientDevice);
+//                            }
+//                        }
+//
+//                    }
+//                    catch (Exception ex)
+//                    {
+//                        Log.d(TAG, "An error occurred while executing a server thread.");
+//                        ex.printStackTrace();
+//                    }
                 }
         };
 
@@ -392,7 +391,6 @@ public class Salut{
                     client.close();
                     Log.d(TAG, "This service has been successfully registered with the host.");
                     thisService.isRegistered = true;
-                    Log.d(TAG, "" + thisService.isRegistered);
                     currentActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -432,7 +430,7 @@ public class Salut{
                     Log.d(TAG, "Attempting to unregister client...");
                     Socket client = new Socket();
                     client.bind(null);
-                    client.connect(new InetSocketAddress(registeredHost.serviceAddress, SALUT_SERVER_PORT));
+                    //client.connect(new InetSocketAddress(registeredHost.serviceAddress, SALUT_SERVER_PORT));
 
 
                     //If this code is reached, we've connected to the server and will transfer data.

@@ -6,7 +6,6 @@
     <string name="exit_app_string">Quit</string>
     <string name="app_description">Mixen lets you create a playlist and share it with friends nearby.</string>
     <string name="app_description_long">Mixen lets you create a playlist and share it with friends nearby. \n Peak Digital. 2015. All Rights Reserved.</string>
-    <string name="title_activity_create_mixen">CreateMixen</string>
     <string name="title_activity_mixen_stage">MixenStage</string>
     <string name="title_activity_more_info">MoreInfo</string>
     <string name="createDescript">First, enter your name to identify your Mixen.</string>
@@ -36,7 +35,8 @@
     <string name="title_activity_mixen_base">MixenBase</string>
     <string name="empty_users_queue">There are no users connected yet.</string>
     <string name="title_activity_album_view">AlbumView</string>
-    <string name="permission_error">We had a problem streaming from Spotify. Another device may be using this Spotify account. Please restart the app.</string>
+    <string name="permission_error">We had a problem streaming from Spotify. Another device may be using this Spotify account. Please logout on the other device and try again.</string>
+    <string name="blank_string"></string>
 
 
 </resources>

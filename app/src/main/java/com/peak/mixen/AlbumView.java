@@ -213,7 +213,7 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
         ArrayList<TrackSimple> albumTracks = new ArrayList<>();
         albumTracks.addAll(album.tracks.items);
 
-        HeaderListCell sectionCell = new HeaderListCell(album.tracks.total + " TRACKS" , null);
+        HeaderListCell sectionCell = new HeaderListCell(album.tracks.total + " TRACKS" , "HEADER");
         sectionCell.setToSectionHeader();
         cellLists.add(sectionCell);
         for(TrackSimple track : albumTracks)

@@ -11,6 +11,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -81,7 +82,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     public MetaTrack currentMetaTrack;
     public ArrayList<Track> spotifyQueue;
-    public ArrayList<MetaTrack> proposedSongs;
+    public ArrayList<MetaTrack> clientQueue;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -115,7 +116,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     private void initService()
     {
         spotifyQueue = new ArrayList<>();
-        proposedSongs = new ArrayList<MetaTrack>();
+        clientQueue = new ArrayList<>();
 
         if(Mixen.isHost)
         {
@@ -124,8 +125,11 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             noisyAudioReciever = new NoisyAudioReciever();
         }
 
-        mediaSession = new MediaSessionCompat(getApplicationContext(), "Mixen Player Service");
-        mediaSession.setPlaybackToLocal(AudioManager.STREAM_MUSIC);
+        ComponentName mixenService = new ComponentName(getApplicationContext(), MixenPlayerService.class);
+        PendingIntent mixenIntent = PendingIntent.getService(getApplicationContext(), 11, new Intent(), PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+        mediaSession = new MediaSessionCompat(getApplicationContext(), "Mixen Player Service", mixenService, mixenIntent);
 
         isRunning = true;
         instance = this;
@@ -295,8 +299,8 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     private void skipToNextSong()
     {
-        resetAndStopPlayer(); //TODO Redundant call from SongQueueFrag.
-        playerHasTrack = false; //TODO Should be false?
+        resetAndStopPlayer(); //TODO Redundant call from SongQueueFrag?
+        playerHasTrack = false;
         queueSongPosition +=1;
         preparePlayback();
         Log.d(Mixen.TAG, "Skipping songs to " + currentMetaTrack.name);
@@ -305,7 +309,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     private void skipToLastSong()
     {
         resetAndStopPlayer();
-        playerHasTrack = false; //TODO Should be false?
+        playerHasTrack = false;
         queueSongPosition -=1;
         preparePlayback();
         Log.d(Mixen.TAG, "Going back to " + currentMetaTrack.name);
@@ -313,16 +317,23 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     private void preparePlayback(){
 
-        serviceIsBusy = true;
-        Log.d(Mixen.TAG, "Signaling playback, it should begin shortly.");
-        MixenBase.mixenPlayerFrag.hideUIControls(false);
-        currentTrack = spotifyQueue.get(queueSongPosition);
-        currentMetaTrack = new MetaTrack(currentTrack);
-        MixenBase.mixenPlayerFrag.prepareHostUI();
-
-        if(hasAudioFocus())
+        if(Mixen.isHost)
         {
-            spotifyPlayer.play(currentTrack.uri);
+            serviceIsBusy = true;
+            Log.d(Mixen.TAG, "Signaling playback, it should begin shortly.");
+            MixenBase.mixenPlayerFrag.hideUIControls(false);
+            currentTrack = spotifyQueue.get(queueSongPosition);
+            currentMetaTrack = new MetaTrack(currentTrack);
+            MixenBase.mixenPlayerFrag.prepareHostUI();
+            //Mixen.network.sendDataToClients(clientQueue);
+            if(hasAudioFocus())
+            {
+                spotifyPlayer.play(currentTrack.uri);
+            }
+        } else
+        {
+            Log.d(Mixen.TAG, "Syncing playback, it should begin shortly.");
+            return;
         }
     }
 
@@ -346,18 +357,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             });
         }
     }
-
-//    private void restartTrackFromBeginning()
-//    {
-//        if (playerIsPlaying || playerHasTrack) {
-//            spotifyPlayer.pause();
-//            MixenBase.mixenPlayerFrag.hideUIControls(true);
-//
-//            spotifyPlayer.seekToPosition(0);
-//            Log.d(Mixen.TAG, "Restarting track from the beginning.");
-//        }
-//    }
-
 
     private void fastForwardPlayer()
     {
@@ -417,12 +416,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         Log.e(Mixen.TAG, "Failed to authenticate user. Reason: " + throwable.getMessage());
 
         StartScreen.instance.restoreControls();
-
-        if(BuildConfig.DEBUG)
-        {
-            StartScreen.instance.startActivity(StartScreen.createNewMixen);
-            return;
-        }
 
         String content = "We had trouble logging into Spotify, please check your username and password and try again later.";
 
@@ -556,6 +549,13 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public void onTrackCompletion()
     {
         Log.d(Mixen.TAG, "Playback has completed.");
+
+        if(!playerHasTrack)
+        {
+            //Skipping songs.
+            return;
+        }
+
         resetAndStopPlayer();
 
         //TODO Delete x amount of tracks if after x amount of completions.
@@ -690,11 +690,11 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             {
                 startForeground(Mixen.MIXEN_NOTIFY_CODE, updateNotification(true));
             }
-            if(Mixen.isHost)
-            {
-                currentMetaTrack.playback_state = MetaTrack.NOW_PLAYING;
-                Mixen.network.sendDataToClients(currentMetaTrack);
-            }
+//            if(Mixen.isHost)
+//            {
+//                currentMetaTrack.playback_state = MetaTrack.NOW_PLAYING;
+//                Mixen.network.sendDataToClients(currentMetaTrack);
+//            }
         }
     }
 
@@ -709,11 +709,11 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             mNotificationManager.notify(Mixen.MIXEN_NOTIFY_CODE, updateNotification(false));
             stopForeground(false);
         }
-        if(Mixen.isHost)
-        {
-            currentMetaTrack.playback_state = MetaTrack.NOW_PLAYING_PAUSED;
-            Mixen.network.sendDataToClients(currentMetaTrack);
-        }
+//        if(Mixen.isHost)
+//        {
+//            currentMetaTrack.playback_state = MetaTrack.NOW_PLAYING_PAUSED;
+//            Mixen.network.sendDataToClients(currentMetaTrack);
+//        }
     }
 
 
@@ -793,11 +793,11 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         {
             if(Mixen.isHost)
             {
-                Mixen.network.stopNetworkService();
+                Mixen.network.stopNetworkService(false);
             }
-            else if(Mixen.network.thisService.isRegistered)
+            else if(Mixen.network.thisDevice.isRegistered)
             {
-                Mixen.network.unregisterClient();
+                //Mixen.network.unregisterClient();
             }
         }
 

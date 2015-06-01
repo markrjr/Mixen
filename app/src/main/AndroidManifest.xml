@@ -43,11 +43,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CreateMixen"
-            android:label="@string/title_activity_create_mixen"
-            android:screenOrientation="nosensor" >
-        </activity>
-        <activity
             android:name=".SearchSongs"
             android:label="@string/title_activity_search_songs"
             android:launchMode="singleTop"
