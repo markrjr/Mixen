@@ -20,7 +20,7 @@
         android:visibility="invisible"
         android:layout_alignParentStart="false" />
 
-    <com.melnykov.fab.FloatingActionButton
+    <com.github.clans.fab.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="56dp"
         android:layout_height="56dp"

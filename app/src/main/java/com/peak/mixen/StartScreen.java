@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -68,6 +69,13 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         checkifFirstRun();
 
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+        {
+            new MaterialDialog.Builder(getApplicationContext())
+                    .title("Larger Device Detected")
+                    .content("It looks like you're using Mixen on a screen or device with a large display or large resolution. The app's interface may look different.")
+                    .neutralText("Okay");
+        }
 
         startService(new Intent(this, MixenPlayerService.class).setAction(MixenPlayerService.init));
 
@@ -234,7 +242,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
         textDivider.setVisibility(View.VISIBLE);
         createMixen.setVisibility(View.VISIBLE);
         indeterminateProgressDiag.dismiss();
-
     }
 
     public void hideControls()
@@ -302,15 +309,9 @@ public class StartScreen extends Activity implements View.OnClickListener{
         }
         else if(v.getId() == R.id.findMixen)
         {
-            hideControls();
             Mixen.isHost = false;
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startActivity(createNewMixen);
-                    restoreControls();
-                }
-            }, 1500);
+            createNewMixen.putExtra("FIND", true);
+            startActivity(createNewMixen);
         }
         else if(v.getId() == R.id.createMixenButton)
         {
@@ -319,6 +320,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 explanationDiag.show();
             }
             else{
+                createNewMixen.putExtra("FIND", false);
                 createMixen();
             }
         }

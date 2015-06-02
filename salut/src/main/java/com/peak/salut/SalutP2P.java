@@ -355,7 +355,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
     public void connectToDevice(final SalutDevice device, final SalutCallback onSuccess, final SalutCallback onFailure)
     {
         WifiP2pConfig config = new WifiP2pConfig();
-        config.deviceAddress = device.deviceAddress.toString();
+        config.deviceAddress = device.device.deviceAddress;
         if(isRunningAsHost)
         {
             //This device will become the WiFi P2P group owner.

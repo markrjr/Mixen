@@ -64,6 +64,10 @@ public class SalutDevice {
     }
 
     public SalutDevice(WifiP2pDevice device, Map<String, String> txtRecord) {
+        this.serviceName = txtRecord.get("SERVICE_NAME");
+        this.readableName = txtRecord.get("INSTANCE_NAME");
+        this.instanceName = txtRecord.get("INSTANCE_NAME");
+        this.deviceName = device.deviceName;
         this.device = device;
         this.txtRecord = txtRecord;
     }

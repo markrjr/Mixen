@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
@@ -24,7 +25,7 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
-import com.melnykov.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
@@ -46,9 +47,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     private FloatingActionButton networkBtn;
     private MaterialDialog findingMixensProgress;
     private MaterialDialog cleanUpDialog;
-    private  MaterialDialog wiFiFailureDiag;
+    private MaterialDialog wiFiFailureDiag;
     private MaterialDialog foundMixensDialog;
     private Intent addSong;
+    private Drawable liveDrawable;
+    private Drawable notLiveDrawable;
     private static TextView infoTV;
     private static ArrayAdapter queueAdapter;
 
@@ -59,22 +62,26 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         baseLayout = (RelativeLayout) v.findViewById(R.id.relativeLayout);
         queueLV = (ListView) v.findViewById(R.id.queueLV);
-        addSongButton = (FloatingActionButton) v.findViewById(R.id.fab);
+        addSongButton = (FloatingActionButton) v.findViewById(R.id.addSongFab);
         networkBtn = (FloatingActionButton) v.findViewById(R.id.goLiveBtn);
         infoTV = (TextView) v.findViewById(R.id.infoTV);
 
-        addSongButton.attachToListView(queueLV);
-        networkBtn.attachToListView(queueLV);
+        //addSongButton.attachToListView(queueLV);
+        //networkBtn.attachToListView(queueLV);
         addSongButton.setOnClickListener(this);
         networkBtn.setOnClickListener(this);
 
         addSong = new Intent(getActivity(), SearchSongs.class);
+        liveDrawable = getResources().getDrawable(R.drawable.ic_live);
+        notLiveDrawable = getResources().getDrawable(R.drawable.ic_not_live);
 
         setupDiags();
 
         setupQueueAdapter();
 
-        if(!Mixen.isHost)
+        Intent startingIntent = getActivity().getIntent();
+
+        if(startingIntent != null && startingIntent.getExtras().getBoolean("FIND"))
         {
             setupMixenNetwork();
         }
@@ -107,6 +114,12 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 .title("Bummer :(")
                 .content(R.string.discover_p2p_error)
                 .neutralText("Okay")
+                .dismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        SongQueueFrag.this.getActivity().finish();
+                    }
+                })
                 .build();
 
         wiFiFailureDiag = new MaterialDialog.Builder(getActivity())
@@ -132,7 +145,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         @Override
                         public void call() {
                             Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
-                            networkBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_live));
+                            networkBtn.setImageDrawable(liveDrawable);
                         }
                     }, new SalutCallback() {
                         @Override
@@ -157,7 +170,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         @Override
                                         public void call() {
                                             Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(i).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
-                                            networkBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_live));
+                                            networkBtn.setImageDrawable(liveDrawable);
                                         }
                                     }, new SalutCallback() {
                                         @Override
@@ -253,21 +266,26 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         {
             if(Mixen.network.serviceIsRunning)
             {
+                networkBtn.setImageDrawable(notLiveDrawable);
+                Toast.makeText(getActivity(), "We're no longer live.", Toast.LENGTH_SHORT).show();
                 Mixen.network.stopNetworkService(false);
-                networkBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_not_live));
+
             }
             else
             {
+                networkBtn.setImageDrawable(liveDrawable);
+                Toast.makeText(getActivity(), "We're now live.", Toast.LENGTH_SHORT).show();
                 Mixen.network.startNetworkService();
-                networkBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_live));
+
             }
         }
         else
         {
             if(Mixen.network.thisDevice.isRegistered)
             {
+                networkBtn.setImageDrawable(notLiveDrawable);
 //                    Mixen.network.unregisterClient();
-                networkBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_not_live));
+
             }
             else
             {
@@ -422,7 +440,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == R.id.fab || v.getId() == R.id.mixenBaseLayout)
+        if(v.getId() == R.id.addSongFab || v.getId() == R.id.mixenBaseLayout)
         {
             startActivityForResult(addSong, 5);
             addSong.setAction(Intent.ACTION_SEARCH);

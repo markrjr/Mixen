@@ -196,10 +196,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentMetaTrack.name + " : " + MixenPlayerService.instance.currentMetaTrack.artist);
 
-        if(albumArtIV.getAnimation() != null)
-        {
-            startRotateAnimation();
-        }
+        setRotateAnimation();
+
         updateUpNext();
 
     }
@@ -208,7 +206,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
     {
         titleTV.setText(song.name);
         artistTV.setText(song.artist);
-        startRotateAnimation();
+        setRotateAnimation();
     }
 
     public void updateUpNext()
@@ -320,7 +318,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                 .alpha(0.3f)
                 .setDuration(250);
 
-        stopRotateAnimation();
+        setRotateAnimation();
         hideSongProgressViews();
 
     }
@@ -356,19 +354,18 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         }
     }
 
-    public void stopRotateAnimation()
-    {
-        if(albumArtIV.getAnimation() != null)
-        {
-            albumArtIV.getAnimation().cancel();
-        }
-    }
-
-    public void startRotateAnimation()
+    public void setRotateAnimation()
     {
         if(albumArtIV != null)
         {
-            albumArtIV.startAnimation(recordPlayerAnim);
+            if(albumArtIV.getAnimation() == null)
+            {
+                albumArtIV.startAnimation(recordPlayerAnim);
+            }
+            else
+            {
+                albumArtIV.setAnimation(null);
+            }
         }
     }
 

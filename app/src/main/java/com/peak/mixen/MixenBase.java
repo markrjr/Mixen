@@ -63,6 +63,8 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         TabNames.add("Up Next");
         TabNames.add("Now Playing");
 
+        mPager.setOffscreenPageLimit(2);
+
         if (Mixen.isHost) {
             TabNames.add("Users");
             mixenUsersFrag = new MixenUsersFrag();

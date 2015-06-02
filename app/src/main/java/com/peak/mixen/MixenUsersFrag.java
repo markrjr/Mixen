@@ -37,14 +37,20 @@ public class MixenUsersFrag extends Fragment{
         queueLV = (ListView)v.findViewById(R.id.queueLV);
         infoTV = (TextView)v.findViewById(R.id.infoTV);
 
-        if(Mixen.network != null && !Mixen.network.registeredClients.isEmpty())
+        if(Mixen.network != null && Mixen.network.serviceIsRunning)
         {
-            populateNetworkListView();
-            infoTV.setText("You're not hosting yet. :(");
+            if(Mixen.network.registeredClients.isEmpty())
+            {
+                infoTV.setText(R.string.empty_users_queue);
+            }
+            else
+            {
+                populateNetworkListView();
+            }
         }
         else
         {
-            infoTV.setText(R.string.empty_users_queue);
+            infoTV.setText("You're not hosting yet. :(");
         }
 
         return relativeLayout;
