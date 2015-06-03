@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
 import android.util.Log;
@@ -25,7 +26,7 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
-import com.github.clans.fab.FloatingActionButton;
+import com.melnykov.fab.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
@@ -66,8 +67,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         networkBtn = (FloatingActionButton) v.findViewById(R.id.goLiveBtn);
         infoTV = (TextView) v.findViewById(R.id.infoTV);
 
-        //addSongButton.attachToListView(queueLV);
-        //networkBtn.attachToListView(queueLV);
+        addSongButton.attachToListView(queueLV);
+        networkBtn.attachToListView(queueLV);
         addSongButton.setOnClickListener(this);
         networkBtn.setOnClickListener(this);
 
@@ -141,7 +142,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                 if (Mixen.network.foundDevices.size() == 1) {
 
-                    Mixen.network.connectToHostDevice(Mixen.network.foundDevices.get(0), new SalutCallback() {
+                    Mixen.network.registerWithHost(Mixen.network.foundDevices.get(0), new SalutCallback() {
                         @Override
                         public void call() {
                             Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
@@ -166,7 +167,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                 @Override
                                 public void onSelection(MaterialDialog materialDialog, View view, final int i, CharSequence charSequence) {
 
-                                    Mixen.network.connectToHostDevice(Mixen.network.foundDevices.get(i), new SalutCallback() {
+                                    Mixen.network.registerWithHost(Mixen.network.foundDevices.get(i), new SalutCallback() {
                                         @Override
                                         public void call() {
                                             Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(i).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
@@ -192,7 +193,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 findingMixensProgress.dismiss();
                 cleanUpDialog.show();
             }
-        }, 3000);
+        }, 5000);
     }
 
     public void updateHostQueueUI() {
@@ -241,6 +242,28 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     public void setupMixenNetwork()
     {
 
+        if(!SalutP2P.isWiFiEnabled(getActivity()))
+        {
+            new MaterialDialog.Builder(getActivity())
+                    .title("Enabling WiFi...")
+                    .content("Mixen needs to turn on WiFi in order to communicate with other devices. ")
+                    .neutralText("Okay")
+                    .dismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setupMixenNetwork();
+                                }
+                            }, 1500);
+                        }
+                    })
+                    .show();
+            SalutP2P.enableWiFi(getActivity());
+            return;
+        }
+
         if(Mixen.username == null || Mixen.username.equals("Anonymous"))
         {
             setUsername();
@@ -284,16 +307,14 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             if(Mixen.network.thisDevice.isRegistered)
             {
                 networkBtn.setImageDrawable(notLiveDrawable);
-//                    Mixen.network.unregisterClient();
-
+                Mixen.network.unregisterClient(null);
+                Toast.makeText(getActivity(), "Disconnected.", Toast.LENGTH_SHORT).show();
             }
             else
             {
                 findMixen();
             }
         }
-
-
     }
 
     @Override
@@ -356,6 +377,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 {
                     snackBarIsVisible = true;
                     addSongButton.setVisibility(View.INVISIBLE);
+                    networkBtn.setVisibility(View.INVISIBLE);
 
                     SnackbarManager.show(
                             Snackbar.with(getActivity().getApplicationContext())
@@ -424,6 +446,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         public void onDismissed(Snackbar snackbar) {
                                             snackBarIsVisible = false;
                                             addSongButton.setVisibility(View.VISIBLE);
+                                            networkBtn.setVisibility(View.VISIBLE);
                                         }
                                     })
                             , getActivity());

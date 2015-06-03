@@ -45,8 +45,10 @@ public class SalutBroadcastReciever extends BroadcastReceiver {
                 return;
             }
             NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
-            if (networkInfo.isConnected()) {
+            if (networkInfo.isConnected() && !salutP2PInstance.thisDevice.isSynced && !salutP2PInstance.thisDevice.isRegistered) {
                 //Here, we are connected to another WiFi P2P device, if necessary one can grab some extra information.
+                //If the above are not true it means that the Salut framework was not aware that
+                //we were previously not connected to a device. Someone may have started the application with a device connected.
                 salutP2PInstance.isConnectedToAnotherDevice = true;
                 manager.requestConnectionInfo(channel, salutP2PInstance);
 
@@ -59,14 +61,14 @@ public class SalutBroadcastReciever extends BroadcastReceiver {
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 
             WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-            salutP2PInstance.thisDevice = new SalutDevice();
-            //salutP2PInstance.thisDevice.txtRecord = salutP2PInstance.serviceData;
-            //salutP2PInstance.thisDevice.deviceName = device.deviceName;
-            salutP2PInstance.thisDevice.macAddress = device.deviceAddress;
-            //salutP2PInstance.thisDevice.readableName = salutP2PInstance.instanceName;
-            salutP2PInstance.thisDevice.device = device;
 
-            Log.v(TAG, device.deviceName + " is now using P2P. ");
+            if(salutP2PInstance.thisDevice.deviceName == null)
+            {
+                salutP2PInstance.thisDevice.deviceName = device.deviceName;
+                salutP2PInstance.thisDevice.macAddress = device.deviceAddress;
+            }
+
+            //Log.v(TAG, device.deviceName + " is now using P2P. ");
         }
 
     }

@@ -198,12 +198,10 @@ public class StartScreen extends Activity implements View.OnClickListener{
     private void createMixen()
     {
         indeterminateProgressDiag.show();
-        SalutP2P.enableWiFi(getApplicationContext());
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
 
-                Mixen.isHost = true;
                 startService(new Intent(StartScreen.instance, MixenPlayerService.class).setAction(MixenPlayerService.init));
 
                 hideControls();
@@ -315,12 +313,13 @@ public class StartScreen extends Activity implements View.OnClickListener{
         }
         else if(v.getId() == R.id.createMixenButton)
         {
+            Mixen.isHost = true;
+            createNewMixen.putExtra("FIND", false);
             if(isActuallyFirstRun)
             {
                 explanationDiag.show();
             }
             else{
-                createNewMixen.putExtra("FIND", false);
                 createMixen();
             }
         }

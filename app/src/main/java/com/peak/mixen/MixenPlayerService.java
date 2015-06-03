@@ -797,7 +797,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             }
             else if(Mixen.network.thisDevice.isRegistered)
             {
-                //Mixen.network.unregisterClient();
+                Mixen.network.unregisterClient(null);
             }
         }
 

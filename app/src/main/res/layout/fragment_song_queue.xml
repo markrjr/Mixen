@@ -20,7 +20,7 @@
         android:visibility="invisible"
         android:layout_alignParentStart="false" />
 
-    <com.github.clans.fab.FloatingActionButton
+    <com.melnykov.fab.FloatingActionButton
         android:id="@+id/addSongFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
         android:layout_alignParentBottom="true"
         android:scaleType="fitXY" />
 
-    <com.github.clans.fab.FloatingActionButton
+    <com.melnykov.fab.FloatingActionButton
         android:id="@+id/goLiveBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

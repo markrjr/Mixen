@@ -37,15 +37,25 @@ public class MixenUsersFrag extends Fragment{
         queueLV = (ListView)v.findViewById(R.id.queueLV);
         infoTV = (TextView)v.findViewById(R.id.infoTV);
 
+        return relativeLayout;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         if(Mixen.network != null && Mixen.network.serviceIsRunning)
         {
             if(Mixen.network.registeredClients.isEmpty())
             {
                 infoTV.setText(R.string.empty_users_queue);
             }
-            else
+            else if(queueAdapter == null)
             {
                 populateNetworkListView();
+            }
+            else
+            {
+                queueLV.invalidate();
             }
         }
         else
@@ -53,13 +63,6 @@ public class MixenUsersFrag extends Fragment{
             infoTV.setText("You're not hosting yet. :(");
         }
 
-        return relativeLayout;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        queueLV.invalidate();
     }
 
     public void setColors(int bgColor)
@@ -72,7 +75,7 @@ public class MixenUsersFrag extends Fragment{
     public void populateNetworkListView()
     {
 
-        Log.d(Mixen.TAG, "Updating network queue.");
+        Log.d(Mixen.TAG, "Updating networked users queue.");
 
         infoTV.setVisibility(View.GONE);
 

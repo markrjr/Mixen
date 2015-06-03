@@ -8,7 +8,7 @@
     <string name="app_description_long">Mixen lets you create a playlist and share it with friends nearby. \n Peak Digital. 2015. All Rights Reserved.</string>
     <string name="title_activity_mixen_stage">MixenStage</string>
     <string name="title_activity_more_info">MoreInfo</string>
-    <string name="createDescript">First, enter your name to identify your Mixen.</string>
+    <string name="createDescript">First, enter a name to tell others who you are.</string>
     <string name="username_hint">Enter a username</string>
     <string name="username_protocol">Your username should contain no spaces or symbols, and be fairly short.</string>
     <string name="currently_playing">Currently Playing </string>
@@ -30,7 +30,7 @@
     <string name="empty_queue">The queue is empty! Add a song to get started.</string>
     <string name="title_activity_tabbed_song_queue">TabbedSongQueue</string>
     <string name="mixen_network_search">Searching for nearby Mixens...</string>
-    <string name="revision_number">Revision 0 (Spotify)</string>
+    <string name="revision_number">Revision 2 (Spotify)</string>
     <string name="build_type">Beta Build</string>
     <string name="title_activity_mixen_base">MixenBase</string>
     <string name="empty_users_queue">There are no users connected yet.</string>

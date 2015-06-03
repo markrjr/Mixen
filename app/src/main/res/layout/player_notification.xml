@@ -50,16 +50,16 @@
 
     <ImageButton
         android:id="@+id/playbackState"
-        android:layout_width="wrap_content"
+        android:layout_width="60dp"
         android:layout_height="fill_parent"
         android:layout_centerHorizontal="true"
         android:background="@color/Madison"
-        android:scaleType="fitCenter"
         android:src="@drawable/pause"
         android:visibility="visible"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:padding="5dp" />
+        android:padding="5dp"
+        android:scaleType="fitCenter" />
 
 
 </RelativeLayout>

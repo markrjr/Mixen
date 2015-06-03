@@ -51,10 +51,9 @@
         app:border_width="2dp"
         app:border_color="@color/EXP_4"/>
 
-    <view
+    <com.melnykov.fab.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        class="com.github.clans.fab.FloatingActionButton"
         android:id="@+id/playAlbumBtn"
         android:src="@drawable/play"
         fab:fab_colorNormal="@color/EXP_4"

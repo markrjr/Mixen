@@ -17,8 +17,6 @@ import java.util.Map;
 @JsonObject
 public class SalutDevice {
 
-    public WifiP2pDevice device;
-
     @JsonField
     public Map<String, String> txtRecord;
     @JsonField
@@ -37,9 +35,10 @@ public class SalutDevice {
     protected int servicePort;
     @JsonField
     protected String TTP = "._tcp.";
-    protected InetAddress deviceAddress;
+    @JsonField
     protected String macAddress;
-
+    @JsonField
+    protected String serviceAddress;
 
 
     public SalutDevice(){}
@@ -50,7 +49,7 @@ public class SalutDevice {
         this.readableName = otherService.getServiceName().split("-")[0];
         this.servicePort = otherService.getPort();
         this.TTP = otherService.getServiceType();
-        this.deviceAddress = otherService.getHost(); //Assuming the service has been resolved.
+        this.serviceAddress = otherService.getHost().toString(); //Assuming the service has been resolved.
     }
 
     protected NsdServiceInfo getAsServiceInfo()
@@ -68,9 +67,11 @@ public class SalutDevice {
         this.readableName = txtRecord.get("INSTANCE_NAME");
         this.instanceName = txtRecord.get("INSTANCE_NAME");
         this.deviceName = device.deviceName;
-        this.device = device;
+        this.macAddress = device.deviceAddress;
         this.txtRecord = txtRecord;
+
     }
+
 
     @Override
     public String toString()
