@@ -36,6 +36,7 @@ import com.peak.salut.Callbacks.SalutDeviceCallback;
 import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
 import com.peak.salut.Salut;
+import com.peak.salut.SalutServiceData;
 
 import java.util.HashMap;
 
@@ -313,12 +314,10 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         if(Mixen.network == null)
         {
-            HashMap serviceData = new HashMap<String, String>();
+            SalutDataReceiver dataReceiver = new SalutDataReceiver(getActivity(), MixenPlayerService.instance);
+            SalutServiceData serviceData = new SalutServiceData("mixen", Mixen.MIXEN_SERVICE_PORT, Mixen.username);
 
-            serviceData.put("SERVICE_NAME", "_mixen");
-            serviceData.put("SERVICE_PORT", "" + Mixen.MIXEN_SERVICE_PORT);
-            serviceData.put("INSTANCE_NAME", Mixen.username);
-            Mixen.network = new Salut(new SalutDataReceiver(getActivity(), MixenPlayerService.instance), serviceData, new SalutCallback() {
+            Mixen.network = new Salut(dataReceiver, serviceData, new SalutCallback() {
                 @Override
                 public void call() {
                     wiFiFailureDiag.show();
