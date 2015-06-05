@@ -124,6 +124,7 @@ public class Salut implements WifiP2pManager.ConnectionInfoListener{
         receiver = new SalutBroadcastReciever(this, manager, channel);
 
         obtainSalutPortLock();
+
     }
 
     private void obtainSalutPortLock()
@@ -679,8 +680,14 @@ public class Salut implements WifiP2pManager.ConnectionInfoListener{
             receiverRegistered = false;
         }
 
-        sendToHost(UNREGISTER, onFailure);
-
+        if(!isConnectedToAnotherDevice)
+        {
+            Log.d(TAG, "Attempted to unregister, but not connected to group. The remote service may already have shutdown.");
+        }
+        else
+        {
+            sendToHost(UNREGISTER, onFailure);
+        }
     }
 
 
