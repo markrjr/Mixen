@@ -64,7 +64,14 @@ public class SearchSongs extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_songs);
 
-        getSupportActionBar().setTitle(Mixen.username + "'s Mixen");
+        if(Mixen.isHost)
+        {
+            getSupportActionBar().setTitle(Mixen.username+ "'s Mixen");
+        }
+        else
+        {
+            getSupportActionBar().setTitle(Mixen.network.registeredHost.readableName + "'s Mixen");
+        }
 
         // Boilerplate.
         songsLV = (ListView) findViewById(R.id.songsLV);
@@ -263,27 +270,57 @@ public class SearchSongs extends ActionBarActivity {
 
     }
 
-
-    private void synchronizeNetworkQueue()
+    private static void addForHost(Activity activity, Track track)
     {
-        if(Mixen.isHost && Mixen.network.serviceIsRunning && !Mixen.network.registeredClients.isEmpty())
-        {
-            Mixen.network.connectAndSendToDevice(Mixen.network.registeredClients.get(0), MixenPlayerService.instance.spotifyQueue, new SalutCallback() {
-                @Override
-                public void call() {
-                    Log.e(Mixen.TAG, "Failed to send network queue data.");
-                }
-            });
+        if (MixenPlayerService.instance.spotifyQueue.isEmpty()) {
+            Log.i(Mixen.TAG, "First song added to queue.");
+
+            MixenPlayerService.instance.spotifyQueue.add(track);
+            MixenPlayerService.instance.queueSongPosition = 0;
+            MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
+            instance.isFirstSong = true;
+        } else {
+            instance.isFirstSong = false;
+            MixenPlayerService.instance.spotifyQueue.add(track);
+            if (!MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack) {
+                //If songs are in the queue, but have completed playback and a new one is suddenly added.
+                MixenPlayerService.instance.queueSongPosition++;
+                MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
+            }
+
         }
-        else if(!Mixen.isHost && Mixen.network.thisDevice.isRegistered)
-        {
-            Mixen.network.connectAndSendToHost(MixenPlayerService.instance.spotifyQueue, new SalutCallback() {
-                @Override
-                public void call() {
-                    Log.e(Mixen.TAG, "Failed to send network queue data.");
-                }
-            });
-        }
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
+                MixenBase.mixenPlayerFrag.updateUpNext();
+            }
+        });
+    }
+
+    private static void addForClient(Activity activity, Track track)
+    {
+        if (MixenPlayerService.instance.clientQueue.isEmpty()) {
+            Log.i(Mixen.TAG, "First song added to queue.");
+
+            MixenPlayerService.instance.clientQueue.add(new MetaTrack(track));
+            MixenPlayerService.instance.queueSongPosition = 0;
+            instance.isFirstSong = true;
+        } else {
+            instance.isFirstSong = false;
+            MixenPlayerService.instance.clientQueue.add(new MetaTrack(track));
+            }
+
+
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
+                MixenBase.mixenPlayerFrag.updateClientUpNext();
+            }
+        });
     }
 
     public static void addTrackToQueue(final Activity activity, final TrackSimple track, boolean showSnackBar)
@@ -321,34 +358,16 @@ public class SearchSongs extends ActionBarActivity {
             @Override
             public void success(Track track, Response response) {
 
-                if (MixenPlayerService.instance.spotifyQueue.isEmpty()) {
-                    Log.i(Mixen.TAG, "First song added to queue.");
-
-                    MixenPlayerService.instance.spotifyQueue.add(track);
-                    MixenPlayerService.instance.queueSongPosition = 0;
-                    MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
-                    instance.isFirstSong = true;
-                } else {
-                    instance.isFirstSong = false;
-                    MixenPlayerService.instance.spotifyQueue.add(track);
-
-                    if (!MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack) {
-                        //If songs are in the queue, but have completed playback and a new one is suddenly added.
-                        MixenPlayerService.instance.queueSongPosition++;
-                        MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
-                    }
-
+                if(Mixen.isHost)
+                {
+                    addForHost(activity, track);
+                }
+                else
+                {
+                    addForClient(activity, track);
                 }
 
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
-                        MixenBase.mixenPlayerFrag.updateUpNext();
-                    }
-                });
-
-                SearchSongs.instance.synchronizeNetworkQueue();
+                MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlaybackData();
 
             }
 

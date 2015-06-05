@@ -32,6 +32,9 @@ import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
 import com.nispok.snackbar.listeners.EventListener;
 import com.peak.salut.Callbacks.SalutCallback;
+import com.peak.salut.Callbacks.SalutDeviceCallback;
+import com.peak.salut.SalutDataReceiver;
+import com.peak.salut.SalutDevice;
 import com.peak.salut.SalutP2P;
 
 import java.util.HashMap;
@@ -78,7 +81,15 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         setupDiags();
 
-        setupQueueAdapter();
+        if(Mixen.isHost)
+        {
+            setupHostQueueAdapter();
+        }
+        else
+        {
+            setupClientQueueAdapter();
+            addSongButton.setVisibility(View.INVISIBLE);
+        }
 
         Intent startingIntent = getActivity().getIntent();
 
@@ -93,13 +104,14 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-
-        if(queueAdapter == null && Mixen.isHost)
+        if(Mixen.isHost && queueAdapter != null)
         {
-            setupQueueAdapter();
+            updateHostQueueUI();
         }
-
-        updateHostQueueUI();
+        else if(!Mixen.isHost && queueAdapter != null)
+        {
+            updateClientQueueUI();
+        }
     }
 
     private void setupDiags() {
@@ -125,7 +137,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         wiFiFailureDiag = new MaterialDialog.Builder(getActivity())
                 .title("Bummer :(")
-                .content("We had trouble checking if WiFi was on, please double check your settings.")
+                .content("We had setting things up. Try turning WiFi off and then back on again.")
                 .neutralText("Okay")
                 .build();
 
@@ -138,19 +150,28 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         Mixen.network.discoverNetworkServicesWithTimeout(new SalutCallback() {
             @Override
             public void call() {
-                findingMixensProgress.dismiss();
 
                 if (Mixen.network.foundDevices.size() == 1) {
+
+                    findingMixensProgress.setTitle("Attempting to connect...");
+                    findingMixensProgress.setContent("Trying to connect to " + Mixen.network.getReadableFoundNames().get(0) + "'s Mixen...");
 
                     Mixen.network.registerWithHost(Mixen.network.foundDevices.get(0), new SalutCallback() {
                         @Override
                         public void call() {
                             Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
                             networkBtn.setImageDrawable(liveDrawable);
+                            addSongButton.setVisibility(View.VISIBLE);
+                            findingMixensProgress.dismiss();
+
                         }
                     }, new SalutCallback() {
                         @Override
                         public void call() {
+                            findingMixensProgress.dismiss();
+
+                            findingMixensProgress.setTitle("Searching for nearby Mixens...");
+                            findingMixensProgress.setContent("Please wait...");
                             cleanUpDialog.setContent("We had a problem connection to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen. Please try again momentarily.");
                             cleanUpDialog.show();
                         }
@@ -172,6 +193,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         public void call() {
                                             Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(i).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
                                             networkBtn.setImageDrawable(liveDrawable);
+                                            addSongButton.setVisibility(View.VISIBLE);
+                                            ;
                                         }
                                     }, new SalutCallback() {
                                         @Override
@@ -183,6 +206,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                 }
                             })
                             .build();
+
+                    findingMixensProgress.dismiss();
                     foundMixensDialog.show();
                 }
 
@@ -201,6 +226,23 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         queueAdapter.notifyDataSetChanged();
 
         if (MixenPlayerService.instance.queueIsEmpty()) {
+
+            infoTV.setVisibility(View.VISIBLE);
+            queueLV.setVisibility(View.GONE);
+        }
+        else
+        {
+            infoTV.setVisibility(View.GONE);
+            queueLV.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+    public void updateClientQueueUI() {
+
+        queueAdapter.notifyDataSetChanged();
+
+        if (MixenPlayerService.instance.clientQueue.isEmpty()) {
 
             infoTV.setVisibility(View.VISIBLE);
             queueLV.setVisibility(View.GONE);
@@ -241,7 +283,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     public void setupMixenNetwork()
     {
-
         if(!SalutP2P.isWiFiEnabled(getActivity()))
         {
             new MaterialDialog.Builder(getActivity())
@@ -277,7 +318,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             serviceData.put("SERVICE_NAME", "_mixen");
             serviceData.put("SERVICE_PORT", "" + Mixen.MIXEN_SERVICE_PORT);
             serviceData.put("INSTANCE_NAME", Mixen.username);
-            Mixen.network = new SalutP2P(this.getActivity(), serviceData, new SalutCallback() {
+            Mixen.network = new SalutP2P(new SalutDataReceiver(getActivity(), MixenPlayerService.instance), serviceData, new SalutCallback() {
                 @Override
                 public void call() {
                     wiFiFailureDiag.show();
@@ -298,7 +339,17 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             {
                 networkBtn.setImageDrawable(liveDrawable);
                 Toast.makeText(getActivity(), "We're now live.", Toast.LENGTH_SHORT).show();
-                Mixen.network.startNetworkService();
+                Mixen.network.startNetworkService(new SalutDeviceCallback() {
+                    @Override
+                    public void call(SalutDevice device) {
+                        Toast.makeText(getActivity(), device.readableName + " is now connected.", Toast.LENGTH_SHORT).show();
+                    }
+                }, new SalutCallback() {
+                    @Override
+                    public void call() {
+                        wiFiFailureDiag.show();
+                    }
+                });
 
             }
         }
@@ -307,8 +358,9 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             if(Mixen.network.thisDevice.isRegistered)
             {
                 networkBtn.setImageDrawable(notLiveDrawable);
+                Toast.makeText(getActivity(), "Disconnected from " + Mixen.network.registeredHost.readableName + " 's Mixen.", Toast.LENGTH_SHORT).show();
                 Mixen.network.unregisterClient(null);
-                Toast.makeText(getActivity(), "Disconnected.", Toast.LENGTH_SHORT).show();
+                this.getActivity().finish();
             }
             else
             {
@@ -335,15 +387,14 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         {
             updateHostQueueUI();
         }
+        else
+        {
+            updateClientQueueUI();
+        }
 
     }
 
-    private void setupQueueAdapter() {
-
-        if(MixenPlayerService.instance == null)
-        {
-            return;
-        }
+    private void setupHostQueueAdapter() {
 
         queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.spotifyQueue) {
             @Override
@@ -373,8 +424,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 // ListView Clicked item value
                 final TrackSimple selected = (TrackSimple) queueLV.getItemAtPosition(position);
 
-                if(!snackBarIsVisible)
-                {
+                if (!snackBarIsVisible) {
                     snackBarIsVisible = true;
                     addSongButton.setVisibility(View.INVISIBLE);
                     networkBtn.setVisibility(View.INVISIBLE);
@@ -390,31 +440,29 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         public void onActionClicked(Snackbar snackbar) {
 
                                             MixenPlayerService.instance.spotifyQueue.remove(position);
-                                            updateHostQueueUI();
 
-                                            if(MixenPlayerService.instance.currentTrack.id.equals(selected.id))
-                                            {
+                                            updateHostQueueUI();
+                                            MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlaybackData();
+
+                                            if (MixenPlayerService.instance.currentTrack.id.equals(selected.id)) {
                                                 //If someone wants to delete the currently playing song, stop everything.
                                                 MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
                                                 Log.d(Mixen.TAG, "Current song was deleted.");
 
-                                                if(MixenPlayerService.instance.getNextTrack() != null || !MixenPlayerService.instance.queueIsEmpty())
-                                                {
-                                                    if(MixenPlayerService.instance.queueHasASingleTrack())
-                                                    {
+                                                if (MixenPlayerService.instance.getNextTrack() != null || !MixenPlayerService.instance.queueIsEmpty()) {
+                                                    if (MixenPlayerService.instance.queueHasASingleTrack()) {
                                                         MixenPlayerService.instance.queueSongPosition = 0;
                                                     }
                                                     //We use preparePlayback here because we don't need to modify the counter, because the ArrayList will move around the counter.
                                                     MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.preparePlayback);
                                                 }
 
-                                            }
-                                            else if(position < MixenPlayerService.instance.queueSongPosition)
-                                            {
+                                            } else if (position < MixenPlayerService.instance.queueSongPosition) {
                                                 MixenPlayerService.instance.queueSongPosition--;
                                             }
 
                                             MixenBase.mixenPlayerFrag.updateUpNext();
+
                                         }
                                     })
                                     .eventListener(new EventListener() {
@@ -450,11 +498,44 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         }
                                     })
                             , getActivity());
-                }
-                else
-                {
+                } else {
                     SnackbarManager.dismiss();
                 }
+
+            }
+        });
+    }
+
+
+    private void setupClientQueueAdapter() {
+
+        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.clientQueue) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+
+                text1.setText(MixenPlayerService.instance.clientQueue.get(position).name);
+                text2.setText(MixenPlayerService.instance.clientQueue.get(position).artist);
+                //text1.setTextSize(24);
+                //text2.setTextSize(18);
+                return view;
+            }
+        };
+
+        // Assign adapter to ListView
+        queueLV.setAdapter(queueAdapter);
+
+        // ListView Item Click Listener
+        queueLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    final int position, long id) {
+
+                // ListView Clicked item value
+                final MetaTrack selected = (MetaTrack) queueLV.getItemAtPosition(position);
 
             }
         });
@@ -475,6 +556,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         }
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -486,6 +568,10 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 if(Mixen.isHost)
                 {
                     updateHostQueueUI();
+                }
+                else
+                {
+                    updateClientQueueUI();
                 }
                 //We really don't care about the Intent data here, we just need some way to know
                 //when the user has come back from searching for songs so that we can update the UI.

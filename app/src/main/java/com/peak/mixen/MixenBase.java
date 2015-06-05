@@ -118,8 +118,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         songQueueFrag.onClick(baseLayout);
     }
 
-
-
     @Override
     protected void onPause() {
         super.onPause();

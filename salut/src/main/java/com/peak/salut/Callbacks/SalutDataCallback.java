@@ -3,5 +3,5 @@ package com.peak.salut.Callbacks;
 
 public interface SalutDataCallback {
 
-    void call(Object data);
+    void onDataReceived(Object data);
 }

@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.mikepenz.aboutlibraries.Libs;
+import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutP2P;
 
@@ -84,7 +85,6 @@ public class Mixen {
         return false;
 
     }
-
 
     public static void showAbout(Activity activity)
     {

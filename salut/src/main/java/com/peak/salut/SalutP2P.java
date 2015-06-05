@@ -8,6 +8,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -34,6 +35,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -44,28 +46,31 @@ import java.util.Map;
 public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
 
     protected static final String TAG = "Salut";
-    protected static int connectionTimeout = 2000;
     private static final int SALUT_SERVER_PORT = 37500;
     private static final int MAX_CLIENT_CONNECTIONS = 5;
     private static final int MAX_SERVER_CONNECTIONS = 25;
+    private static final int BUFFER_SIZE = 65536;;
+    private String UNREGISTER_CODE = "UNREGISTER_SALUT_DEVICE";
     private String TTP = "._tcp";
-    private Activity currentActivity;
+    private SalutDataReceiver dataReceiver;
     private boolean receiverRegistered = false;
 
     private static WifiManager wifiManager;
     private boolean respondersAlreadySet = false;
     private boolean firstDeviceAlreadyFound = false;
+    private boolean hostServerIsRunning = false;
     private SalutCallback deviceNotSupported;
     private SalutCallback onRegistered;
     private SalutCallback onRegistrationFail;
+    private SalutDeviceCallback onDeviceRegisteredWithHost;
 
     //Service Objects
-    public boolean serviceIsRunning = false;
-    private boolean isRunningAsHost = false;
-    private boolean hostServerIsRunning = false;
     public SalutDevice thisDevice;
-    private SalutDevice registeredHost;
-
+    public boolean serviceIsRunning = false;
+    public SalutDevice registeredHost;
+    protected boolean isRunningAsHost = false;
+    private ServerSocket listenerServiceSocket;
+    private Socket listeningSocket;
 
     //WiFi P2P Objects
     private WifiP2pServiceInfo serviceInfo;
@@ -88,12 +93,12 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
 
 
 
-    public SalutP2P(Activity activity, Map<String, String> serviceData, SalutCallback deviceNotSupported)
+    public SalutP2P(SalutDataReceiver dataReceiver, Map<String, String> serviceData, SalutCallback deviceNotSupported)
     {
-        WifiManager wifiMan = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiMan = (WifiManager) dataReceiver.currentContext.getSystemService(Context.WIFI_SERVICE);
         WifiInfo wifiInfo = wifiMan.getConnectionInfo();
 
-        this.currentActivity = activity;
+        this.dataReceiver = dataReceiver;
         this.deviceNotSupported = deviceNotSupported;
         this.TTP = serviceData.get("SERVICE_NAME") + TTP;
 
@@ -113,19 +118,12 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-        manager = (WifiP2pManager) activity.getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = manager.initialize(activity, activity.getMainLooper(), null);
+        manager = (WifiP2pManager) dataReceiver.currentContext.getSystemService(Context.WIFI_P2P_SERVICE);
+        channel = manager.initialize(dataReceiver.currentContext, dataReceiver.currentContext.getMainLooper(), null);
 
         receiver = new SalutBroadcastReciever(this, manager, channel);
 
-        activity.registerReceiver(receiver, intentFilter);
-        receiverRegistered = true;
-
         obtainSalutPortLock();
-    }
-
-    public void setConnectionTimeout(int connectionTimeout) {
-        this.connectionTimeout = connectionTimeout;
     }
 
     private void obtainSalutPortLock()
@@ -133,6 +131,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
         try {
             salutServerSocket = new ServerSocket(SALUT_SERVER_PORT, MAX_SERVER_CONNECTIONS);
             salutServerSocket.setReuseAddress(true);
+            salutServerSocket.setReceiveBufferSize(BUFFER_SIZE);
             thisDevice.txtRecord.put("SALUT_SERVER_PORT", "" + SALUT_SERVER_PORT);
         }
         catch(IOException ex)
@@ -143,11 +142,39 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
             {
                 salutServerSocket = new ServerSocket(0, MAX_SERVER_CONNECTIONS);
                 salutServerSocket.setReuseAddress(true);
+                salutServerSocket.setReceiveBufferSize(BUFFER_SIZE);
                 thisDevice.txtRecord.put("SALUT_SERVER_PORT", "" + salutServerSocket.getLocalPort());
             }
             catch (IOException ioEx)
             {
                 Log.e(TAG, "Failed to get a random port, Salut will not work correctly.");
+            }
+
+        }
+    }
+
+    private void obtainServicePortLock()
+    {
+        try {
+            listenerServiceSocket = new ServerSocket(thisDevice.servicePort, MAX_SERVER_CONNECTIONS);
+            listenerServiceSocket.setReuseAddress(true);
+            listenerServiceSocket.setReceiveBufferSize(BUFFER_SIZE);
+            thisDevice.txtRecord.put("SERVICE_PORT", "" + thisDevice.servicePort);
+        }
+        catch(IOException ex)
+        {
+            Log.e(TAG, "Failed to use standard port, another will be used instead.");
+
+            try
+            {
+                listenerServiceSocket = new ServerSocket(0, MAX_SERVER_CONNECTIONS);
+                listenerServiceSocket.setReuseAddress(true);
+                listenerServiceSocket.setReceiveBufferSize(BUFFER_SIZE);
+                thisDevice.txtRecord.put("SERVICE_PORT", "" + listenerServiceSocket.getLocalPort());
+            }
+            catch (IOException ioEx)
+            {
+                Log.e(TAG, "Failed to get a random port, " + thisDevice.serviceName + " will not work correctly.");
             }
 
         }
@@ -176,25 +203,27 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
     }
 
     @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo info) {
+    public void onConnectionInfoAvailable(final WifiP2pInfo info) {
         /* This method is automatically called when we connect to a device.
          * The group owner accepts connections using a server socket and then spawns a
          * client socket for every client. This is handled by the registration jobs.
          * This will automatically handle first time connections.*/
 
         if (isRunningAsHost && !hostServerIsRunning) {
-
-            try {
-                startHostServer();
-            } catch (Exception ex) {
-                Log.e(TAG,"Failed to create a server thread - " + ex.getMessage());
-            }
-
+            AsyncJob.doInBackground(new AsyncJob.OnBackgroundJob() {
+                @Override
+                public void doOnBackground() {
+                    startHostRegistrationServer();
+                }
+            });
         }
-        else if(!thisDevice.isRegistered) {
-
-            InetSocketAddress groupOwnerAddress = new InetSocketAddress(info.groupOwnerAddress, SALUT_SERVER_PORT);
-            startRegistrationForClient(groupOwnerAddress);
+        else if(!thisDevice.isRegistered && !info.isGroupOwner) {
+            AsyncJob.doInBackground(new AsyncJob.OnBackgroundJob() {
+                @Override
+                public void doOnBackground() {
+                    startRegistrationForClient(new InetSocketAddress(info.groupOwnerAddress.getHostAddress(), SALUT_SERVER_PORT));
+                }
+            });
         }
     }
 
@@ -221,316 +250,329 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
         wifiManager.setWifiEnabled(false);
     }
 
-    private void startHostServer()
+    private void cleanUpDeviceConnection()
     {
+        try {
+            salutServerSocket.close();
+            salutClientSocket.close();
+        }
+        catch (IOException IoEx)
+        {
+            Log.e(TAG, "Failed to close sockets.");
 
-        AsyncJob.OnBackgroundJob clientRegistrationServer = new AsyncJob.OnBackgroundJob() {
+        }
+    }
+
+    private void startHostRegistrationServer()
+    {
+        try
+        {
+            //Create a server socket and wait for client connections. This
+            //call blocks until a connection is accepted from a client.
+
+            while(isRunningAsHost)
+            {
+                hostServerIsRunning = true;
+
+                Log.d(TAG, "\nListening for registration data...");
+                salutClientSocket = salutServerSocket.accept();
+                salutClientSocket.setReceiveBufferSize(BUFFER_SIZE);
+                salutClientSocket.setSendBufferSize(BUFFER_SIZE);
+
+                //If this code is reached, a client has connected and transferred data.
+                Log.d(TAG, "A device has connected to the server, transferring data...");
+
+                Log.d(TAG, "Receiving client registration data...");
+                DataInputStream fromClient = new DataInputStream(salutClientSocket.getInputStream());
+                String serializedClient = fromClient.readUTF();
+                SalutDevice clientDevice = LoganSquare.parse(serializedClient, SalutDevice.class);
+                clientDevice.serviceAddress = salutClientSocket.getInetAddress().toString().replace("/", "");
+
+                Log.d(TAG, "Sending server registration data...");
+                String serializedServer = LoganSquare.serialize(thisDevice);
+                DataOutputStream toClient = new DataOutputStream(salutClientSocket.getOutputStream());
+                toClient.writeUTF(serializedServer);
+
+                if(!clientDevice.isRegistered)
+                {
+                    Log.d(TAG, "Registered device and user: " + clientDevice);
+                    clientDevice.isRegistered = true;
+                    clientDevice.isSynced = true;
+                    final SalutDevice finalDevice = clientDevice; //Allows us to get around having to add the final modifier earlier.
+                    if(registeredClients.isEmpty())
+                    {
+                        startListeningForData();
+                    }
+                    if(onDeviceRegisteredWithHost != null)
+                    {
+                        dataReceiver.currentContext.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                onDeviceRegisteredWithHost.call(finalDevice);
+                            }
+                        });
+                    }
+                    registeredClients.add(clientDevice);
+                }
+            }
+
+        }
+        catch (Exception ex) {
+            Log.d(TAG, "An error occurred while executing a server thread.");
+            ex.printStackTrace();
+        }
+        finally {
+            cleanUpDeviceConnection();
+            hostServerIsRunning = false;
+        }
+    }
+
+    private void startRegistrationForClient(final InetSocketAddress hostDeviceAddress)
+    {
+        try
+        {
+            /**
+             * Create a client socket with the host,
+             * port, and timeout information.
+             */
+            Log.d(TAG, "\nAttempting to register this client with the server...");
+            salutClientSocket = new Socket();
+            salutClientSocket.connect(hostDeviceAddress);
+            salutClientSocket.setReceiveBufferSize(BUFFER_SIZE);
+            salutClientSocket.setSendBufferSize(BUFFER_SIZE);
+
+            //If this code is reached, we've connected to the server and will transfer data.
+            Log.d(TAG, thisDevice.deviceName + " is connected to the server, transferring registration data...");
+
+            Log.d(TAG, "Sending client registration data to server...");
+            String serializedClient = LoganSquare.serialize(thisDevice);
+            DataOutputStream toClient = new DataOutputStream(salutClientSocket.getOutputStream());
+            toClient.writeUTF(serializedClient);
+
+            Log.d(TAG, "Receiving server registration data...");
+            DataInputStream fromClient = new DataInputStream(salutClientSocket.getInputStream());
+            String serializedServer = fromClient.readUTF();
+            SalutDevice serverDevice = LoganSquare.parse(serializedServer, SalutDevice.class);
+            serverDevice.serviceAddress = salutClientSocket.getInetAddress().toString().replace("/", "");
+            registeredHost = serverDevice;
+
+            Log.d(TAG, "Registered Host | " + registeredHost.deviceName);
+
+            Log.d(TAG, "This device has been successfully registered with the host.");
+            thisDevice.isRegistered = true;
+            thisDevice.isSynced = true;
+            dataReceiver.currentContext.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (onRegistered != null)
+                        onRegistered.call();
+                }
+            });
+            startListeningForData();
+        }
+        catch (IOException ex)
+        {
+            Log.d(TAG, "An error occurred while attempting to register.");
+            dataReceiver.currentContext.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (onRegistrationFail != null)
+                        onRegistrationFail.call();
+                }
+            });
+            ex.printStackTrace();
+        }
+        finally {
+            cleanUpDeviceConnection();
+        }
+    }
+
+    private void sendData(final SalutDevice device, final Object data, @Nullable final SalutCallback onFailure)
+    {
+        AsyncJob.OnBackgroundJob sendData = new AsyncJob.OnBackgroundJob() {
             @Override
             public void doOnBackground() {
+                try
+                {
+                    listeningSocket = new Socket();
+                    listeningSocket.setReceiveBufferSize(BUFFER_SIZE);
+                    listeningSocket.setSendBufferSize(BUFFER_SIZE);
+
+                    listeningSocket.connect(new InetSocketAddress(device.serviceAddress, device.servicePort));
+
+                    //If this code is reached, a client has connected and transferred data.
+                    Log.d(TAG, "Connected, transferring data...");
+                    DataOutputStream dataStreamToOtherDevice = new DataOutputStream(listeningSocket.getOutputStream());
+
+                    if(!data.toString().equals(UNREGISTER_CODE))
+                    {
+                        String dataToSend = LoganSquare.serialize(data);
+                        dataStreamToOtherDevice.writeUTF(dataToSend);
+                    }
+                    else
+                    {
+                        dataStreamToOtherDevice.writeUTF(data.toString());
+                        thisDevice.isRegistered = false;
+                        thisDevice.isSynced = false;
+                        registeredHost = null;
+                    }
+                    Log.d(TAG, "Successfully sent data.");
+
+                }
+                catch (IOException ex)
+                {
+                    Log.d(TAG, "An error occurred while sending data to a device.");
+                    if(onFailure != null)
+                        onFailure.call();
+                    ex.printStackTrace();
+                }
+                finally {
+                    if(data.toString().equals(UNREGISTER_CODE))
+                    {
+                        try
+                        {
+                            salutServerSocket.close();
+                            salutClientSocket.close();
+                        }
+                        catch (IOException IoEx)
+                        {
+                            Log.e(TAG, "Failed to close sockets.");
+
+                        }
+                        disconnectFromDevice();
+                        clientDisconnectFromDevice();
+                    }
+                }
+            }
+        };
+
+        AsyncJob.doInBackground(sendData);
+    }
+
+    public void registerWithHost(final SalutDevice device, SalutCallback onRegistered, final SalutCallback onRegistrationFail)
+    {
+        this.onRegistered = onRegistered;
+        this.onRegistrationFail = onRegistrationFail;
+        connectToDevice(device, onRegistrationFail);
+    }
+
+    public void sendToAllDevices(final Object data, final SalutCallback onFailure)
+    {
+        if(isRunningAsHost)
+        {
+            for(SalutDevice registered : registeredClients) {
+                sendData(registered, data, onFailure);
+            }
+        }
+        else
+        {
+            Log.e(TAG, "You must be running as the host to invoke this method.");
+        }
+    }
+
+    public void sendToHost(final Object data, final SalutCallback onFailure)
+    {
+        if(!isRunningAsHost && thisDevice.isRegistered)
+        {
+            sendData(registeredHost, data, onFailure);
+        }
+
+    }
+
+    public void sendToDevice(final SalutDevice device, final Object data, final SalutCallback onFailure)
+    {
+        sendData(device, data, onFailure);
+    }
+
+
+    private void connectToDevice(final SalutDevice device, final SalutCallback onFailure)
+    {
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = device.macAddress;
+        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
+
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Successfully connected to another device.");
+                lastConnectedDevice = device;
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                onFailure.call();
+                Log.e(TAG, "Failed to connect to device. ");
+            }
+        });
+    }
+
+
+    private void startListeningForData()
+    {
+        if(listenerServiceSocket == null)
+            obtainServicePortLock();
+
+        AsyncJob.OnBackgroundJob serviceServer = new AsyncJob.OnBackgroundJob() {
+            @Override
+            public void doOnBackground() {
+                Log.d(TAG, "Listening for service data...");
                 try
                 {
                     //Create a server socket and wait for client connections. This
                     //call blocks until a connection is accepted from a client.
 
-                    while(isRunningAsHost)
-                    {
-                        hostServerIsRunning = true;
+                    while(isRunningAsHost || thisDevice.isRegistered) {
 
-                        Log.d(TAG, "\nAttempting to receive registration data...");
-                        salutClientSocket = salutServerSocket.accept();
+                        listeningSocket = listenerServiceSocket.accept();
 
                         //If this code is reached, a client has connected and transferred data.
-                        Log.d(TAG, "A device has connected to the server, transferring data...");
+                        //Log.d(TAG, "A device is sending data...");
+                        DataInputStream dataStreamFromOtherDevice = new DataInputStream(listeningSocket.getInputStream());
+                        String data = "";
 
-                        Log.d(TAG, "Receiving client registration data...");
-                        DataInputStream fromClient = new DataInputStream(salutClientSocket.getInputStream());
-                        String serializedClient = fromClient.readUTF();
-                        SalutDevice clientDevice = LoganSquare.parse(serializedClient, SalutDevice.class);
-                        clientDevice.serviceAddress = salutClientSocket.getInetAddress().toString();
-
-                        Log.d(TAG, "Sending server registration data...");
-                        String serializedServer = LoganSquare.serialize(thisDevice);
-                        DataOutputStream toClient = new DataOutputStream(salutClientSocket.getOutputStream());
-                        toClient.writeUTF(serializedServer);
-
-                        if(!clientDevice.isRegistered)
+                        while(dataStreamFromOtherDevice.available()>0)
                         {
-                            Log.d(TAG, "Registered device and user: " + clientDevice);
-                            clientDevice.isRegistered = true;
-                            clientDevice.isSynced = true;
-                            registeredClients.add(clientDevice);
-                        }
-                        else
-                        {
-                            Log.d(TAG, "Unregistered device and user: " + clientDevice.instanceName);
-                            clientDevice.serviceAddress = salutClientSocket.getInetAddress().toString();
-                            registeredClients.remove(clientDevice);
+                           data = dataStreamFromOtherDevice.readUTF();
                         }
 
+                        dataStreamFromOtherDevice.close();
+
+                        //Log.d(TAG, "\nSuccessfully received data.\n");
+
+                        if(data.equals(UNREGISTER_CODE))
+                        {
+                            //TODO Should send data back.
+                            Log.d(TAG, "\nReceived request to unregister device\n");
+                            for(SalutDevice registered : registeredClients)
+                            {
+                                if(registered.serviceAddress.equals(listeningSocket.getInetAddress().toString().replace("/", "")))
+                                {
+                                    registeredClients.remove(registered);
+                                    Log.d(TAG, "\nSuccesfully unregistered device.\n");
+                                }
+                            }
+                        }
+                        else if(!data.isEmpty())
+                        {
+                            dataReceiver.dataCallback.onDataReceived(data);
+                        }
                     }
 
                 }
-                catch (Exception ex)
+                catch (IOException ex)
                 {
                     Log.d(TAG, "An error occurred while executing a server thread.");
                     ex.printStackTrace();
                 }
                 finally {
-                    try
-                    {
-                        salutServerSocket.close();
-                        salutClientSocket.close();
-                    }
-                    catch (IOException IoEx)
-                    {
-                        Log.e(TAG, "Failed to close sockets.");
-
-                    }
-
-                    hostServerIsRunning = false;
+                    cleanUpDeviceConnection();
                 }
             }
         };
 
-        AsyncJob.doInBackground(clientRegistrationServer);
-
+        AsyncJob.doInBackground(serviceServer);
     }
 
-    private void startRegistrationForClient(final InetSocketAddress hostDeviceAddress)
-    {
-        AsyncJob.OnBackgroundJob clientRegistrationServer = new AsyncJob.OnBackgroundJob() {
-            @Override
-            public void doOnBackground() {
-
-                try
-                {
-                    /**
-                     * Create a client socket with the host,
-                     * port, and timeout information.
-                     */
-                    Log.d(TAG, "\nAttempting to register this client with the server...");
-                    salutClientSocket = new Socket();
-                    salutClientSocket.connect(hostDeviceAddress);
-
-                    //If this code is reached, we've connected to the server and will transfer data.
-                    Log.d(TAG, thisDevice.deviceName + " is connected to the server, transferring registration data...");
-
-                    Log.d(TAG, "Sending client registration data to server...");
-                    String serializedClient = LoganSquare.serialize(thisDevice);
-                    DataOutputStream toClient = new DataOutputStream(salutClientSocket.getOutputStream());
-                    toClient.writeUTF(serializedClient);
-
-                    Log.d(TAG, "Receiving server registration data...");
-                    DataInputStream fromClient = new DataInputStream(salutClientSocket.getInputStream());
-                    String serializedServer = fromClient.readUTF();
-                    SalutDevice serverDevice = LoganSquare.parse(serializedServer, SalutDevice.class);
-                    serverDevice.serviceAddress = hostDeviceAddress.getAddress().toString();
-                    registeredHost = serverDevice;
-
-                    Log.d(TAG, "Registered Host | " + registeredHost.deviceName);
-
-                    Log.d(TAG, "This device has been successfully registered with the host.");
-                    thisDevice.isRegistered = true;
-                    thisDevice.isSynced = true;
-                    currentActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (onRegistered != null)
-                                onRegistered.call();
-                        }
-                    });
-                    disconnectFromDevice();
-                }
-                catch (IOException ex)
-                {
-                    Log.d(TAG, "An error occurred while attempting to register.");
-                    currentActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (onRegistrationFail != null)
-                                onRegistrationFail.call();
-                        }
-                    });
-                    ex.printStackTrace();
-                }
-                finally {
-                    try
-                    {
-                        salutServerSocket.close();
-                        salutClientSocket.close();
-                    }
-                    catch (IOException IoEx)
-                    {
-                        Log.e(TAG, "Failed to close sockets.");
-                    }
-                }
-            }
-        };
-
-        AsyncJob.doInBackground(clientRegistrationServer);
-    }
-
-    private void sendDataToDevice(final SalutDevice device, final Object data)
-    {
-        AsyncJob.OnBackgroundJob connectToDevice = new AsyncJob.OnBackgroundJob() {
-            @Override
-            public void doOnBackground() {
-                try
-                {
-                    //Create a server socket and wait for client connections. This
-                    //call blocks until a connection is accepted from a client.
-
-
-                    Socket socket = new Socket();
-                    socket.bind(null);
-                    socket.connect(new InetSocketAddress(device.serviceAddress, device.servicePort));
-
-
-                    //If this code is reached, a client has connected and transferred data.
-                    Log.d(TAG, "Connected, transferring data...");
-                    OutputStream outputStream = socket.getOutputStream();
-                    LoganSquare.serialize(data, outputStream);
-                    socket.close();
-                    Log.d(TAG, "Successfully sent data.");
-                }
-                catch (IOException ex)
-                {
-                    Log.d(TAG, "An error occurred while sending data to a device.");
-                    ex.printStackTrace();
-                }
-                finally {
-                    try
-                    {
-                        salutServerSocket.close();
-                        salutClientSocket.close();
-                    }
-                    catch (IOException IoEx)
-                    {
-                        Log.e(TAG, "Failed to close sockets.");
-                    }
-                }
-            }
-        };
-
-        AsyncJob.doInBackground(connectToDevice);
-    }
-
-    public void registerWithHost(final SalutDevice device, final SalutCallback onSuccess, final SalutCallback onFailure)
-    {
-        WifiP2pConfig config = new WifiP2pConfig();
-        config.deviceAddress = device.macAddress;
-        if(isRunningAsHost)
-        {
-            //This device will become the WiFi P2P group owner.
-            config.groupOwnerIntent = 15;
-        }
-        else
-        {
-            config.groupOwnerIntent = 0;
-        }
-        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
-
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "Successfully connected to another device.");
-                lastConnectedDevice = device;
-                onSuccess.call();
-            }
-
-            @Override
-            public void onFailure(int reason) {
-                onFailure.call();
-                Log.e(TAG, "Failed to connect to device. ");
-            }
-        });
-
-    }
-
-    public void connectAndSendToHost(final Object data, final SalutCallback onFailure)
-    {
-        if(!isRunningAsHost && thisDevice.isRegistered)
-        {
-            connectAndSendToDevice(registeredHost, data, onFailure);
-        }
-
-    }
-
-    public void connectAndSendToDevice(final SalutDevice device, final Object data, final SalutCallback onFailure)
-    {
-        WifiP2pConfig config = new WifiP2pConfig();
-        config.deviceAddress = device.macAddress;
-        if(isRunningAsHost)
-        {
-            //This device will become the WiFi P2P group owner.
-            config.groupOwnerIntent = 15;
-        }
-        else
-        {
-            config.groupOwnerIntent = 0;
-        }
-        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
-
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "Successfully connected to another device.");
-                lastConnectedDevice = device;
-                sendDataToDevice(device, data);
-            }
-
-            @Override
-            public void onFailure(int reason) {
-                onFailure.call();
-                Log.e(TAG, "Failed to connect to device. ");
-            }
-        });
-
-    }
-
-//    private void startListeningForData(final Class<?> classType, final SalutDataCallback onDataRecieved)
-//    {
-//        AsyncJob.OnBackgroundJob serviceServer = new AsyncJob.OnBackgroundJob() {
-//            @Override
-//            public void doOnBackground() {
-//                Log.d(TAG, "Listening for data on port: " + SalutP2P.this.thisDevice.servicePort);
-//                try
-//                {
-//                    //Create a server socket and wait for client connections. This
-//                    //call blocks until a connection is accepted from a client.
-//                    ServerSocket listenerServiceSocket = new ServerSocket(SalutP2P.this.thisDevice.servicePort);, MAX_CLIENT_CONNECTIONS);
-//
-//                    while(isRunningAsHost) {
-//
-//                        Socket listeningSocket = listenerServiceSocket.accept();
-//
-//                        //If this code is reached, a client has connected and transferred data.
-//                        Log.d(TAG, "A device is sending data...");
-//                        InputStream inputStream = listeningSocket.getInputStream();
-//                        final Object data = LoganSquare.parse(inputStream, classType);
-//                        inputStream.close();
-//                        currentActivity.runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                onDataRecieved.call(data);
-//                            }
-//                        });
-//                        Log.d(TAG, "Successfully recieved data.");
-//                    }
-//
-//                    listenerServiceSocket.close();
-//                    //listeningSocket.close();
-//                }
-//                catch (IOException ex)
-//                {
-//                    Log.d(TAG, "An error occurred while executing a server thread.");
-//                    ex.printStackTrace();
-//                }
-//            }
-//        };
-//
-//        AsyncJob.doInBackground(serviceServer);
-//    }
-//
-    public void disconnectFromDevice()
+    protected void disconnectFromDevice()
     {
         manager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
             @Override
@@ -552,18 +594,21 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                 }
             }
         });
+    }
 
-//        manager.cancelConnect(channel, new WifiP2pManager.ActionListener() {
-//            @Override
-//            public void onSuccess() {
-//                Log.d(TAG, "Attempting to disconnect...");
-//            }
-//
-//            @Override
-//            public void onFailure(int reason) {
-//                Log.e(TAG, "Failed to disconnect from device. Reason: " + reason);
-//            }
-//        });
+    protected void clientDisconnectFromDevice()
+    {
+        manager.cancelConnect(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFailure(int reason) {
+
+            }
+        });
     }
 
 
@@ -586,7 +631,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
         return false;
     }
 
-    private void createService() {
+    private void createService(final SalutCallback onFailure) {
 
         Log.d(TAG, "Starting " + thisDevice.serviceName + " Transport Protocol " + TTP);
 
@@ -602,6 +647,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
             @Override
             public void onSuccess() {
                 Log.d(TAG, "Successfully created " + thisDevice.serviceName + " service running on port " + thisDevice.servicePort);
+                manager.createGroup(channel, null);
                 serviceIsRunning = true;
                 isRunningAsHost = true;
             }
@@ -609,38 +655,51 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
             @Override
             public void onFailure(int error) {
                 Log.d(TAG, "Failed to create " + thisDevice.serviceName + " : Error Code: " + error);
+                if(onFailure != null)
+                    onFailure.call();
             }
         });
     }
 
-    public void unregisterClient(@Nullable SalutCallback doNothing)
+    public void unregisterClient( @Nullable SalutCallback onFailure)
     {
-        disconnectFromDevice();
+        if(onFailure == null)
+        {
+            onFailure = new SalutCallback() {
+                @Override
+                public void call() {
 
-//        if(doNothing == null)
-//        {
-//            doNothing = new SalutCallback() {
-//                @Override
-//                public void call() {
-//
-//                }
-//            };
-//        }
-//
-//        Integer UNREGISTER_CODE = 542;
-//
-//        connectToDeviceAndSendData(registeredHost, UNREGISTER_CODE, doNothing);
+                }
+            };
+        }
+
+        if(receiverRegistered)
+        {
+            dataReceiver.currentContext.unregisterReceiver(receiver);
+            receiverRegistered = false;
+        }
+
+        sendToHost(UNREGISTER_CODE, onFailure);
 
     }
 
 
-    public void startNetworkService()
+    public void startNetworkService(@Nullable SalutDeviceCallback onDeviceRegisteredWithHost, @Nullable SalutCallback onFailure)
     {
         //In order to have a service that you create be seen, you must also actively look for other services. This is an Android bug.
         //For more information, read here. https://code.google.com/p/android/issues/detail?id=37425
         //We do not need to setup DNS responders.
         registeredClients = new ArrayList<>();
-        createService();
+
+        this.onDeviceRegisteredWithHost = onDeviceRegisteredWithHost;
+
+        if(!receiverRegistered)
+        {
+            dataReceiver.currentContext.registerReceiver(receiver, intentFilter);
+            receiverRegistered = false;
+        }
+
+        createService(onFailure);
         discoverNetworkServices(deviceNotSupported);
     }
 
@@ -677,7 +736,9 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                     }
                 }
 
-                foundDevices.add(new SalutDevice(device, record));
+                SalutDevice foundDevice = new SalutDevice(device, record);
+
+                foundDevices.add(foundDevice);
             }
         };
 
@@ -719,7 +780,9 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                     }
                 }
 
-                foundDevices.add(new SalutDevice(device, record));
+                SalutDevice foundDevice = new SalutDevice(device, record);
+
+                foundDevices.add(foundDevice);
                 if(!firstDeviceAlreadyFound && !callContinously)
                 {
                     onDeviceFound.call();
@@ -760,23 +823,23 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
 
                 Log.d(TAG, "Found " + device.deviceName +  " " + record.values().toString());
 
-                for(SalutDevice found : foundDevices)
-                {
-                    if(found.deviceName.equals(device.deviceName))
-                    {
+                for(SalutDevice found : foundDevices) {
+                    if (found.deviceName.equals(device.deviceName)) {
                         return;
                     }
                 }
 
-                foundDevices.add(new SalutDevice(device, record));
+                SalutDevice foundDevice = new SalutDevice(device, record);
+
+                foundDevices.add(foundDevice);
                 if(!firstDeviceAlreadyFound && !callContinously)
                 {
-                    onDeviceFound.call(record, device);
+                    onDeviceFound.call(foundDevice);
                     firstDeviceAlreadyFound = true;
                 }
                 else if(firstDeviceAlreadyFound && callContinously)
                 {
-                    onDeviceFound.call(record, device);
+                    onDeviceFound.call(foundDevice);
                 }
             }
         };
@@ -804,7 +867,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
     {
         if(!receiverRegistered)
         {
-            currentActivity.registerReceiver(receiver, intentFilter);
+            dataReceiver.currentContext.registerReceiver(receiver, intentFilter);
             receiverRegistered = true;
         }
 
@@ -836,7 +899,8 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                 if (arg0 == WifiP2pManager.P2P_UNSUPPORTED)
                     deviceNotSupported.call();
                 if(arg0 == WifiP2pManager.NO_SERVICE_REQUESTS)
-                    disableWiFi(currentActivity);
+                    disableWiFi(dataReceiver.currentContext);
+                    enableWiFi(dataReceiver.currentContext);
             }
         });
 
@@ -892,7 +956,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                     Log.d(TAG, "Successfully shutdown service.");
                     if(disableWiFi)
                     {
-                        disableWiFi(currentActivity); //To give time for the requests to be disposed.
+                        disableWiFi(dataReceiver.currentContext); //To give time for the requests to be disposed.
                     }
                     serviceIsRunning = false;
                 }
@@ -910,7 +974,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
 
         if(receiverRegistered)
         {
-            currentActivity.unregisterReceiver(receiver);
+            dataReceiver.currentContext.unregisterReceiver(receiver);
             receiverRegistered = false;
         }
 

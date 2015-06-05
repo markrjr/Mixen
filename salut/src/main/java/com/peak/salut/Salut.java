@@ -213,7 +213,7 @@ public class Salut{
                             currentActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    onDataRecieved.call(data);
+                                    onDataRecieved.onDataReceived(data);
                                 }
                             });
                             Log.d(TAG, "Successfully recieved data.");

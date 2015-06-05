@@ -1,12 +1,16 @@
 package com.peak.mixen;
 
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -27,9 +31,12 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.lzyzsd.circleprogress.ArcProgress;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
+
+import java.io.ByteArrayOutputStream;
 import java.util.Random;
 
 
@@ -184,29 +191,46 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         }
     }
 
-    public void prepareHostUI()
+    public void prepareUI()
     {
         titleTV.setText(MixenPlayerService.instance.currentMetaTrack.name);
         artistTV.setText(MixenPlayerService.instance.currentMetaTrack.artist);
 
         Picasso.with(getActivity().getApplicationContext())
                 .load(MixenPlayerService.instance.currentMetaTrack.albumArtURL)
+                .placeholder(getResources().getDrawable(R.drawable.mixen_icon))
                 .into(albumArtIV);
-
 
         Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentMetaTrack.name + " : " + MixenPlayerService.instance.currentMetaTrack.artist);
 
         setRotateAnimation();
 
-        updateUpNext();
+        if(Mixen.isHost)
+        {
+            updateUpNext();
+        }
+        else
+        {
+            updateClientUpNext();
+        }
 
     }
 
-    public void prepareClientUI(MetaTrack song)
+    public void updateClientUpNext()
     {
-        titleTV.setText(song.name);
-        artistTV.setText(song.artist);
-        setRotateAnimation();
+        if(MixenPlayerService.instance.clientQueue.isEmpty())
+        {
+            MixenBase.mixenPlayerFrag.upNextTV.setText("Nothing Is Playing");
+            MixenBase.mixenPlayerFrag.upNextTV.setVisibility(View.VISIBLE);
+        }
+        else if(MixenPlayerService.instance.getNextMetaTrack() != null)
+        {
+            MixenBase.mixenPlayerFrag.upNextTV.setText("Next: \n" + MixenPlayerService.instance.getNextMetaTrack().name);
+        }
+        else
+        {
+            upNextTV.setText("");
+        }
     }
 
     public void updateUpNext()
