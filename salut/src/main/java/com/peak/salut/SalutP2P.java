@@ -50,7 +50,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
     private static final int MAX_CLIENT_CONNECTIONS = 5;
     private static final int MAX_SERVER_CONNECTIONS = 25;
     private static final int BUFFER_SIZE = 65536;;
-    private String UNREGISTER_CODE = "UNREGISTER_SALUT_DEVICE";
+    private final String UNREGISTER = "UNREGISTER_SALUT_DEVICE";
     private String TTP = "._tcp";
     private SalutDataReceiver dataReceiver;
     private boolean receiverRegistered = false;
@@ -404,7 +404,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                     Log.d(TAG, "Connected, transferring data...");
                     DataOutputStream dataStreamToOtherDevice = new DataOutputStream(listeningSocket.getOutputStream());
 
-                    if(!data.toString().equals(UNREGISTER_CODE))
+                    if(!data.toString().equals(UNREGISTER))
                     {
                         String dataToSend = LoganSquare.serialize(data);
                         dataStreamToOtherDevice.writeUTF(dataToSend);
@@ -427,7 +427,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                     ex.printStackTrace();
                 }
                 finally {
-                    if(data.toString().equals(UNREGISTER_CODE))
+                    if(data.toString().equals(UNREGISTER))
                     {
                         try
                         {
@@ -439,6 +439,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                             Log.e(TAG, "Failed to close sockets.");
 
                         }
+                        cleanUpDeviceConnection();
                         disconnectFromDevice();
                         clientDisconnectFromDevice();
                     }
@@ -531,16 +532,15 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
 
                         while(dataStreamFromOtherDevice.available()>0)
                         {
-                           data = dataStreamFromOtherDevice.readUTF();
+                            data = dataStreamFromOtherDevice.readUTF();
                         }
 
                         dataStreamFromOtherDevice.close();
 
                         //Log.d(TAG, "\nSuccessfully received data.\n");
 
-                        if(data.equals(UNREGISTER_CODE))
+                        if(data.equals(UNREGISTER))
                         {
-                            //TODO Should send data back.
                             Log.d(TAG, "\nReceived request to unregister device\n");
                             for(SalutDevice registered : registeredClients)
                             {
@@ -564,7 +564,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                     ex.printStackTrace();
                 }
                 finally {
-                    cleanUpDeviceConnection();
+                    //cleanUpDeviceConnection();
                 }
             }
         };
@@ -679,7 +679,7 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
             receiverRegistered = false;
         }
 
-        sendToHost(UNREGISTER_CODE, onFailure);
+        sendToHost(UNREGISTER, onFailure);
 
     }
 
@@ -899,8 +899,10 @@ public class SalutP2P implements WifiP2pManager.ConnectionInfoListener{
                 if (arg0 == WifiP2pManager.P2P_UNSUPPORTED)
                     deviceNotSupported.call();
                 if(arg0 == WifiP2pManager.NO_SERVICE_REQUESTS)
+                {
                     disableWiFi(dataReceiver.currentContext);
                     enableWiFi(dataReceiver.currentContext);
+                }
             }
         });
 
