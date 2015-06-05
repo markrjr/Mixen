@@ -16,15 +16,15 @@ public class SalutBroadcastReciever extends BroadcastReceiver {
 
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
-    private SalutP2P salutP2PInstance;
+    private Salut salutInstance;
 
     final static String TAG = "Salut";
 
-    public SalutBroadcastReciever(SalutP2P salutP2PInstance, WifiP2pManager manager,  WifiP2pManager.Channel channel) {
+    public SalutBroadcastReciever(Salut salutInstance, WifiP2pManager manager,  WifiP2pManager.Channel channel) {
         super();
         this.manager = manager;
         this.channel = channel;
-        this.salutP2PInstance = salutP2PInstance;
+        this.salutInstance = salutInstance;
     }
 
     @Override
@@ -47,31 +47,31 @@ public class SalutBroadcastReciever extends BroadcastReceiver {
             NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
             if (networkInfo.isConnected()) {
                 //Here, we are connected to another WiFi P2P device, if necessary one can grab some extra information.
-                if(!salutP2PInstance.isRunningAsHost && !salutP2PInstance.thisDevice.isRegistered)
+                if(!salutInstance.isRunningAsHost && !salutInstance.thisDevice.isRegistered)
                 {
                     //If we've reached here it means that the Salut framework was not aware that
                     //we were previously not connected to a device. Someone may have started the application with a device connected.
-                    salutP2PInstance.disconnectFromDevice();
-                    salutP2PInstance.clientDisconnectFromDevice();
+                    salutInstance.disconnectFromDevice();
+                    salutInstance.clientDisconnectFromDevice();
                 }
 
-                salutP2PInstance.isConnectedToAnotherDevice = true;
-                manager.requestConnectionInfo(channel, salutP2PInstance);
+                salutInstance.isConnectedToAnotherDevice = true;
+                manager.requestConnectionInfo(channel, salutInstance);
 
             } else {
 
                 Log.v(TAG, "Not connected to another device.");
-                salutP2PInstance.isConnectedToAnotherDevice = false;
+                salutInstance.isConnectedToAnotherDevice = false;
             }
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 
             WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
 
-            if(salutP2PInstance.thisDevice.deviceName == null)
+            if(salutInstance.thisDevice.deviceName == null)
             {
-                salutP2PInstance.thisDevice.deviceName = device.deviceName;
-                salutP2PInstance.thisDevice.macAddress = device.deviceAddress;
+                salutInstance.thisDevice.deviceName = device.deviceName;
+                salutInstance.thisDevice.macAddress = device.deviceAddress;
             }
 
             //Log.v(TAG, device.deviceName + " is now using P2P. ");

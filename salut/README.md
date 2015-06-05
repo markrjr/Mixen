@@ -9,7 +9,7 @@ Salut is a wrapper around the WiFi Direct Service discovery API in Android. Befo
 
 ## Installation
 
-To install the library simple download the AAR from [here](http://google.com), and add it to your project's build.gradle file.
+To install the library simply download the AAR from [here](http://google.com), and add it to your project's build.gradle file.
 
 
 ## Usage

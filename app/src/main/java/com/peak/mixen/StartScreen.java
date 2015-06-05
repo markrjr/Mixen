@@ -16,18 +16,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.Theme;
 import com.peak.salut.Salut;
-import com.peak.salut.Callbacks.SalutCallback;
-import com.peak.salut.SalutP2P;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.Spotify;
-
-import java.util.HashMap;
 
 
 public class StartScreen extends Activity implements View.OnClickListener{

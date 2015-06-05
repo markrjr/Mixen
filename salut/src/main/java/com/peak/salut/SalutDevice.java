@@ -11,9 +11,6 @@ import com.bluelinelabs.logansquare.annotation.JsonObject;
 import java.net.InetAddress;
 import java.util.Map;
 
-/**
- * Created by markrjr on 4/17/15.
- */
 @JsonObject
 public class SalutDevice {
 
@@ -42,25 +39,6 @@ public class SalutDevice {
 
 
     public SalutDevice(){}
-
-    public SalutDevice(NsdServiceInfo otherService)
-    {
-        this.instanceName = otherService.getServiceName();
-        this.readableName = otherService.getServiceName().split("-")[0];
-        this.servicePort = otherService.getPort();
-        this.TTP = otherService.getServiceType();
-        this.serviceAddress = otherService.getHost().toString(); //Assuming the service has been resolved.
-    }
-
-    protected NsdServiceInfo getAsServiceInfo()
-    {
-        NsdServiceInfo thisDevice = new NsdServiceInfo();
-        thisDevice.setServiceName(this.instanceName);
-        thisDevice.setPort(this.servicePort);
-        thisDevice.setServiceType(this.TTP);
-
-        return thisDevice;
-    }
 
     public SalutDevice(WifiP2pDevice device, Map<String, String> txtRecord) {
         this.serviceName = txtRecord.get("SERVICE_NAME");

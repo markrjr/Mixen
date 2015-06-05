@@ -35,7 +35,7 @@ import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDeviceCallback;
 import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
-import com.peak.salut.SalutP2P;
+import com.peak.salut.Salut;
 
 import java.util.HashMap;
 
@@ -283,7 +283,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     public void setupMixenNetwork()
     {
-        if(!SalutP2P.isWiFiEnabled(getActivity()))
+        if(!Salut.isWiFiEnabled(getActivity()))
         {
             new MaterialDialog.Builder(getActivity())
                     .title("Enabling WiFi...")
@@ -301,7 +301,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         }
                     })
                     .show();
-            SalutP2P.enableWiFi(getActivity());
+            Salut.enableWiFi(getActivity());
             return;
         }
 
@@ -318,7 +318,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             serviceData.put("SERVICE_NAME", "_mixen");
             serviceData.put("SERVICE_PORT", "" + Mixen.MIXEN_SERVICE_PORT);
             serviceData.put("INSTANCE_NAME", Mixen.username);
-            Mixen.network = new SalutP2P(new SalutDataReceiver(getActivity(), MixenPlayerService.instance), serviceData, new SalutCallback() {
+            Mixen.network = new Salut(new SalutDataReceiver(getActivity(), MixenPlayerService.instance), serviceData, new SalutCallback() {
                 @Override
                 public void call() {
                     wiFiFailureDiag.show();

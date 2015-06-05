@@ -10,9 +10,7 @@ import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.mikepenz.aboutlibraries.Libs;
-import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
-import com.peak.salut.SalutP2P;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -36,7 +34,7 @@ public class Mixen {
 
     public static int[] appColors;
 
-    public static SalutP2P network;
+    public static Salut network;
 
     public static final String COVER_ART_URL = "http://images.gs-cdn.net/static/albums/";
 
