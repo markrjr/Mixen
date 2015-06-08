@@ -48,15 +48,24 @@ public class PlaybackSnapshot {
             clientQueue = new ArrayList<>(MixenPlayerService.instance.spotifyQueue.size());
         }
 
-        for(Track track : MixenPlayerService.instance.spotifyQueue)
+        if(!MixenPlayerService.instance.spotifyQueue.isEmpty())
         {
-            clientQueue.add(new MetaTrack(track));
+            for(Track track : MixenPlayerService.instance.spotifyQueue)
+            {
+                for(MetaTrack metaTrack : MixenPlayerService.instance.clientQueue)
+                {
+                    if(track.id.equals(metaTrack.spotifyID))
+                        return;
+                }
+
+                MixenPlayerService.instance.clientQueue.add(new MetaTrack(track));
+            }
         }
     }
 
     public void updateNetworkPlaybackData()
     {
-        if(Mixen.isHost && Mixen.network != null && Mixen.network.serviceIsRunning && !Mixen.network.registeredClients.isEmpty())
+        if(Mixen.isHost && Mixen.network != null && Mixen.network.isRunningAsHost && !Mixen.network.registeredClients.isEmpty())
         {
             Mixen.network.sendToAllDevices(this, new SalutCallback() {
                 @Override

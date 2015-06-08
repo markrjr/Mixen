@@ -122,6 +122,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 .content("Please wait...")
                 .theme(Theme.DARK)
                 .progress(true, 0)
+                .cancelable(false)
                 .build();
 
         cleanUpDialog = new MaterialDialog.Builder(getActivity())
@@ -160,7 +161,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     Mixen.network.registerWithHost(Mixen.network.foundDevices.get(0), new SalutCallback() {
                         @Override
                         public void call() {
-                            Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(Mixen.currentContext, "You're now connected to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
                             networkBtn.setImageDrawable(liveDrawable);
                             addSongButton.setVisibility(View.VISIBLE);
                             findingMixensProgress.dismiss();
@@ -327,7 +328,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         if(Mixen.isHost)
         {
-            if(Mixen.network.serviceIsRunning)
+            if(Mixen.network.isRunningAsHost)
             {
                 networkBtn.setImageDrawable(notLiveDrawable);
                 Toast.makeText(getActivity(), "We're no longer live.", Toast.LENGTH_SHORT).show();

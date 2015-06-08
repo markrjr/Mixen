@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.lzyzsd.circleprogress.ArcProgress;
+import com.melnykov.fab.FloatingActionButton;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
 import com.squareup.picasso.Callback;
@@ -49,6 +50,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
     private ImageButton previousTrackBtn;
 
     private RelativeLayout baseLayout;
+    private FloatingActionButton upVoteBtn;
+    private FloatingActionButton downVoteBtn;
     public ProgressBar bufferPB;
     public boolean isRunning;
     public boolean progressBarThreadIsRunning = false;
@@ -88,6 +91,9 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         songProgressTV = (TextView) currentView.findViewById(R.id.songProgressTV);
         songDurationTV = (TextView) currentView.findViewById(R.id.songDurationTV);
         arcProgressBar = (ArcProgress) currentView.findViewById(R.id.arc_progress_bar);
+        upVoteBtn = (FloatingActionButton) currentView.findViewById(R.id.upVoteBtn);
+        downVoteBtn = (FloatingActionButton) currentView.findViewById(R.id.downVoteBtn);
+
 
         titleTV.setSelected(true);
         titleTV.setEllipsize(TextUtils.TruncateAt.MARQUEE);
@@ -121,13 +127,20 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         //a different memory location than the above, making the showHidePlayBtn method not work.
         playPauseButton.setImageDrawable(pauseDrawable);
 
-        showOrHidePlayBtn();
+        showOrHidePlayBtn(null);
         playPauseButton.setClickable(false);
         fastForwardIB.setClickable(false);
         rewindIB.setClickable(false);
         skipTrackBtn.setClickable(false);
         previousTrackBtn.setClickable(false);
 
+        if(!Mixen.isHost)
+        {
+            upVoteBtn.setVisibility(View.VISIBLE);
+            upVoteBtn.setClickable(false);
+            downVoteBtn.setClickable(false);
+            downVoteBtn.setVisibility(View.VISIBLE);
+        }
 
         return baseLayout;
 
@@ -332,8 +345,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         arcProgressBar.setVisibility(View.INVISIBLE);
         songDurationTV.setVisibility(View.INVISIBLE);
         songProgressTV.setVisibility(View.INVISIBLE);
-        //MixenPlayerService.instance.current = "";
-        //MixenPlayerService.instance.currentAlbumArt = null;
         playPauseButton.setImageDrawable(playDrawable);
         playPauseButton.animate()
                 .alpha(1.0f)
@@ -347,34 +358,54 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     }
 
-    public void showOrHidePlayBtn()
+    protected void setUIToPaused()
     {
-        //The UI is already set to a paused state when UIIsClean, so calling this function would upset the order
-        // for future calls to this function.
+        playPauseButton.setImageDrawable(playDrawable);
+        playPauseButton.animate()
+                .alpha(1.0f)
+                .setDuration(250);
+        albumArtIV.animate()
+                .alpha(0.3f)
+                .setDuration(250);
+        Log.d(Mixen.TAG, "PAUSED");
+    }
+
+    protected void setUIToPlaying()
+    {
+        playPauseButton.setImageDrawable(pauseDrawable);
+        playPauseButton.animate()
+                .alpha(0f)
+                .setDuration(250);
+        albumArtIV.animate()
+                .alpha(1.0f)
+                .setDuration(250);
+        Log.d(Mixen.TAG, "PLAYING");
+    }
+
+    public void showOrHidePlayBtn(@Nullable PlaybackSnapshot playbackState)
+    {
+
+        if(playbackState != null)
+        {
+            if(playbackState.playServiceState == PlaybackSnapshot.PLAYING)
+            {
+                setUIToPlaying();
+                return;
+            }
+            else if(playbackState.playServiceState == PlaybackSnapshot.PAUSED)
+            {
+                setUIToPaused();
+                return;
+            }
+        }
 
         if (playPauseButton.getDrawable() == pauseDrawable)
         {
-
-            playPauseButton.setImageDrawable(playDrawable);
-            playPauseButton.animate()
-                    .alpha(1.0f)
-                    .setDuration(250);
-            albumArtIV.animate()
-                    .alpha(0.3f)
-                    .setDuration(250);
-            Log.d(Mixen.TAG, "PAUSED");
+            setUIToPaused();
         }
         else
         {
-            playPauseButton.setImageDrawable(pauseDrawable);
-            playPauseButton.animate()
-                    .alpha(0f)
-                    .setDuration(250);
-            albumArtIV.animate()
-                    .alpha(1.0f)
-                    .setDuration(250);
-            Log.d(Mixen.TAG, "PLAYING");
-
+            setUIToPlaying();
         }
     }
 
@@ -400,7 +431,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         bufferPB.setVisibility(View.VISIBLE);
         upNextTV.setVisibility(View.INVISIBLE);
         if(changeDrawable)
-            showOrHidePlayBtn();
+            showOrHidePlayBtn(null);
         playPauseButton.setClickable(false);
         fastForwardIB.setClickable(false);
         rewindIB.setClickable(false);
@@ -415,7 +446,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         bufferPB.setVisibility(View.GONE);
         upNextTV.setVisibility(View.VISIBLE);
-        showOrHidePlayBtn();
+        showOrHidePlayBtn(null);
         playPauseButton.setClickable(true);
         fastForwardIB.setClickable(true);
         rewindIB.setClickable(true);

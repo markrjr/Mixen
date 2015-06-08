@@ -351,7 +351,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         {
             MixenBase.songQueueFrag.updateClientQueueUI();
             MixenBase.mixenPlayerFrag.prepareUI();
-            MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
+            MixenBase.mixenPlayerFrag.showOrHidePlayBtn(playerServiceSnapshot);
             Log.d(Mixen.TAG, "Syncing playback, it should begin shortly.");
 
         }
@@ -569,6 +569,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public void onTrackCompletion()
     {
         Log.d(Mixen.TAG, "Playback has completed.");
+        playerServiceSnapshot.updatePlayerServiceState(PlaybackSnapshot.COMPLETED);
 
         if(!playerHasTrack)
         {
@@ -703,7 +704,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         if (hasAudioFocus())
         {
             spotifyPlayer.resume();
-            MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
+            MixenBase.mixenPlayerFrag.showOrHidePlayBtn(null);
             setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
             MixenBase.mixenPlayerFrag.updateProgressBar();
             if(MixenBase.userHasLeftApp)
@@ -720,7 +721,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public void pausePlayback()
     {
         spotifyPlayer.pause();
-        MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
+        MixenBase.mixenPlayerFrag.showOrHidePlayBtn(null);
         setMediaMetaData(PlaybackStateCompat.STATE_PAUSED);
         if(MixenBase.userHasLeftApp)
         {
@@ -824,16 +825,21 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     public void handleNetworkData(PlaybackSnapshot hostPlaybackSnapshot)
     {
+        playerServiceSnapshot = hostPlaybackSnapshot;
+        clientQueue = hostPlaybackSnapshot.clientQueue;
+        currentMetaTrack = hostPlaybackSnapshot.currentMetaTrack;
+        queueSongPosition = hostPlaybackSnapshot.queueSongPosition;
+
         switch(hostPlaybackSnapshot.playServiceState)
         {
             case PlaybackSnapshot.PLAYING:
                 preparePlayback();
                 return;
             case PlaybackSnapshot.PAUSED:
-                MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
+                MixenBase.mixenPlayerFrag.showOrHidePlayBtn(hostPlaybackSnapshot);
                 return;
             case PlaybackSnapshot.RESUME:
-                MixenBase.mixenPlayerFrag.showOrHidePlayBtn();
+                MixenBase.mixenPlayerFrag.showOrHidePlayBtn(hostPlaybackSnapshot);
                 return;
 
         }
@@ -888,11 +894,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         try
         {
             final PlaybackSnapshot hostPlaybackState = LoganSquare.parse((String)data, PlaybackSnapshot.class);
-            if(hostPlaybackState == null)
-                return;
-            clientQueue = hostPlaybackState.clientQueue;
-            currentMetaTrack = hostPlaybackState.currentMetaTrack;
-            queueSongPosition = hostPlaybackState.queueSongPosition;
             MixenBase.mixenPlayerFrag.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -904,6 +905,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         catch (IOException ex)
         {
             Log.e(Mixen.TAG, "Failed to parse network data.");
+            ex.printStackTrace();
         }
     }
 

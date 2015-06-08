@@ -43,7 +43,7 @@ public class MixenUsersFrag extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
-        if(Mixen.network != null && Mixen.network.serviceIsRunning)
+        if(Mixen.network != null && Mixen.network.isRunningAsHost)
         {
             if(Mixen.network.registeredClients.isEmpty())
             {

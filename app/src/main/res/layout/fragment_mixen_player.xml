@@ -197,12 +197,41 @@
 
     </RelativeLayout>
 
+    <com.melnykov.fab.FloatingActionButton
+        android:id="@+id/downVoteBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_action_down"
+        fab:fab_colorNormal="@color/Puerto_Rico"
+        fab:fab_colorPressed="@color/Puerto_Rico"
+        fab:fab_colorRipple="@color/Puerto_Rico"
+        android:visibility="gone"
+        android:scaleType="center"
+        android:layout_alignBottom="@+id/artistTV"
+        android:layout_alignRight="@+id/albumArtIV"
+        android:layout_alignEnd="@+id/albumArtIV" />
+
+    <com.melnykov.fab.FloatingActionButton
+        android:id="@+id/upVoteBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_action_up"
+        fab:fab_colorNormal="@color/Puerto_Rico"
+        fab:fab_colorPressed="@color/Puerto_Rico"
+        fab:fab_colorRipple="@color/Puerto_Rico"
+        android:visibility="gone"
+        android:scaleType="center"
+        android:layout_alignBottom="@+id/artistTV"
+        android:layout_alignLeft="@+id/albumArtIV"
+        android:layout_alignStart="@+id/albumArtIV" />
+
     <TextView
         android:id="@+id/songDurationTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/Snow_White"
-        android:visibility="visible"
+        android:visibility="gone"
+        android:scaleType="centerCrop"
         android:layout_below="@+id/arc_progress_bar"
         android:layout_toRightOf="@+id/playPauseButton"
         android:layout_toEndOf="@+id/playPauseButton"
