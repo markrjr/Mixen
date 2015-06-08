@@ -270,7 +270,7 @@ public class SearchSongs extends ActionBarActivity {
 
     }
 
-    private static void addForHost(Activity activity, Track track)
+    protected static void addForHost(Activity activity, Track track)
     {
         if (MixenPlayerService.instance.spotifyQueue.isEmpty()) {
             Log.i(Mixen.TAG, "First song added to queue.");
@@ -299,7 +299,7 @@ public class SearchSongs extends ActionBarActivity {
         });
     }
 
-    private static void addForClient(Activity activity, Track track)
+    protected static void addForClient(Activity activity, Track track)
     {
         if (MixenPlayerService.instance.clientQueue.isEmpty()) {
             Log.i(Mixen.TAG, "First song added to queue.");
@@ -311,8 +311,6 @@ public class SearchSongs extends ActionBarActivity {
             instance.isFirstSong = false;
             MixenPlayerService.instance.clientQueue.add(new MetaTrack(track));
             }
-
-
 
         activity.runOnUiThread(new Runnable() {
             @Override
@@ -367,7 +365,7 @@ public class SearchSongs extends ActionBarActivity {
                     addForClient(activity, track);
                 }
 
-                MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlaybackData();
+                MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
 
             }
 

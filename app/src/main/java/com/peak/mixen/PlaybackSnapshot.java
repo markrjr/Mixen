@@ -23,6 +23,10 @@ public class PlaybackSnapshot {
     public static final int RESUME = 7;
     public static final int INIT = 47;
 
+
+    public static final int QUEUE_UPDATE = 23;
+    public static final int PLAYBACK_UPDATE = 93;
+
     @JsonField
     public ArrayList<MetaTrack> clientQueue;
     @JsonField
@@ -31,6 +35,8 @@ public class PlaybackSnapshot {
     public MetaTrack currentMetaTrack;
     @JsonField
     public int queueSongPosition;
+    @JsonField
+    public int snapshotType;
 
     public PlaybackSnapshot(){}
 
@@ -43,27 +49,20 @@ public class PlaybackSnapshot {
 
     private void populateNetworkQueue()
     {
-        if(clientQueue == null)
-        {
-            clientQueue = new ArrayList<>(MixenPlayerService.instance.spotifyQueue.size());
-        }
+        clientQueue = new ArrayList<>(MixenPlayerService.instance.spotifyQueue.size());
 
         if(!MixenPlayerService.instance.spotifyQueue.isEmpty())
         {
             for(Track track : MixenPlayerService.instance.spotifyQueue)
             {
-                for(MetaTrack metaTrack : MixenPlayerService.instance.clientQueue)
-                {
-                    if(track.id.equals(metaTrack.spotifyID))
-                        return;
-                }
-
-                MixenPlayerService.instance.clientQueue.add(new MetaTrack(track));
+                clientQueue.add(new MetaTrack(track));
             }
         }
+
+        MixenPlayerService.instance.clientQueue = clientQueue;
     }
 
-    public void updateNetworkPlaybackData()
+    private void updateNetworkPlaybackData()
     {
         if(Mixen.isHost && Mixen.network != null && Mixen.network.isRunningAsHost && !Mixen.network.registeredClients.isEmpty())
         {
@@ -85,15 +84,34 @@ public class PlaybackSnapshot {
         }
     }
 
-    public void updatePlayerServiceState(int playerServiceState)
+    public void updateNetworkQueue()
     {
-        this.playServiceState = playerServiceState;
+        this.playServiceState = READY;
+        this.snapshotType = QUEUE_UPDATE;
         populateNetworkQueue();
         updateNetworkPlaybackData();
     }
 
-    public void updatePlayerServiceState(int playerServiceState, int queueSongPosition, MetaTrack currentMetaTrack)
+    public void updateNetworkQueue(ArrayList<MetaTrack> clientQueue)
     {
+        this.clientQueue = clientQueue;
+        this.playServiceState = READY;
+        this.snapshotType = QUEUE_UPDATE;
+        populateNetworkQueue();
+        updateNetworkPlaybackData();
+    }
+
+    public void updateNetworkPlayerState(int playerServiceState)
+    {
+        this.playServiceState = playerServiceState;
+        this.snapshotType = PLAYBACK_UPDATE;
+        //populateNetworkQueue();
+        updateNetworkPlaybackData();
+    }
+
+    public void updateNetworkPlayerState(int playerServiceState, int queueSongPosition, MetaTrack currentMetaTrack)
+    {
+        this.snapshotType = QUEUE_UPDATE;
         this.currentMetaTrack = currentMetaTrack;
         this.playServiceState = playerServiceState;
         this.queueSongPosition = queueSongPosition;

@@ -29,11 +29,10 @@
         fab:fab_colorPressed="@color/Puerto_Rico"
         fab:fab_colorRipple="@color/Puerto_Rico"
         android:visibility="visible"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="10dp"
+        android:scaleType="center"
         android:layout_alignParentBottom="true"
-        android:scaleType="fitXY" />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/goLiveBtn"
@@ -44,7 +43,8 @@
         fab:fab_colorPressed="@color/Puerto_Rico"
         fab:fab_colorRipple="@color/Puerto_Rico"
         android:visibility="visible"
-        android:layout_alignTop="@+id/addSongFab"
+        android:scaleType="center"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 

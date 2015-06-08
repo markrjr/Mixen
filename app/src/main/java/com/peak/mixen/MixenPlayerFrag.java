@@ -166,6 +166,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         songDurationTV.setVisibility(View.VISIBLE);
         upNextTV.setVisibility(View.VISIBLE);
     }
+
     public void updateProgressBar()
     {
         if(progressBarUpdateThread == null)
@@ -342,9 +343,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         artistTV.setText("");
         upNextTV.setText("");
         albumArtIV.setImageResource(R.drawable.mixen_icon);
-        arcProgressBar.setVisibility(View.INVISIBLE);
-        songDurationTV.setVisibility(View.INVISIBLE);
-        songProgressTV.setVisibility(View.INVISIBLE);
         playPauseButton.setImageDrawable(playDrawable);
         playPauseButton.animate()
                 .alpha(1.0f)

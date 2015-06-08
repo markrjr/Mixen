@@ -57,8 +57,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     private Intent addSong;
     private Drawable liveDrawable;
     private Drawable notLiveDrawable;
-    private static TextView infoTV;
-    private static ArrayAdapter queueAdapter;
+    private TextView infoTV;
+    private ArrayAdapter queueAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -338,7 +338,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             else
             {
                 networkBtn.setImageDrawable(liveDrawable);
-                Toast.makeText(getActivity(), "We're now live.", Toast.LENGTH_SHORT).show();
                 Mixen.network.startNetworkService(new SalutDeviceCallback() {
                     @Override
                     public void call(SalutDevice device) {
@@ -348,6 +347,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     @Override
                     public void call() {
                         wiFiFailureDiag.show();
+                        networkBtn.setImageDrawable(notLiveDrawable);
                     }
                 });
 
@@ -375,21 +375,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         if (!isVisibleToUser && snackBarIsVisible) {
             SnackbarManager.dismiss();
-        }
-
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        if(Mixen.isHost)
-        {
-            updateHostQueueUI();
-        }
-        else
-        {
-            updateClientQueueUI();
         }
 
     }
@@ -442,7 +427,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                             MixenPlayerService.instance.spotifyQueue.remove(position);
 
                                             updateHostQueueUI();
-                                            MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlaybackData();
+                                            MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
 
                                             if (MixenPlayerService.instance.currentTrack.id.equals(selected.id)) {
                                                 //If someone wants to delete the currently playing song, stop everything.

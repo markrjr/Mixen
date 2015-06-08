@@ -46,7 +46,7 @@
         android:layout_width="310dp"
         android:layout_height="310dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="55dp"
+        android:layout_marginTop="45dp"
         custom:arc_text_size="0dp"
         custom:arc_suffix_text_size="0dp"
         custom:arc_finished_color="@color/Dodger_Blue"
@@ -71,7 +71,7 @@
         android:src="@drawable/mixen_icon"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="50dp"
         android:backgroundTint="@color/Tundora"
         android:backgroundTintMode="src_atop"
         android:alpha="0.3" />
@@ -205,11 +205,13 @@
         fab:fab_colorNormal="@color/Puerto_Rico"
         fab:fab_colorPressed="@color/Puerto_Rico"
         fab:fab_colorRipple="@color/Puerto_Rico"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:scaleType="center"
-        android:layout_alignBottom="@+id/artistTV"
-        android:layout_alignRight="@+id/albumArtIV"
-        android:layout_alignEnd="@+id/albumArtIV" />
+        android:layout_above="@+id/playerControls"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp" />
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/upVoteBtn"
@@ -219,11 +221,13 @@
         fab:fab_colorNormal="@color/Puerto_Rico"
         fab:fab_colorPressed="@color/Puerto_Rico"
         fab:fab_colorRipple="@color/Puerto_Rico"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:scaleType="center"
-        android:layout_alignBottom="@+id/artistTV"
-        android:layout_alignLeft="@+id/albumArtIV"
-        android:layout_alignStart="@+id/albumArtIV" />
+        android:layout_above="@+id/playerControls"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp" />
 
     <TextView
         android:id="@+id/songDurationTV"

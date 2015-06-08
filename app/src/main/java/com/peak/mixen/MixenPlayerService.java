@@ -15,7 +15,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.media.session.PlaybackState;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.media.MediaMetadataCompat;
@@ -29,10 +28,7 @@ import android.widget.RemoteViews;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bluelinelabs.logansquare.LoganSquare;
-import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDataCallback;
-import com.peak.salut.Callbacks.SalutDeviceCallback;
-import com.peak.salut.SalutDevice;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
@@ -41,6 +37,9 @@ import com.spotify.sdk.android.player.PlayerStateCallback;
 import com.spotify.sdk.android.player.Spotify;
 
 import kaaes.spotify.webapi.android.models.Track;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 public class MixenPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SalutDataCallback,
                                                             ConnectionStateCallback, PlayerNotificationCallback{
@@ -304,7 +303,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
             }
             unregisterReceiver(noisyAudioReciever);
-            playerServiceSnapshot.updatePlayerServiceState(PlaybackSnapshot.STOPPED);
+            playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.STOPPED);
             MixenBase.mixenPlayerFrag.cleanUpUI();
             audioManager.abandonAudioFocus(this);
             setMediaMetaData(PlaybackStateCompat.STATE_STOPPED);
@@ -352,6 +351,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             MixenBase.songQueueFrag.updateClientQueueUI();
             MixenBase.mixenPlayerFrag.prepareUI();
             MixenBase.mixenPlayerFrag.showOrHidePlayBtn(playerServiceSnapshot);
+            MixenBase.mixenPlayerFrag.showSongProgressViews();
             Log.d(Mixen.TAG, "Syncing playback, it should begin shortly.");
 
         }
@@ -569,7 +569,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public void onTrackCompletion()
     {
         Log.d(Mixen.TAG, "Playback has completed.");
-        playerServiceSnapshot.updatePlayerServiceState(PlaybackSnapshot.COMPLETED);
+        playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.COMPLETED);
 
         if(!playerHasTrack)
         {
@@ -596,7 +596,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     {
         serviceIsBusy = false;
         playerHasTrack = true;
-        playerServiceSnapshot.updatePlayerServiceState(PlaybackSnapshot.PLAYING, queueSongPosition, currentMetaTrack);
+        playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.PLAYING, queueSongPosition, currentMetaTrack);
         MixenBase.mixenPlayerFrag.restoreUIControls();
         setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
         registerReceiver(noisyAudioReciever, intentFilter);
@@ -713,7 +713,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             }
             if(Mixen.isHost)
             {
-                playerServiceSnapshot.updatePlayerServiceState(PlaybackSnapshot.RESUME);
+                playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.RESUME);
             }
         }
     }
@@ -731,7 +731,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         }
         if(Mixen.isHost)
         {
-            playerServiceSnapshot.updatePlayerServiceState(PlaybackSnapshot.PAUSED);
+            playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.PAUSED);
         }
     }
 
@@ -826,9 +826,16 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public void handleNetworkData(PlaybackSnapshot hostPlaybackSnapshot)
     {
         playerServiceSnapshot = hostPlaybackSnapshot;
-        clientQueue = hostPlaybackSnapshot.clientQueue;
-        currentMetaTrack = hostPlaybackSnapshot.currentMetaTrack;
-        queueSongPosition = hostPlaybackSnapshot.queueSongPosition;
+
+        if(playerServiceSnapshot.snapshotType == PlaybackSnapshot.QUEUE_UPDATE)
+        {
+            clientQueue.clear();
+            clientQueue.addAll(hostPlaybackSnapshot.clientQueue);
+            currentMetaTrack = hostPlaybackSnapshot.currentMetaTrack;
+            queueSongPosition = hostPlaybackSnapshot.queueSongPosition;
+            MixenBase.mixenPlayerFrag.updateClientUpNext();
+            MixenBase.songQueueFrag.updateClientQueueUI();
+        }
 
         switch(hostPlaybackSnapshot.playServiceState)
         {
@@ -840,6 +847,9 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 return;
             case PlaybackSnapshot.RESUME:
                 MixenBase.mixenPlayerFrag.showOrHidePlayBtn(hostPlaybackSnapshot);
+                return;
+            case PlaybackSnapshot.COMPLETED:
+                MixenBase.mixenPlayerFrag.cleanUpUI();
                 return;
 
         }
@@ -893,14 +903,31 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         Log.d(Mixen.TAG, "Received network playback snapshot, now updating UI.");
         try
         {
-            final PlaybackSnapshot hostPlaybackState = LoganSquare.parse((String)data, PlaybackSnapshot.class);
-            MixenBase.mixenPlayerFrag.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    handleNetworkData(hostPlaybackState);
-                }
-            });
+            if(Mixen.isHost)
+            {
+                MetaTrack trackToAdd = LoganSquare.parse((String) data, MetaTrack.class);
+                Mixen.spotify.getTrack(trackToAdd.spotifyID, new Callback<Track>() {
+                    @Override
+                    public void success(Track track, Response response) {
+                        SearchSongs.addForHost(MixenBase.songQueueFrag.getActivity(), track);
+                    }
 
+                    @Override
+                    public void failure(RetrofitError error) {
+                        //TODO Send error to client that added song.
+                    }
+                });
+            }
+            else {
+
+                final PlaybackSnapshot hostPlaybackState = LoganSquare.parse((String) data, PlaybackSnapshot.class);
+                MixenBase.mixenPlayerFrag.getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        handleNetworkData(hostPlaybackState);
+                    }
+                });
+            }
         }
         catch (IOException ex)
         {
