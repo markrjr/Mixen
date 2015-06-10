@@ -796,6 +796,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public void cleanUpAndShutdown()
     {
         Log.d(Mixen.TAG, "Ending Mixen Service.");
+
         if(spotifyPlayer != null)
         {
             isRunning = false;
@@ -806,6 +807,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             {
                 Spotify.awaitDestroyPlayer(spotifyPlayer, 5, TimeUnit.SECONDS);
                 //spotifyPlayer = null;
+                Log.d(Mixen.TAG, "Killed Spotify instance.");
             }
             catch(Exception ex)
             {

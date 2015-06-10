@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Base.Theme.AppCompat.Light.DarkActionBar">
     <!-- Custom theme configuration here. -->
         <!--parent="@android:style/Theme.Holo.Light.DarkActionBar">-->
         <!--<item name="android:actionBarStyle">@style/MixenStageActionBar</item>-->

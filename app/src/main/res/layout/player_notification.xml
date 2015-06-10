@@ -50,7 +50,7 @@
 
     <ImageButton
         android:id="@+id/playbackState"
-        android:layout_width="60dp"
+        android:layout_width="48dp"
         android:layout_height="fill_parent"
         android:layout_centerHorizontal="true"
         android:background="@color/Madison"

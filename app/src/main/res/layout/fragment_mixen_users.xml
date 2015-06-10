@@ -3,7 +3,7 @@
     android:id="@+id/relativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/Outer_Space"
+    android:background="@color/Jelly_Bean"
     tools:context="com.peak.mixen.MixenUsersFrag">
 
     <ListView
@@ -13,8 +13,7 @@
         android:layout_alignParentStart="false"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:visibility="invisible"
-        android:background="@color/EXP_2" />
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/infoTV"

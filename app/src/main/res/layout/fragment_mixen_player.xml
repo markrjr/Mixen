@@ -7,7 +7,7 @@
     android:layout_height="fill_parent"
     android:visibility="visible"
     tools:context="com.peak.mixen.MixenPlayerFrag"
-    android:background="@color/Outer_Space">
+    android:background="@color/Jelly_Bean">
 
 
     <TextView
@@ -42,15 +42,15 @@
 
     <com.github.lzyzsd.circleprogress.ArcProgress
         android:id="@+id/arc_progress_bar"
-        android:background="@color/Outer_Space"
+        android:background="@color/Jelly_Bean"
         android:layout_width="310dp"
         android:layout_height="310dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="55dp"
         custom:arc_text_size="0dp"
         custom:arc_suffix_text_size="0dp"
-        custom:arc_finished_color="@color/Dodger_Blue"
-        custom:arc_unfinished_color="@color/Madison"/>
+        custom:arc_finished_color="@color/Puerto_Rico"
+        custom:arc_unfinished_color="@color/Tundora"/>
 
     <ImageButton
         android:id="@+id/playPauseButton"
@@ -72,7 +72,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="60dp"
-        android:backgroundTint="@color/Tundora"
+        android:backgroundTint="@color/Jelly_Bean"
         android:backgroundTintMode="src_atop"
         android:alpha="0.3" />
 
@@ -113,7 +113,7 @@
             android:layout_alignParentStart="false"
             android:background="@color/Tundora"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_down"
+            android:src="@drawable/ic_dislike"
             android:text="Button"
             android:visibility="visible"
             android:layout_alignParentLeft="false"
@@ -130,7 +130,7 @@
             android:layout_alignParentStart="true"
             android:background="@color/Tundora"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_up"
+            android:src="@drawable/ic_like"
             android:text="Button"
             android:visibility="visible"
             android:layout_centerVertical="true"

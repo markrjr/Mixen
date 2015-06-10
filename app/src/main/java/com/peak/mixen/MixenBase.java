@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.nispok.snackbar.SnackbarManager;
+import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
 
 
@@ -117,10 +118,9 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     protected void onPause() {
         super.onPause();
         userHasLeftApp = true;
-        if(MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying)
+        if(MixenPlayerService.instance != null && MixenPlayerService.instance.playerIsPlaying && !pressedBefore)
         {
             MixenPlayerService.instance.startForeground(Mixen.MIXEN_NOTIFY_CODE, MixenPlayerService.instance.updateNotification(true));
-            //Checking for pressedBefore fixes some illegal state exception caused by calling playerIsPlaying as the app is exiting.
         }
     }
 
@@ -228,7 +228,12 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             }
             if(Mixen.network != null && Mixen.network.thisDevice.isRegistered)
             {
-//                Mixen.network.unregisterClient();
+//                Mixen.network.unregisterClient(new SalutCallback() {
+//                    @Override
+//                    public void call() {
+//                        //
+//                    }
+//                });
             }
 
             super.onBackPressed();

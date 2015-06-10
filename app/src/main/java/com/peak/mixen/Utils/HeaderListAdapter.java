@@ -36,7 +36,7 @@ public class HeaderListAdapter extends ArrayAdapter<HeaderListCell> {
 		}
 		else
 		{
-			v = inflater.inflate(R.layout.list_item, null);
+			v = inflater.inflate(R.layout.search_list_item, null);
 			TextView name = (TextView) v.findViewById(R.id.name);
 			TextView category = (TextView) v.findViewById(R.id.extra);
 			

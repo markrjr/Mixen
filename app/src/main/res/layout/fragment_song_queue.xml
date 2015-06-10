@@ -9,7 +9,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.peak.mixen.SongQueueFrag"
     android:id="@+id/relativeLayout"
-    android:background="@color/Outer_Space">
+    android:background="@color/Jelly_Bean">
 
     <ListView
         android:layout_width="fill_parent"
@@ -18,7 +18,9 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:visibility="invisible"
-        android:layout_alignParentStart="false" />
+        android:layout_alignParentStart="false"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="5.0dp"/>
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/addSongFab"
@@ -32,7 +34,9 @@
         android:scaleType="center"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="5dp" />
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/goLiveBtn"
@@ -46,7 +50,9 @@
         android:scaleType="center"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="5dp" />
 
 
     <TextView

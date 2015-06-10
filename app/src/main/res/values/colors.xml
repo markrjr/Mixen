@@ -26,14 +26,12 @@
     <color name="Puerto_Rico">#4ECDC4</color>
     <color name="Outer_Space">#1A1F1E</color>
     <color name="Cocoa_Brown">#29221F</color>
+    <color name="Darker_Gray">#AAAAAA</color>
 
 
-    <color name="EXP_1">#1C264A</color>
-    <color name="EXP_2">#1E6075</color>
+
     <color name="EXP_3">#2DA89C</color>
     <color name="EXP_4">#2DEBAE</color>
-    <color name="EXP_5">#DCDEAC</color>
-
 
     <integer-array name="appcolors">
         <item>@color/Icon_Orange</item>

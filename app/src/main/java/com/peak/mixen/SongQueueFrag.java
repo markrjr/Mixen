@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
 import com.melnykov.fab.FloatingActionButton;
+import com.melnykov.fab.ScrollDirectionListener;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
@@ -76,7 +77,17 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         infoTV = (TextView) v.findViewById(R.id.infoTV);
 
         addSongButton.attachToListView(queueLV);
-        networkBtn.attachToListView(queueLV);
+        networkBtn.attachToListView(queueLV, new ScrollDirectionListener() {
+            @Override
+            public void onScrollDown() {
+                addSongButton.show(true);
+            }
+
+            @Override
+            public void onScrollUp() {
+                addSongButton.hide(true);
+            }
+        });
         addSongButton.setOnClickListener(this);
         networkBtn.setOnClickListener(this);
 
@@ -126,7 +137,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         findingMixensProgress = new MaterialDialog.Builder(getActivity())
                 .title("Searching for nearby Mixens...")
                 .content("Please wait...")
-                .theme(Theme.DARK)
                 .progress(true, 0)
                 .cancelable(false)
                 .build();
@@ -573,13 +583,15 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent) {
                     View view = super.getView(position, convertView, parent);
+                    //view.setBackground(getResources().getDrawable(R.drawable.song_queue_item_background));
+
                     TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                     TextView text2 = (TextView) view.findViewById(android.R.id.text2);
 
                     text1.setText(MixenPlayerService.instance.spotifyQueue.get(position).name);
                     text2.setText(MixenPlayerService.instance.spotifyQueue.get(position).artists.get(0).name);
-                    //text1.setTextSize(24);
-                    //text2.setTextSize(18);
+                    //text1.setTextColor(getResources().getColor(R.color.Darker_Gray));
+                    //text2.setTextColor(getResources().getColor(R.color.Darker_Gray));
                     return view;
                 }
             };

@@ -44,6 +44,8 @@ public class SongQueueListAdapter extends ArrayAdapter<SongQueueListItem> {
 			v = inflater.inflate(R.layout.song_list_item, null);
 		}
 
+		v.setBackground(getContext().getResources().getDrawable(R.drawable.song_queue_item_background));
+
 		TextView songName = (TextView) v.findViewById(R.id.songName);
 		TextView artistName = (TextView) v.findViewById(R.id.artistName);
 		TextView addedBy = (TextView) v.findViewById(R.id.addedBy);
