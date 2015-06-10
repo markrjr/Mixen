@@ -50,8 +50,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
     private ImageButton previousTrackBtn;
 
     private RelativeLayout baseLayout;
-    private FloatingActionButton upVoteBtn;
-    private FloatingActionButton downVoteBtn;
     public ProgressBar bufferPB;
     public boolean isRunning;
     public boolean progressBarThreadIsRunning = false;
@@ -91,8 +89,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         songProgressTV = (TextView) currentView.findViewById(R.id.songProgressTV);
         songDurationTV = (TextView) currentView.findViewById(R.id.songDurationTV);
         arcProgressBar = (ArcProgress) currentView.findViewById(R.id.arc_progress_bar);
-        upVoteBtn = (FloatingActionButton) currentView.findViewById(R.id.upVoteBtn);
-        downVoteBtn = (FloatingActionButton) currentView.findViewById(R.id.downVoteBtn);
+        RelativeLayout voteControls = (RelativeLayout) currentView.findViewById(R.id.voteControls);
+        RelativeLayout playerControls = (RelativeLayout) currentView.findViewById(R.id.playerControls);
 
 
         titleTV.setSelected(true);
@@ -136,10 +134,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         if(!Mixen.isHost)
         {
-            upVoteBtn.setVisibility(View.VISIBLE);
-            upVoteBtn.setClickable(false);
-            downVoteBtn.setClickable(false);
-            downVoteBtn.setVisibility(View.VISIBLE);
+            voteControls.setVisibility(View.VISIBLE);
+            playerControls.setVisibility(View.INVISIBLE);
         }
 
         return baseLayout;

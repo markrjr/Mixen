@@ -92,6 +92,76 @@
 
 
     <RelativeLayout
+        android:id="@+id/voteControls"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/Tundora"
+        android:visibility="invisible"
+        android:paddingTop="10dp"
+        android:alpha="0.8"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/artistTV">
+
+        <ImageButton
+            android:id="@+id/downVoteBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignParentStart="false"
+            android:background="@color/Tundora"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_action_down"
+            android:text="Button"
+            android:visibility="visible"
+            android:layout_alignParentLeft="false"
+            android:clickable="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
+            android:focusableInTouchMode="false"
+            android:layout_marginRight="20dp" />
+
+        <ImageButton
+            android:id="@+id/upVoteBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignParentStart="true"
+            android:background="@color/Tundora"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_action_up"
+            android:text="Button"
+            android:visibility="visible"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="I&apos;m a fan."
+            android:id="@+id/upVoteHint"
+            android:textColor="@color/Snow_White"
+            android:gravity="center"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="false"
+            android:textSize="16dp"
+            android:layout_toRightOf="@+id/upVoteBtn" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Not a fan."
+            android:id="@+id/downVoteHint"
+            android:textColor="@color/Snow_White"
+            android:textSize="16dp"
+            android:layout_toLeftOf="@+id/downVoteBtn"
+            android:layout_centerVertical="true" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/playerControls"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -196,38 +266,6 @@
             android:layout_centerHorizontal="true" />
 
     </RelativeLayout>
-
-    <com.melnykov.fab.FloatingActionButton
-        android:id="@+id/downVoteBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_action_down"
-        fab:fab_colorNormal="@color/Puerto_Rico"
-        fab:fab_colorPressed="@color/Puerto_Rico"
-        fab:fab_colorRipple="@color/Puerto_Rico"
-        android:visibility="invisible"
-        android:scaleType="center"
-        android:layout_above="@+id/playerControls"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginRight="10dp" />
-
-    <com.melnykov.fab.FloatingActionButton
-        android:id="@+id/upVoteBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_action_up"
-        fab:fab_colorNormal="@color/Puerto_Rico"
-        fab:fab_colorPressed="@color/Puerto_Rico"
-        fab:fab_colorRipple="@color/Puerto_Rico"
-        android:visibility="invisible"
-        android:scaleType="center"
-        android:layout_above="@+id/playerControls"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp" />
 
     <TextView
         android:id="@+id/songDurationTV"

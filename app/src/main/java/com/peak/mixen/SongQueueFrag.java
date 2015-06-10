@@ -232,6 +232,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     public void updateHostQueueUI() {
 
         queueAdapter.notifyDataSetChanged();
+        queueLV.invalidate();
 
         if (MixenPlayerService.instance.queueIsEmpty()) {
 
@@ -249,6 +250,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     public void updateClientQueueUI() {
 
         queueAdapter.notifyDataSetChanged();
+        queueLV.invalidate();
 
         if (MixenPlayerService.instance.clientQueue.isEmpty()) {
 
@@ -349,6 +351,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     @Override
                     public void call(SalutDevice device) {
                         Toast.makeText(getActivity(), device.readableName + " is now connected.", Toast.LENGTH_SHORT).show();
+                        //TODO Update new client.
                     }
                 }, new SalutCallback() {
                     @Override
@@ -387,9 +390,9 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     }
 
 
-    private void assignItemClickListener(final int position)
+    private void assignItemClickListener(boolean forNetwork, final int position)
     {
-        if(Mixen.network.isRunningAsHost)
+        if(forNetwork)
         {
             final SongQueueListItem selected = (SongQueueListItem) queueLV.getItemAtPosition(position);
 
@@ -558,7 +561,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     }
 
 
-    private void setupHostQueueAdapter(boolean forNetwork) {
+    private void setupHostQueueAdapter(final boolean forNetwork) {
 
         if(forNetwork)
         {
@@ -593,7 +596,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     final int position, long id) {
 
                 // ListView Clicked item value
-                assignItemClickListener(position);
+                assignItemClickListener(forNetwork, position);
             }
         });
     }
