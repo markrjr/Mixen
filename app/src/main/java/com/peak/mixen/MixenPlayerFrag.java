@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.graphics.Palette;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -34,6 +35,7 @@ import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
@@ -210,8 +212,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                 .load(MixenPlayerService.instance.currentMetaTrack.albumArtURL)
                 .placeholder(getResources().getDrawable(R.drawable.mixen_icon))
                 .into(albumArtIV);
-
-        MixenPlayerService.instance.currentMetaTrack.downloadAlbumArt(getActivity());
 
         Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentMetaTrack.name + " : " + MixenPlayerService.instance.currentMetaTrack.artist);
 

@@ -49,11 +49,13 @@ public class SongQueueListAdapter extends ArrayAdapter<SongQueueListItem> {
 		TextView songName = (TextView) v.findViewById(R.id.songName);
 		TextView artistName = (TextView) v.findViewById(R.id.artistName);
 		TextView addedBy = (TextView) v.findViewById(R.id.addedBy);
-		//ImageView downIcon = (ImageView) v.findViewById(R.id.downIcon);
-		//ImageView upIcon = (ImageView) v.findViewById(R.id.upIcon);
+		TextView upVotes = (TextView) v.findViewById(R.id.votesUp);
+		TextView downVotes = (TextView) v.findViewById(R.id.votesDown);
 		songName.setText(listItem.songName);
 		artistName.setText(listItem.songArtist);
 		addedBy.setText("Added by " + listItem.addedBy);
+		upVotes.setText(listItem.upVotes);
+        downVotes.setText(listItem.downVotes);
 
 		return v;
 	}

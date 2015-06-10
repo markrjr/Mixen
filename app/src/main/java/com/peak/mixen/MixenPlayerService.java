@@ -67,7 +67,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public Player spotifyPlayer;
     public Track currentTrack;
     public boolean playerIsPlaying;
-    private MediaSessionCompat mediaSession;
+    public MediaSessionCompat mediaSession;
 
     private NoisyAudioReciever noisyAudioReciever;
     private IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -169,13 +169,11 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 state.setState(playbackState, (long) MixenBase.mixenPlayerFrag.arcProgressBar.getProgress(), 1f);
 
         mediaSession.setPlaybackState(state.build());
-        
         mediaSession.setMetadata(mediaData);
 
         if(!mediaSession.isActive())
         {
             mediaSession.setActive(true);
-
         }
     }
 
