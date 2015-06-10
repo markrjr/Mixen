@@ -42,27 +42,4 @@ public class MetaTrack {
         this.duration = (int)track.duration_ms;
         this.addedBy = Mixen.username;
     }
-
-    public void downloadAlbumArt(Context context)
-    {
-        Picasso.with(context)
-                .load(this.albumArtURL)
-                .into(new Target() {
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                        MetaTrack.this.albumArt = bitmap;
-                    }
-
-                    @Override
-                    public void onBitmapFailed(Drawable errorDrawable) {
-
-                    }
-
-                    @Override
-                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                    }
-                });
-    }
-
 }
