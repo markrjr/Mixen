@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
+import com.peak.mixen.Utils.SongQueueListAdapter;
 import com.peak.salut.Callbacks.SalutCallback;
 
 import java.util.ArrayList;
@@ -44,10 +45,10 @@ public class PlaybackSnapshot {
     {
         this.playServiceState = playerServiceState;
         if(playerServiceState != INIT && playerServiceState != READY)
-            populateNetworkQueue();
+            updateQueue();
     }
 
-    private void populateNetworkQueue()
+    private void updateQueue()
     {
         clientQueue = new ArrayList<>(MixenPlayerService.instance.spotifyQueue.size());
 
@@ -60,6 +61,8 @@ public class PlaybackSnapshot {
         }
 
         MixenPlayerService.instance.clientQueue = clientQueue;
+        MixenBase.songQueueFrag.cellList.clear();
+        MixenBase.songQueueFrag.cellList.addAll(SongQueueListAdapter.convertToListItems(clientQueue));
     }
 
     private void updateNetworkPlaybackData()
@@ -73,7 +76,7 @@ public class PlaybackSnapshot {
                 }
             });
         }
-        else if(!Mixen.isHost && Mixen.network.thisDevice.isRegistered)
+        else if(Mixen.network != null && !Mixen.isHost && Mixen.network.thisDevice.isRegistered)
         {
             Mixen.network.sendToHost(this, new SalutCallback() {
                 @Override
@@ -88,7 +91,7 @@ public class PlaybackSnapshot {
     {
         this.playServiceState = READY;
         this.snapshotType = QUEUE_UPDATE;
-        populateNetworkQueue();
+        updateQueue();
         updateNetworkPlaybackData();
     }
 
@@ -97,7 +100,7 @@ public class PlaybackSnapshot {
         this.clientQueue = clientQueue;
         this.playServiceState = READY;
         this.snapshotType = QUEUE_UPDATE;
-        populateNetworkQueue();
+        updateQueue();
         updateNetworkPlaybackData();
     }
 
@@ -105,7 +108,6 @@ public class PlaybackSnapshot {
     {
         this.playServiceState = playerServiceState;
         this.snapshotType = PLAYBACK_UPDATE;
-        //populateNetworkQueue();
         updateNetworkPlaybackData();
     }
 
@@ -115,7 +117,7 @@ public class PlaybackSnapshot {
         this.currentMetaTrack = currentMetaTrack;
         this.playServiceState = playerServiceState;
         this.queueSongPosition = queueSongPosition;
-        populateNetworkQueue();
+        updateQueue();
         updateNetworkPlaybackData();
     }
 

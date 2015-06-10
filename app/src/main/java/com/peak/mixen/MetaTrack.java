@@ -22,8 +22,9 @@ public class MetaTrack {
     public String spotifyID;
     @JsonField
     public int duration;
+    @JsonField
+    public String addedBy;
     public Bitmap albumArt;
-
 
     public MetaTrack(){}
 
@@ -35,6 +36,7 @@ public class MetaTrack {
         this.albumArtURL = track.album.images.get(0).url;
         this.spotifyID = track.id;
         this.duration = (int)track.duration_ms;
+        this.addedBy = Mixen.username;
     }
 
 }

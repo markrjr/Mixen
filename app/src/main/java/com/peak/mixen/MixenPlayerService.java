@@ -28,6 +28,7 @@ import android.widget.RemoteViews;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bluelinelabs.logansquare.LoganSquare;
+import com.peak.mixen.Utils.SongQueueListAdapter;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
@@ -35,6 +36,7 @@ import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
 import com.spotify.sdk.android.player.Spotify;
+import com.squareup.picasso.Picasso;
 
 import kaaes.spotify.webapi.android.models.Track;
 import retrofit.Callback;
@@ -660,11 +662,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         bigContentView.setTextViewText(R.id.status_bar_artist_name, currentMetaTrack.artist);
         bigContentView.setTextViewText(R.id.status_bar_album_name, currentMetaTrack.albumName);
 
-//        if(MixenPlayerFrag.hasAlbumArt())
-//        {
-//            bigContentView.setImageViewBitmap(R.id.status_bar_album_art, currentMetaTrack.albumArt);
-//        }
-
         if(isPlaying)
         {
             contentView.setImageViewResource(R.id.playbackState, R.drawable.pause);
@@ -695,6 +692,10 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
         Notification notification = mBuilder.build();
         notification.bigContentView = bigContentView;
+
+        Picasso.with(getApplicationContext())
+                .load(currentMetaTrack.albumArtURL)
+                .into(bigContentView, R.id.status_bar_album_art, Mixen.MIXEN_NOTIFY_CODE, notification);
 
         return notification;
     }
@@ -829,10 +830,12 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
         if(playerServiceSnapshot.snapshotType == PlaybackSnapshot.QUEUE_UPDATE)
         {
-            clientQueue.clear();
-            clientQueue.addAll(hostPlaybackSnapshot.clientQueue);
             currentMetaTrack = hostPlaybackSnapshot.currentMetaTrack;
             queueSongPosition = hostPlaybackSnapshot.queueSongPosition;
+            clientQueue.clear();
+            clientQueue = hostPlaybackSnapshot.clientQueue;
+            MixenBase.songQueueFrag.cellList.clear();
+            MixenBase.songQueueFrag.cellList.addAll(SongQueueListAdapter.convertToListItems(clientQueue));
             MixenBase.mixenPlayerFrag.updateClientUpNext();
             MixenBase.songQueueFrag.updateClientQueueUI();
         }

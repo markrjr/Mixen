@@ -31,6 +31,8 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
 import com.nispok.snackbar.listeners.EventListener;
+import com.peak.mixen.Utils.SongQueueListAdapter;
+import com.peak.mixen.Utils.SongQueueListItem;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDeviceCallback;
 import com.peak.salut.SalutDataReceiver;
@@ -38,6 +40,7 @@ import com.peak.salut.SalutDevice;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutServiceData;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import kaaes.spotify.webapi.android.models.TrackSimple;
@@ -48,6 +51,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     public ListView queueLV;
     public RelativeLayout baseLayout;
     public boolean snackBarIsVisible = false;
+    public ArrayList<SongQueueListItem> cellList;
     private FloatingActionButton addSongButton;
     private FloatingActionButton networkBtn;
     private MaterialDialog findingMixensProgress;
@@ -82,9 +86,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         setupDiags();
 
+        cellList = new ArrayList<>();
+
         if(Mixen.isHost)
         {
-            setupHostQueueAdapter();
+            setupHostQueueAdapter(false);
         }
         else
         {
@@ -333,6 +339,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 networkBtn.setImageDrawable(notLiveDrawable);
                 Toast.makeText(getActivity(), "We're no longer live.", Toast.LENGTH_SHORT).show();
                 Mixen.network.stopNetworkService(false);
+                setupHostQueueAdapter(false);
 
             }
             else
@@ -350,7 +357,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         networkBtn.setImageDrawable(notLiveDrawable);
                     }
                 });
-
+                setupHostQueueAdapter(true);
             }
         }
         else
@@ -379,22 +386,201 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     }
 
-    private void setupHostQueueAdapter() {
 
-        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.spotifyQueue) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+    private void assignItemClickListener(final int position)
+    {
+        if(Mixen.network.isRunningAsHost)
+        {
+            final SongQueueListItem selected = (SongQueueListItem) queueLV.getItemAtPosition(position);
 
-                text1.setText(MixenPlayerService.instance.spotifyQueue.get(position).name);
-                text2.setText(MixenPlayerService.instance.spotifyQueue.get(position).artists.get(0).name);
-                //text1.setTextSize(24);
-                //text2.setTextSize(18);
-                return view;
+            if (!snackBarIsVisible) {
+                snackBarIsVisible = true;
+                addSongButton.setVisibility(View.INVISIBLE);
+                networkBtn.setVisibility(View.INVISIBLE);
+
+                SnackbarManager.show(
+                        Snackbar.with(getActivity().getApplicationContext())
+                                .text("Selected: " + selected.metaTrack.name)
+                                .actionColor(Color.YELLOW)
+                                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
+                                .actionLabel("Remove")
+                                .actionListener(new ActionClickListener() {
+                                    @Override
+                                    public void onActionClicked(Snackbar snackbar) {
+
+                                        MixenPlayerService.instance.spotifyQueue.remove(position);
+
+                                        updateHostQueueUI();
+                                        MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
+
+                                        if (MixenPlayerService.instance.currentTrack.id.equals(selected.metaTrack.spotifyID)) {
+                                            //If someone wants to delete the currently playing song, stop everything.
+                                            MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
+                                            Log.d(Mixen.TAG, "Current song was deleted.");
+
+                                            if (MixenPlayerService.instance.getNextTrack() != null || !MixenPlayerService.instance.queueIsEmpty()) {
+                                                if (MixenPlayerService.instance.queueHasASingleTrack()) {
+                                                    MixenPlayerService.instance.queueSongPosition = 0;
+                                                }
+                                                //We use preparePlayback here because we don't need to modify the counter, because the ArrayList will move around the counter.
+                                                MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.preparePlayback);
+                                            }
+
+                                        } else if (position < MixenPlayerService.instance.queueSongPosition) {
+                                            MixenPlayerService.instance.queueSongPosition--;
+                                        }
+
+                                        MixenBase.mixenPlayerFrag.updateUpNext();
+
+                                    }
+                                })
+                                .eventListener(new EventListener() {
+                                    @Override
+                                    public void onShow(Snackbar snackbar) {
+
+                                    }
+
+                                    @Override
+                                    public void onShowByReplace(Snackbar snackbar) {
+
+                                    }
+
+                                    @Override
+                                    public void onShown(Snackbar snackbar) {
+
+                                    }
+
+                                    @Override
+                                    public void onDismiss(Snackbar snackbar) {
+                                    }
+
+                                    @Override
+                                    public void onDismissByReplace(Snackbar snackbar) {
+
+                                    }
+
+                                    @Override
+                                    public void onDismissed(Snackbar snackbar) {
+                                        snackBarIsVisible = false;
+                                        addSongButton.setVisibility(View.VISIBLE);
+                                        networkBtn.setVisibility(View.VISIBLE);
+                                    }
+                                })
+                        , getActivity());
+            } else {
+                SnackbarManager.dismiss();
             }
-        };
+        }
+
+        else
+        {
+
+            final TrackSimple selected = (TrackSimple) queueLV.getItemAtPosition(position);
+
+            if (!snackBarIsVisible) {
+                snackBarIsVisible = true;
+                addSongButton.setVisibility(View.INVISIBLE);
+                networkBtn.setVisibility(View.INVISIBLE);
+
+                SnackbarManager.show(
+                        Snackbar.with(getActivity().getApplicationContext())
+                                .text("Selected: " + selected.name)
+                                .actionColor(Color.YELLOW)
+                                .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
+                                .actionLabel("Remove")
+                                .actionListener(new ActionClickListener() {
+                                    @Override
+                                    public void onActionClicked(Snackbar snackbar) {
+
+                                        MixenPlayerService.instance.spotifyQueue.remove(position);
+
+                                        updateHostQueueUI();
+                                        MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
+
+                                        if (MixenPlayerService.instance.currentTrack.id.equals(selected.id)) {
+                                            //If someone wants to delete the currently playing song, stop everything.
+                                            MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
+                                            Log.d(Mixen.TAG, "Current song was deleted.");
+
+                                            if (MixenPlayerService.instance.getNextTrack() != null || !MixenPlayerService.instance.queueIsEmpty()) {
+                                                if (MixenPlayerService.instance.queueHasASingleTrack()) {
+                                                    MixenPlayerService.instance.queueSongPosition = 0;
+                                                }
+                                                //We use preparePlayback here because we don't need to modify the counter, because the ArrayList will move around the counter.
+                                                MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.preparePlayback);
+                                            }
+
+                                        } else if (position < MixenPlayerService.instance.queueSongPosition) {
+                                            MixenPlayerService.instance.queueSongPosition--;
+                                        }
+
+                                        MixenBase.mixenPlayerFrag.updateUpNext();
+
+                                    }
+                                })
+                                .eventListener(new EventListener() {
+                                    @Override
+                                    public void onShow(Snackbar snackbar) {
+
+                                    }
+
+                                    @Override
+                                    public void onShowByReplace(Snackbar snackbar) {
+
+                                    }
+
+                                    @Override
+                                    public void onShown(Snackbar snackbar) {
+
+                                    }
+
+                                    @Override
+                                    public void onDismiss(Snackbar snackbar) {
+                                    }
+
+                                    @Override
+                                    public void onDismissByReplace(Snackbar snackbar) {
+
+                                    }
+
+                                    @Override
+                                    public void onDismissed(Snackbar snackbar) {
+                                        snackBarIsVisible = false;
+                                        addSongButton.setVisibility(View.VISIBLE);
+                                        networkBtn.setVisibility(View.VISIBLE);
+                                    }
+                                })
+                        , getActivity());
+            } else {
+                SnackbarManager.dismiss();
+            }
+        }
+    }
+
+
+    private void setupHostQueueAdapter(boolean forNetwork) {
+
+        if(forNetwork)
+        {
+            queueAdapter = new SongQueueListAdapter(getActivity(), cellList);
+        }
+        else
+        {
+            queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.spotifyQueue) {
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    View view = super.getView(position, convertView, parent);
+                    TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                    TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+
+                    text1.setText(MixenPlayerService.instance.spotifyQueue.get(position).name);
+                    text2.setText(MixenPlayerService.instance.spotifyQueue.get(position).artists.get(0).name);
+                    //text1.setTextSize(24);
+                    //text2.setTextSize(18);
+                    return view;
+                }
+            };
+        }
 
         // Assign adapter to ListView
         queueLV.setAdapter(queueAdapter);
@@ -407,86 +593,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     final int position, long id) {
 
                 // ListView Clicked item value
-                final TrackSimple selected = (TrackSimple) queueLV.getItemAtPosition(position);
-
-                if (!snackBarIsVisible) {
-                    snackBarIsVisible = true;
-                    addSongButton.setVisibility(View.INVISIBLE);
-                    networkBtn.setVisibility(View.INVISIBLE);
-
-                    SnackbarManager.show(
-                            Snackbar.with(getActivity().getApplicationContext())
-                                    .text("Selected: " + selected.name)
-                                    .actionColor(Color.YELLOW)
-                                    .duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
-                                    .actionLabel("Remove")
-                                    .actionListener(new ActionClickListener() {
-                                        @Override
-                                        public void onActionClicked(Snackbar snackbar) {
-
-                                            MixenPlayerService.instance.spotifyQueue.remove(position);
-
-                                            updateHostQueueUI();
-                                            MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
-
-                                            if (MixenPlayerService.instance.currentTrack.id.equals(selected.id)) {
-                                                //If someone wants to delete the currently playing song, stop everything.
-                                                MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
-                                                Log.d(Mixen.TAG, "Current song was deleted.");
-
-                                                if (MixenPlayerService.instance.getNextTrack() != null || !MixenPlayerService.instance.queueIsEmpty()) {
-                                                    if (MixenPlayerService.instance.queueHasASingleTrack()) {
-                                                        MixenPlayerService.instance.queueSongPosition = 0;
-                                                    }
-                                                    //We use preparePlayback here because we don't need to modify the counter, because the ArrayList will move around the counter.
-                                                    MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.preparePlayback);
-                                                }
-
-                                            } else if (position < MixenPlayerService.instance.queueSongPosition) {
-                                                MixenPlayerService.instance.queueSongPosition--;
-                                            }
-
-                                            MixenBase.mixenPlayerFrag.updateUpNext();
-
-                                        }
-                                    })
-                                    .eventListener(new EventListener() {
-                                        @Override
-                                        public void onShow(Snackbar snackbar) {
-
-                                        }
-
-                                        @Override
-                                        public void onShowByReplace(Snackbar snackbar) {
-
-                                        }
-
-                                        @Override
-                                        public void onShown(Snackbar snackbar) {
-
-                                        }
-
-                                        @Override
-                                        public void onDismiss(Snackbar snackbar) {
-                                        }
-
-                                        @Override
-                                        public void onDismissByReplace(Snackbar snackbar) {
-
-                                        }
-
-                                        @Override
-                                        public void onDismissed(Snackbar snackbar) {
-                                            snackBarIsVisible = false;
-                                            addSongButton.setVisibility(View.VISIBLE);
-                                            networkBtn.setVisibility(View.VISIBLE);
-                                        }
-                                    })
-                            , getActivity());
-                } else {
-                    SnackbarManager.dismiss();
-                }
-
+                assignItemClickListener(position);
             }
         });
     }
@@ -494,20 +601,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     private void setupClientQueueAdapter() {
 
-        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.clientQueue) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-
-                text1.setText(MixenPlayerService.instance.clientQueue.get(position).name);
-                text2.setText(MixenPlayerService.instance.clientQueue.get(position).artist);
-                //text1.setTextSize(24);
-                //text2.setTextSize(18);
-                return view;
-            }
-        };
+        queueAdapter = new SongQueueListAdapter(getActivity(), cellList);
 
         // Assign adapter to ListView
         queueLV.setAdapter(queueAdapter);
@@ -520,7 +614,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     final int position, long id) {
 
                 // ListView Clicked item value
-                final MetaTrack selected = (MetaTrack) queueLV.getItemAtPosition(position);
+                final SongQueueListItem selected = (SongQueueListItem) queueLV.getItemAtPosition(position);
 
             }
         });
