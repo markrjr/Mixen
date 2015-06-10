@@ -14,10 +14,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.telephony.PhoneStateListener;
@@ -37,6 +40,7 @@ import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
 import com.spotify.sdk.android.player.Spotify;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import kaaes.spotify.webapi.android.models.Track;
 import retrofit.Callback;
@@ -151,10 +155,8 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, currentMetaTrack.albumArtURL)
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentMetaTrack.artist)
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentMetaTrack.name)
-
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentMetaTrack.name)
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, currentMetaTrack.albumName)
-
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentMetaTrack.albumArt)
                 .build();
 
@@ -167,8 +169,9 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 state.setState(playbackState, (long) MixenBase.mixenPlayerFrag.arcProgressBar.getProgress(), 1f);
 
         mediaSession.setPlaybackState(state.build());
-
+        
         mediaSession.setMetadata(mediaData);
+
         if(!mediaSession.isActive())
         {
             mediaSession.setActive(true);

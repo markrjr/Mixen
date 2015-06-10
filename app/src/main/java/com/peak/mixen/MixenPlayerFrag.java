@@ -215,6 +215,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                 .placeholder(getResources().getDrawable(R.drawable.mixen_icon))
                 .into(albumArtIV);
 
+        MixenPlayerService.instance.currentMetaTrack.downloadAlbumArt(getActivity());
+
         Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentMetaTrack.name + " : " + MixenPlayerService.instance.currentMetaTrack.artist);
 
         setRotateAnimation();
