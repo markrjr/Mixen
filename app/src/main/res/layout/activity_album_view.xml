@@ -62,7 +62,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="170dp"
-        android:visibility="visible"
+        android:visibility="invisible"
         android:layout_marginRight="10dp"
         android:scaleType="center" />
 

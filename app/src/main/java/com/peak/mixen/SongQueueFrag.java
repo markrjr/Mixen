@@ -356,7 +356,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     @Override
                     public void call(SalutDevice device) {
                         Toast.makeText(getActivity(), device.readableName + " is now connected.", Toast.LENGTH_SHORT).show();
-                        //TODO Update new client.
+                        MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
                     }
                 }, new SalutCallback() {
                     @Override

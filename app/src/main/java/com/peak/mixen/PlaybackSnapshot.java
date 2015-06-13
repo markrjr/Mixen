@@ -85,6 +85,14 @@ public class PlaybackSnapshot {
         updateNetworkPlaybackData();
     }
 
+    public void updateNetworkPlayer()
+    {
+        this.currentMetaTrack = MixenPlayerService.instance.currentTrack;
+        this.playServiceState = MixenPlayerService.instance.playerServiceSnapshot.playServiceState;
+        this.queueSongPosition = MixenPlayerService.instance.queueSongPosition;
+        updateNetworkQueue();
+    }
+
     public void updateNetworkPlayer(int playerServiceState, int queueSongPosition, MetaTrack currentMetaTrack)
     {
         this.currentMetaTrack = currentMetaTrack;
