@@ -57,7 +57,13 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         fab = (FloatingActionButton) findViewById(R.id.playAlbumBtn);
 
-        fab.setOnClickListener(this);
+        if(Mixen.isHost)
+        {
+            fab.setOnClickListener(this);
+        }
+        else {
+            fab.setVisibility(View.INVISIBLE);
+        }
 
         progressBar.getIndeterminateDrawable().setColorFilter(
                 getResources().getColor(R.color.Snow_White),
@@ -258,13 +264,14 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
                 for(TrackSimple track : foundAlbum.tracks.items)
                 {
                     SearchSongs.addTrackToQueue(AlbumView.this, new MetaTrack(track), false);
-                    SnackbarManager.show(
-                            Snackbar.with(this)
-                                    .text("Added " + foundAlbum.name)
-                            //.actionLabel("Undo")
-                            //.actionColor(Color.YELLOW)
-                            , this);
                 }
+
+                SnackbarManager.show(
+                        Snackbar.with(this)
+                                .text("Added " + foundAlbum.name)
+                        //.actionLabel("Undo")
+                        //.actionColor(Color.YELLOW)
+                        , this);
             }
         }
     }
