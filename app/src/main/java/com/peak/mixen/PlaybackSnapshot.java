@@ -29,7 +29,7 @@ public class PlaybackSnapshot {
     public static final int PLAYBACK_UPDATE = 93;
 
     @JsonField
-    public ArrayList<MetaTrack> clientQueue;
+    public ArrayList<MetaTrack> remoteQueue;
     @JsonField
     public int playServiceState;
     @JsonField
@@ -38,31 +38,14 @@ public class PlaybackSnapshot {
     public int queueSongPosition;
     @JsonField
     public int snapshotType;
+    @JsonField
+    public MetaTrack trackToAdd;
 
     public PlaybackSnapshot(){}
 
     public PlaybackSnapshot(int playerServiceState)
     {
         this.playServiceState = playerServiceState;
-        if(playerServiceState != INIT && playerServiceState != READY)
-            updateQueue();
-    }
-
-    private void updateQueue()
-    {
-        clientQueue = new ArrayList<>(MixenPlayerService.instance.spotifyQueue.size());
-
-        if(!MixenPlayerService.instance.spotifyQueue.isEmpty())
-        {
-            for(Track track : MixenPlayerService.instance.spotifyQueue)
-            {
-                clientQueue.add(new MetaTrack(track));
-            }
-        }
-
-        MixenPlayerService.instance.clientQueue = clientQueue;
-        MixenBase.songQueueFrag.cellList.clear();
-        MixenBase.songQueueFrag.cellList.addAll(SongQueueListAdapter.convertToListItems(clientQueue));
     }
 
     private void updateNetworkPlaybackData()
@@ -78,6 +61,7 @@ public class PlaybackSnapshot {
         }
         else if(Mixen.network != null && !Mixen.isHost && Mixen.network.thisDevice.isRegistered)
         {
+            trackToAdd = MixenPlayerService.instance.metaQueue.get(MixenPlayerService.instance.metaQueue.size() - 1);
             Mixen.network.sendToHost(this, new SalutCallback() {
                 @Override
                 public void call() {
@@ -89,18 +73,8 @@ public class PlaybackSnapshot {
 
     public void updateNetworkQueue()
     {
-        this.playServiceState = READY;
         this.snapshotType = QUEUE_UPDATE;
-        updateQueue();
-        updateNetworkPlaybackData();
-    }
-
-    public void updateNetworkQueue(ArrayList<MetaTrack> clientQueue)
-    {
-        this.clientQueue = clientQueue;
-        this.playServiceState = READY;
-        this.snapshotType = QUEUE_UPDATE;
-        updateQueue();
+        this.remoteQueue = MixenPlayerService.instance.metaQueue;
         updateNetworkPlaybackData();
     }
 
@@ -111,14 +85,12 @@ public class PlaybackSnapshot {
         updateNetworkPlaybackData();
     }
 
-    public void updateNetworkPlayerState(int playerServiceState, int queueSongPosition, MetaTrack currentMetaTrack)
+    public void updateNetworkPlayer(int playerServiceState, int queueSongPosition, MetaTrack currentMetaTrack)
     {
-        this.snapshotType = QUEUE_UPDATE;
         this.currentMetaTrack = currentMetaTrack;
         this.playServiceState = playerServiceState;
         this.queueSongPosition = queueSongPosition;
-        updateQueue();
-        updateNetworkPlaybackData();
+        updateNetworkQueue();
     }
 
 }

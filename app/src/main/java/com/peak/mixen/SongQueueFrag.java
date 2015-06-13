@@ -88,6 +88,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 addSongButton.hide(true);
             }
         });
+
         addSongButton.setOnClickListener(this);
         networkBtn.setOnClickListener(this);
 
@@ -101,11 +102,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         if(Mixen.isHost)
         {
-            setupHostQueueAdapter(false);
+            setupQueueAdapter(false);
         }
         else
         {
-            setupClientQueueAdapter();
+            setupQueueAdapter(true);
             addSongButton.setVisibility(View.INVISIBLE);
         }
 
@@ -122,13 +123,9 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-        if(Mixen.isHost && queueAdapter != null)
+        if(queueAdapter != null)
         {
-            updateHostQueueUI();
-        }
-        else if(!Mixen.isHost && queueAdapter != null)
-        {
-            updateClientQueueUI();
+            updateQueueUI();
         }
     }
 
@@ -137,8 +134,21 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         findingMixensProgress = new MaterialDialog.Builder(getActivity())
                 .title("Searching for nearby Mixens...")
                 .content("Please wait...")
+                .negativeText("Stop")
                 .progress(true, 0)
                 .cancelable(false)
+                .callback(new MaterialDialog.ButtonCallback() {
+                    @Override
+                    public void onNegative(MaterialDialog dialog) {
+                        super.onNegative(dialog);
+                        if(Mixen.network != null)
+                        {
+                            Mixen.network.cancelConnecting();
+                            Mixen.network.stopServiceDiscovery();
+                            SongQueueFrag.this.getActivity().finish();
+                        }
+                    }
+                })
                 .build();
 
         cleanUpDialog = new MaterialDialog.Builder(getActivity())
@@ -239,30 +249,15 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         }, 5000);
     }
 
-    public void updateHostQueueUI() {
+    public void updateQueueUI() {
+
+        MixenBase.songQueueFrag.cellList.clear();
+        MixenBase.songQueueFrag.cellList.addAll(SongQueueListAdapter.convertToListItems(MixenPlayerService.instance.metaQueue));
 
         queueAdapter.notifyDataSetChanged();
         queueLV.invalidate();
 
         if (MixenPlayerService.instance.queueIsEmpty()) {
-
-            infoTV.setVisibility(View.VISIBLE);
-            queueLV.setVisibility(View.GONE);
-        }
-        else
-        {
-            infoTV.setVisibility(View.GONE);
-            queueLV.setVisibility(View.VISIBLE);
-        }
-
-    }
-
-    public void updateClientQueueUI() {
-
-        queueAdapter.notifyDataSetChanged();
-        queueLV.invalidate();
-
-        if (MixenPlayerService.instance.clientQueue.isEmpty()) {
 
             infoTV.setVisibility(View.VISIBLE);
             queueLV.setVisibility(View.GONE);
@@ -351,7 +346,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 networkBtn.setImageDrawable(notLiveDrawable);
                 Toast.makeText(getActivity(), "We're no longer live.", Toast.LENGTH_SHORT).show();
                 Mixen.network.stopNetworkService(false);
-                setupHostQueueAdapter(false);
+                setupQueueAdapter(false);
 
             }
             else
@@ -370,7 +365,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         networkBtn.setImageDrawable(notLiveDrawable);
                     }
                 });
-                setupHostQueueAdapter(true);
+                setupQueueAdapter(true);
             }
         }
         else
@@ -421,12 +416,12 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     @Override
                                     public void onActionClicked(Snackbar snackbar) {
 
-                                        MixenPlayerService.instance.spotifyQueue.remove(position);
+                                        MixenPlayerService.instance.metaQueue.remove(position);
 
-                                        updateHostQueueUI();
+                                        updateQueueUI();
                                         MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
 
-                                        if (MixenPlayerService.instance.currentTrack.id.equals(selected.metaTrack.spotifyID)) {
+                                        if (MixenPlayerService.instance.currentTrack.spotifyID.equals(selected.metaTrack.spotifyID)) {
                                             //If someone wants to delete the currently playing song, stop everything.
                                             MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
                                             Log.d(Mixen.TAG, "Current song was deleted.");
@@ -488,7 +483,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         else
         {
 
-            final TrackSimple selected = (TrackSimple) queueLV.getItemAtPosition(position);
+            final MetaTrack selected = (MetaTrack) queueLV.getItemAtPosition(position);
 
             if (!snackBarIsVisible) {
                 snackBarIsVisible = true;
@@ -505,12 +500,12 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     @Override
                                     public void onActionClicked(Snackbar snackbar) {
 
-                                        MixenPlayerService.instance.spotifyQueue.remove(position);
+                                        MixenPlayerService.instance.metaQueue.remove(position);
 
-                                        updateHostQueueUI();
+                                        updateQueueUI();
                                         MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
 
-                                        if (MixenPlayerService.instance.currentTrack.id.equals(selected.id)) {
+                                        if (MixenPlayerService.instance.currentTrack.spotifyID.equals(selected.spotifyID)) {
                                             //If someone wants to delete the currently playing song, stop everything.
                                             MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
                                             Log.d(Mixen.TAG, "Current song was deleted.");
@@ -571,7 +566,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     }
 
 
-    private void setupHostQueueAdapter(final boolean forNetwork) {
+    private void setupQueueAdapter(final boolean forNetwork) {
 
         if(forNetwork)
         {
@@ -579,7 +574,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         }
         else
         {
-            queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.spotifyQueue) {
+            queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_2, android.R.id.text1, MixenPlayerService.instance.metaQueue) {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent) {
                     View view = super.getView(position, convertView, parent);
@@ -588,10 +583,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                     TextView text2 = (TextView) view.findViewById(android.R.id.text2);
 
-                    text1.setText(MixenPlayerService.instance.spotifyQueue.get(position).name);
-                    text2.setText(MixenPlayerService.instance.spotifyQueue.get(position).artists.get(0).name);
-                    //text1.setTextColor(getResources().getColor(R.color.Darker_Gray));
-                    //text2.setTextColor(getResources().getColor(R.color.Darker_Gray));
+                    text1.setText(MixenPlayerService.instance.metaQueue.get(position).name);
+                    text2.setText(MixenPlayerService.instance.metaQueue.get(position).artist);
                     return view;
                 }
             };
@@ -600,39 +593,19 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         // Assign adapter to ListView
         queueLV.setAdapter(queueAdapter);
 
-        // ListView Item Click Listener
-        queueLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        if(Mixen.isHost)
+        {
+            // ListView Item Click Listener
+            queueLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view,
+                                        final int position, long id) {
 
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    final int position, long id) {
-
-                // ListView Clicked item value
-                assignItemClickListener(forNetwork, position);
-            }
-        });
-    }
-
-
-    private void setupClientQueueAdapter() {
-
-        queueAdapter = new SongQueueListAdapter(getActivity(), cellList);
-
-        // Assign adapter to ListView
-        queueLV.setAdapter(queueAdapter);
-
-        // ListView Item Click Listener
-        queueLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    final int position, long id) {
-
-                // ListView Clicked item value
-                final SongQueueListItem selected = (SongQueueListItem) queueLV.getItemAtPosition(position);
-
-            }
-        });
+                    // ListView Clicked item value
+                    assignItemClickListener(forNetwork, position);
+                }
+            });
+        }
     }
 
     @Override
@@ -659,14 +632,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         {
             if (resultCode == Activity.RESULT_OK)
             {
-                if(Mixen.isHost)
-                {
-                    updateHostQueueUI();
-                }
-                else
-                {
-                    updateClientQueueUI();
-                }
+                updateQueueUI();
                 //We really don't care about the Intent data here, we just need some way to know
                 //when the user has come back from searching for songs so that we can update the UI.
             }

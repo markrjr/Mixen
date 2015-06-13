@@ -105,7 +105,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         recordPlayerAnim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         recordPlayerAnim.setRepeatCount(Animation.INFINITE);
-        recordPlayerAnim.setDuration(120000);
 
         playPauseButton.setOnClickListener(this);
         fastForwardIB.setOnClickListener(this);
@@ -174,10 +173,10 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         if(MixenPlayerService.instance.isRunning && MixenPlayerFrag.this.isRunning && MixenPlayerService.instance.playerIsPlaying)
         {
-            String songDuration = humanReadableTimeString(MixenPlayerService.instance.currentMetaTrack.duration);
+            String songDuration = humanReadableTimeString(MixenPlayerService.instance.currentTrack.duration);
 
             songDurationTV.setText("" + songDuration);
-            arcProgressBar.setMax(MixenPlayerService.instance.currentMetaTrack.duration);
+            arcProgressBar.setMax(MixenPlayerService.instance.currentTrack.duration);
 
             if(!progressBarThreadIsRunning)
             {
@@ -205,44 +204,38 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     public void prepareUI()
     {
-        titleTV.setText(MixenPlayerService.instance.currentMetaTrack.name);
-        artistTV.setText(MixenPlayerService.instance.currentMetaTrack.artist);
+        Picasso.with(getActivity())
+                .load(MixenPlayerService.instance.currentTrack.albumArtURL)
+                .into(new Target() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                        MixenPlayerService.instance.currentTrack.albumArt = bitmap;
+                    }
+
+                    @Override
+                    public void onBitmapFailed(Drawable errorDrawable) {
+
+                    }
+
+                    @Override
+                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                    }
+                });
+
+        titleTV.setText(MixenPlayerService.instance.currentTrack.name);
+        artistTV.setText(MixenPlayerService.instance.currentTrack.artist);
 
         Picasso.with(getActivity().getApplicationContext())
-                .load(MixenPlayerService.instance.currentMetaTrack.albumArtURL)
+                .load(MixenPlayerService.instance.currentTrack.albumArtURL)
                 .placeholder(getResources().getDrawable(R.drawable.mixen_icon))
                 .into(albumArtIV);
 
-        Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentMetaTrack.name + " : " + MixenPlayerService.instance.currentMetaTrack.artist);
+        Log.d(Mixen.TAG, "Current Song Info: " + MixenPlayerService.instance.currentTrack.name + " : " + MixenPlayerService.instance.currentTrack.artist);
 
         setRotateAnimation();
 
-        if(Mixen.isHost)
-        {
-            updateUpNext();
-        }
-        else
-        {
-            updateClientUpNext();
-        }
-
-    }
-
-    public void updateClientUpNext()
-    {
-        if(MixenPlayerService.instance.clientQueue.isEmpty())
-        {
-            MixenBase.mixenPlayerFrag.upNextTV.setText("Nothing Is Playing");
-            MixenBase.mixenPlayerFrag.upNextTV.setVisibility(View.VISIBLE);
-        }
-        else if(MixenPlayerService.instance.getNextMetaTrack() != null)
-        {
-            MixenBase.mixenPlayerFrag.upNextTV.setText("Next: \n" + MixenPlayerService.instance.getNextMetaTrack().name);
-        }
-        else
-        {
-            upNextTV.setText("");
-        }
+        updateUpNext();
     }
 
     public void updateUpNext()
@@ -411,6 +404,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         {
             if(albumArtIV.getAnimation() == null)
             {
+                recordPlayerAnim.setDuration(MixenPlayerService.instance.currentTrack.duration);
                 albumArtIV.startAnimation(recordPlayerAnim);
             }
             else

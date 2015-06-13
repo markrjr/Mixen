@@ -24,6 +24,7 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.peak.mixen.Utils.HeaderListAdapter;
 import com.peak.mixen.Utils.HeaderListCell;
+import com.peak.mixen.Utils.SongQueueListAdapter;
 import com.peak.salut.Callbacks.SalutCallback;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -259,7 +260,7 @@ public class SearchSongs extends ActionBarActivity {
                 } else if (selected.hiddenCategory.equals("EXTRA_ALBUMS")) {
                     populateSpecificListView("ALBUMS");
                 } else if (selected.hiddenCategory.equals("SONG")) {
-                    addTrackToQueue(SearchSongs.this, selected.trackSimple, true);
+                    addTrackToQueue(SearchSongs.this, new MetaTrack(selected.trackSimple), true);
 
                 } else if (selected.hiddenCategory.equals("ALBUM")) {
                     viewAlbumInfo.putExtra("REQUESTED_ALBUM_ID", selected.albumSimple.id);
@@ -270,18 +271,18 @@ public class SearchSongs extends ActionBarActivity {
 
     }
 
-    protected static void addForHost(Activity activity, Track track)
+    private static void actuallyAddToQueue(Activity activity, MetaTrack track)
     {
-        if (MixenPlayerService.instance.spotifyQueue.isEmpty()) {
+        if (MixenPlayerService.instance.metaQueue.isEmpty()) {
             Log.i(Mixen.TAG, "First song added to queue.");
 
-            MixenPlayerService.instance.spotifyQueue.add(track);
+            MixenPlayerService.instance.metaQueue.add(track);
             MixenPlayerService.instance.queueSongPosition = 0;
             MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
             instance.isFirstSong = true;
         } else {
             instance.isFirstSong = false;
-            MixenPlayerService.instance.spotifyQueue.add(track);
+            MixenPlayerService.instance.metaQueue.add(track);
             if (!MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack) {
                 //If songs are in the queue, but have completed playback and a new one is suddenly added.
                 MixenPlayerService.instance.queueSongPosition++;
@@ -295,37 +296,16 @@ public class SearchSongs extends ActionBarActivity {
             public void run() {
                 MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
                 MixenBase.mixenPlayerFrag.updateUpNext();
+                MixenBase.songQueueFrag.updateQueueUI();
             }
         });
     }
 
-    protected static void addForClient(Activity activity, Track track)
+    public static void addTrackToQueue(final Activity activity, final MetaTrack metaTrack, boolean showSnackBar)
     {
-        if (MixenPlayerService.instance.clientQueue.isEmpty()) {
-            Log.i(Mixen.TAG, "First song added to queue.");
-
-            MixenPlayerService.instance.clientQueue.add(new MetaTrack(track));
-            MixenPlayerService.instance.queueSongPosition = 0;
-            instance.isFirstSong = true;
-        } else {
-            instance.isFirstSong = false;
-            MixenPlayerService.instance.clientQueue.add(new MetaTrack(track));
-            }
-
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
-                MixenBase.mixenPlayerFrag.updateClientUpNext();
-            }
-        });
-    }
-
-    public static void addTrackToQueue(final Activity activity, final TrackSimple track, boolean showSnackBar)
-    {
-        for(TrackSimple queuedTrack : MixenPlayerService.instance.spotifyQueue)
+        for(MetaTrack queuedTrack : MixenPlayerService.instance.metaQueue)
         {
-            if(track.id.equals(queuedTrack.id))
+            if(metaTrack.spotifyID.equals(queuedTrack.spotifyID))
             {
                 SnackbarManager.show(
                         Snackbar.with(activity)
@@ -339,7 +319,7 @@ public class SearchSongs extends ActionBarActivity {
         {
             SnackbarManager.show(
                     Snackbar.with(activity)
-                            .text("Added " + track.name)
+                            .text("Added " + metaTrack.name)
                     //.actionLabel("Undo")
                     //.actionColor(Color.YELLOW)
                     , activity);
@@ -352,21 +332,13 @@ public class SearchSongs extends ActionBarActivity {
             }
         });
 
-        Mixen.spotify.getTrack(track.id, new Callback<Track>() {
+        Mixen.spotify.getTrack(metaTrack.spotifyID, new Callback<Track>() {
             @Override
             public void success(Track track, Response response) {
-
-                if(Mixen.isHost)
-                {
-                    addForHost(activity, track);
-                }
-                else
-                {
-                    addForClient(activity, track);
-                }
-
+                MetaTrack trackToAdd = new MetaTrack(track);
+                trackToAdd.addedBy = metaTrack.addedBy;
+                actuallyAddToQueue(activity, trackToAdd);
                 MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
-
             }
 
             @Override

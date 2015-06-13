@@ -59,7 +59,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         createNewMixen = new Intent(StartScreen.this, MixenBase.class);
 
-
         createDialogs();
 
         checkifFirstRun();
@@ -68,11 +67,9 @@ public class StartScreen extends Activity implements View.OnClickListener{
         {
             new MaterialDialog.Builder(getApplicationContext())
                     .title("Larger Device Detected")
-                    .content("It looks like you're using Mixen on a screen or device with a large display or large resolution. The app's interface may look different.")
+                    .content("It looks like you're using Mixen on a screen or device with a large display or large resolution. The app's interface may look A LOT different.")
                     .neutralText("Okay");
         }
-
-        startService(new Intent(this, MixenPlayerService.class).setAction(MixenPlayerService.init));
 
         createMixen.setOnClickListener(this);
         findMixen.setOnClickListener(this);
@@ -197,8 +194,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
             @Override
             public void run() {
 
-                startService(new Intent(StartScreen.instance, MixenPlayerService.class).setAction(MixenPlayerService.init));
-
                 hideControls();
 
                 if (!hasSpotifyToken())
@@ -267,6 +262,16 @@ public class StartScreen extends Activity implements View.OnClickListener{
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if(MixenPlayerService.instance != null)
+        {
+            stopService(new Intent(this, MixenPlayerService.class));
+        }
+    }
+
+    @Override
     public void onBackPressed() {
 
         if (pressedBefore)
@@ -295,6 +300,8 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
     @Override
     public void onClick(View v) {
+
+        startService(new Intent(StartScreen.instance, MixenPlayerService.class).setAction(MixenPlayerService.init));
 
         if(v.getId() == R.id.appNameTV)
         {

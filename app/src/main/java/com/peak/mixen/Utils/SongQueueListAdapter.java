@@ -5,12 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.R;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -33,7 +31,7 @@ public class SongQueueListAdapter extends ArrayAdapter<SongQueueListItem> {
 
 		return listItems;
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -54,8 +52,8 @@ public class SongQueueListAdapter extends ArrayAdapter<SongQueueListItem> {
 		songName.setText(listItem.songName);
 		artistName.setText(listItem.songArtist);
 		addedBy.setText("Added by " + listItem.addedBy);
-		upVotes.setText(listItem.upVotes);
-        downVotes.setText(listItem.downVotes);
+		upVotes.setText(String.valueOf(listItem.upVotes));
+        downVotes.setText(String.valueOf(listItem.downVotes));
 
 		return v;
 	}

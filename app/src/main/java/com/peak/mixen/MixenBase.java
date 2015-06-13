@@ -83,6 +83,7 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         Mixen.currentContext = getApplicationContext();
         Mixen.spotifyAPI = new SpotifyApi();
         Mixen.spotify = Mixen.spotifyAPI.getService();
+        startService(new Intent(StartScreen.instance, MixenPlayerService.class).setAction(MixenPlayerService.init));
     }
 
 

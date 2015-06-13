@@ -21,6 +21,8 @@ public class SongQueueListItem implements Comparable<SongQueueListItem> {
 		this.songArtist = track.artist;
 		this.addedBy = track.addedBy;
 		this.metaTrack = track;
+		this.upVotes = track.upVotes;
+        this.downVotes = track.downVotes;
 	}
 
 	@Override

@@ -65,7 +65,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     public static MixenPlayerService instance;
     public Player spotifyPlayer;
-    public Track currentTrack;
+    public MetaTrack currentTrack;
     public boolean playerIsPlaying;
     public MediaSessionCompat mediaSession;
 
@@ -86,9 +86,8 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public boolean serviceIsBusy = true;
     //Another catch all boolean for when the service is fetching data, and cannot handle another request.
 
-    public MetaTrack currentMetaTrack;
-    public ArrayList<Track> spotifyQueue;
-    public ArrayList<MetaTrack> clientQueue;
+    //public ArrayList<Track> spotifyQueue;
+    public ArrayList<MetaTrack> metaQueue;
     public PlaybackSnapshot playerServiceSnapshot;
 
     @Override
@@ -122,8 +121,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     private void initService()
     {
-        spotifyQueue = new ArrayList<>();
-        clientQueue = new ArrayList<>();
+        metaQueue = new ArrayList<>();
         playerServiceSnapshot = new PlaybackSnapshot(PlaybackSnapshot.INIT);
 
         if(Mixen.isHost)
@@ -150,14 +148,14 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     {
 
         MediaMetadataCompat mediaData = new MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentMetaTrack.albumName)
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, currentMetaTrack.artist)
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, currentMetaTrack.albumArtURL)
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentMetaTrack.artist)
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentMetaTrack.name)
-                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentMetaTrack.name)
-                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, currentMetaTrack.albumName)
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentMetaTrack.albumArt)
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, currentTrack.albumName)
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, currentTrack.artist)
+                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, currentTrack.albumArtURL)
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, currentTrack.artist)
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, currentTrack.name)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, currentTrack.name)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, currentTrack.albumName)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentTrack.albumArt)
                 .build();
 
         PlaybackStateCompat.Builder state = new PlaybackStateCompat.Builder();
@@ -219,20 +217,20 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     public boolean queueIsEmpty()
     {
-        return spotifyQueue.isEmpty();
+        return metaQueue.isEmpty();
     }
 
     public boolean queueHasASingleTrack()
     {
-        if (spotifyQueue.size() == 1) return true;
+        if (metaQueue.size() == 1) return true;
         else return false;
     }
 
-    public MetaTrack getNextMetaTrack()
+    public MetaTrack getNextTrack()
     {
         try
         {
-            return clientQueue.get(instance.queueSongPosition + 1);
+            return metaQueue.get(instance.queueSongPosition + 1);
         }
         catch (Exception ex)
         {
@@ -242,21 +240,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         return null;
     }
 
-    public Track getNextTrack()
-    {
-        try
-        {
-            return spotifyQueue.get(instance.queueSongPosition + 1);
-        }
-        catch (Exception ex)
-        {
-            Log.i(Mixen.TAG, "No song was found after the current one in the queue.");
-        }
-
-        return null;
-    }
-
-    public Track getLastTrack()
+    public MetaTrack getLastTrack()
     {
         if(queueSongPosition == 0)
         {
@@ -266,7 +250,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         {
             try
             {
-                return spotifyQueue.get(queueSongPosition - 1);
+                return metaQueue.get(queueSongPosition - 1);
             }
             catch (Exception ex)
             {
@@ -323,7 +307,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         playerHasTrack = false;
         queueSongPosition +=1;
         preparePlayback();
-        Log.d(Mixen.TAG, "Skipping songs to " + currentMetaTrack.name);
+        Log.d(Mixen.TAG, "Skipping songs to " + currentTrack.name);
     }
 
     private void skipToLastSong()
@@ -332,7 +316,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         playerHasTrack = false;
         queueSongPosition -=1;
         preparePlayback();
-        Log.d(Mixen.TAG, "Going back to " + currentMetaTrack.name);
+        Log.d(Mixen.TAG, "Going back to " + currentTrack.name);
     }
 
     private void preparePlayback(){
@@ -342,16 +326,15 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             serviceIsBusy = true;
             Log.d(Mixen.TAG, "Signaling playback, it should begin shortly.");
             MixenBase.mixenPlayerFrag.hideUIControls(false);
-            currentTrack = spotifyQueue.get(queueSongPosition);
-            currentMetaTrack = new MetaTrack(currentTrack);
+            currentTrack = metaQueue.get(queueSongPosition);
             MixenBase.mixenPlayerFrag.prepareUI();
             if(hasAudioFocus())
             {
-                spotifyPlayer.play(currentTrack.uri);
+                spotifyPlayer.play(currentTrack.trackURI);
             }
         } else
         {
-            MixenBase.songQueueFrag.updateClientQueueUI();
+            MixenBase.songQueueFrag.updateQueueUI();
             MixenBase.mixenPlayerFrag.prepareUI();
             MixenBase.mixenPlayerFrag.showOrHidePlayBtn(playerServiceSnapshot);
             MixenBase.mixenPlayerFrag.showSongProgressViews();
@@ -389,7 +372,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 @Override
                 public void onPlayerState(PlayerState playerState) {
 
-                    if(playerState.positionInMs + 30000 > currentMetaTrack.duration)
+                    if(playerState.positionInMs + 30000 > currentTrack.duration)
                     {
                         Log.d(Mixen.TAG, "User tried to seek past track length.");
                         return;
@@ -599,7 +582,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     {
         serviceIsBusy = false;
         playerHasTrack = true;
-        playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.PLAYING, queueSongPosition, currentMetaTrack);
+        playerServiceSnapshot.updateNetworkPlayer(PlaybackSnapshot.PLAYING, queueSongPosition, currentTrack);
         MixenBase.mixenPlayerFrag.restoreUIControls();
         setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
         registerReceiver(noisyAudioReciever, intentFilter);
@@ -655,13 +638,13 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
         RemoteViews contentView = new RemoteViews(Mixen.currentContext.getPackageName(), R.layout.player_notification);
         contentView.setImageViewResource(R.id.icon, R.drawable.mixen_icon);
-        contentView.setTextViewText(R.id.title, currentMetaTrack.name);
-        contentView.setTextViewText(R.id.text, currentMetaTrack.artist);
+        contentView.setTextViewText(R.id.title, currentTrack.name);
+        contentView.setTextViewText(R.id.text, currentTrack.artist);
 
         RemoteViews bigContentView = new RemoteViews(Mixen.currentContext.getPackageName(), R.layout.player_notification_big);
-        bigContentView.setTextViewText(R.id.status_bar_track_name, currentMetaTrack.name);
-        bigContentView.setTextViewText(R.id.status_bar_artist_name, currentMetaTrack.artist);
-        bigContentView.setTextViewText(R.id.status_bar_album_name, currentMetaTrack.albumName);
+        bigContentView.setTextViewText(R.id.status_bar_track_name, currentTrack.name);
+        bigContentView.setTextViewText(R.id.status_bar_artist_name, currentTrack.artist);
+        bigContentView.setTextViewText(R.id.status_bar_album_name, currentTrack.albumName);
 
         if(isPlaying)
         {
@@ -695,7 +678,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         notification.bigContentView = bigContentView;
 
         Picasso.with(getApplicationContext())
-                .load(currentMetaTrack.albumArtURL)
+                .load(currentTrack.albumArtURL)
                 .into(bigContentView, R.id.status_bar_album_art, Mixen.MIXEN_NOTIFY_CODE, notification);
 
         return notification;
@@ -833,14 +816,11 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
         if(playerServiceSnapshot.snapshotType == PlaybackSnapshot.QUEUE_UPDATE)
         {
-            currentMetaTrack = hostPlaybackSnapshot.currentMetaTrack;
+            currentTrack = hostPlaybackSnapshot.currentMetaTrack;
             queueSongPosition = hostPlaybackSnapshot.queueSongPosition;
-            clientQueue.clear();
-            clientQueue = hostPlaybackSnapshot.clientQueue;
-            MixenBase.songQueueFrag.cellList.clear();
-            MixenBase.songQueueFrag.cellList.addAll(SongQueueListAdapter.convertToListItems(clientQueue));
-            MixenBase.mixenPlayerFrag.updateClientUpNext();
-            MixenBase.songQueueFrag.updateClientQueueUI();
+            metaQueue = hostPlaybackSnapshot.remoteQueue;
+            MixenBase.mixenPlayerFrag.updateUpNext();
+            MixenBase.songQueueFrag.updateQueueUI();
         }
 
         switch(hostPlaybackSnapshot.playServiceState)
@@ -906,26 +886,16 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     @Override
     public void onDataReceived(Object data) {
-        Log.d(Mixen.TAG, "Received network playback snapshot, now updating UI.");
         try
         {
             if(Mixen.isHost)
             {
-                MetaTrack trackToAdd = LoganSquare.parse((String) data, MetaTrack.class);
-                Mixen.spotify.getTrack(trackToAdd.spotifyID, new Callback<Track>() {
-                    @Override
-                    public void success(Track track, Response response) {
-                        SearchSongs.addForHost(MixenBase.songQueueFrag.getActivity(), track);
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-                        //TODO Send error to client that added song.
-                    }
-                });
+                Log.d(Mixen.TAG, "Received song request data, updating...");
+                final PlaybackSnapshot clientPlaybackState = LoganSquare.parse((String) data, PlaybackSnapshot.class);
+                SearchSongs.addTrackToQueue(MixenBase.songQueueFrag.getActivity(), clientPlaybackState.trackToAdd, false);
             }
             else {
-
+                Log.d(Mixen.TAG, "Received network playback snapshot, now updating UI.");
                 final PlaybackSnapshot hostPlaybackState = LoganSquare.parse((String) data, PlaybackSnapshot.class);
                 MixenBase.mixenPlayerFrag.getActivity().runOnUiThread(new Runnable() {
                     @Override
