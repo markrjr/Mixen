@@ -33,6 +33,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
     private MaterialDialog explanationDiag;
     private boolean isActuallyFirstRun;
     public static boolean hasSpotifyToken;
+    public static boolean wiFiBeforeLaunch;
 
     private Button findMixen;
     private Button createMixen;
@@ -74,6 +75,9 @@ public class StartScreen extends Activity implements View.OnClickListener{
         createMixen.setOnClickListener(this);
         findMixen.setOnClickListener(this);
         appNameTV.setOnClickListener(this);
+
+        wiFiBeforeLaunch = Salut.isWiFiEnabled(getApplicationContext());
+
         instance = this;
     }
 

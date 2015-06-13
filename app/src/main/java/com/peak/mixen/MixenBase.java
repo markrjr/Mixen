@@ -227,15 +227,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
             {
                 stopService(new Intent(this, MixenPlayerService.class));
             }
-            if(Mixen.network != null && Mixen.network.thisDevice.isRegistered)
-            {
-//                Mixen.network.unregisterClient(new SalutCallback() {
-//                    @Override
-//                    public void call() {
-//                        //
-//                    }
-//                });
-            }
 
             super.onBackPressed();
             return;

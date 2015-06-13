@@ -799,7 +799,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         {
             if(Mixen.isHost)
             {
-                Mixen.network.stopNetworkService(false);
+                Mixen.network.stopNetworkService(StartScreen.wiFiBeforeLaunch);
             }
             else if(Mixen.network.thisDevice.isRegistered)
             {
