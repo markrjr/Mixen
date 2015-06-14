@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 
 
 import android.support.annotation.Nullable;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -26,8 +27,7 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
-import com.melnykov.fab.FloatingActionButton;
-import com.melnykov.fab.ScrollDirectionListener;
+import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
@@ -76,16 +76,16 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         networkBtn = (FloatingActionButton) v.findViewById(R.id.goLiveBtn);
         infoTV = (TextView) v.findViewById(R.id.infoTV);
 
-        addSongButton.attachToListView(queueLV);
-        networkBtn.attachToListView(queueLV, new ScrollDirectionListener() {
+        queueLV.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
-            public void onScrollDown() {
-                addSongButton.show(true);
+            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+
             }
 
             @Override
-            public void onScrollUp() {
-                addSongButton.hide(true);
+            public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+
             }
         });
 

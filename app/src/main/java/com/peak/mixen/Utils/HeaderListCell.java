@@ -26,7 +26,7 @@ public class HeaderListCell implements Comparable<HeaderListCell> {
 	public HeaderListCell(TrackSimple track)
 	{
 		this.name = track.name;
-		this.category = SearchSongs.humanReadableTimeString(track.duration_ms);
+		this.category = track.artists.get(0).name;
 		this.hiddenCategory = "SONG";
 		this.trackSimple = track;
 		isSectionHeader = false;

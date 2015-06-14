@@ -62,7 +62,7 @@ dependencies {
     compile 'com.bluelinelabs:logansquare:1.0.6'
     compile project(':salut')
     //UI Libraries
-    compile 'com.melnykov:floatingactionbutton:1.3.0'
+    compile 'com.getbase:floatingactionbutton:1.9.1'
     compile 'it.neokree:MaterialTabs:0.11'
     compile 'com.nispok:snackbar:2.9.1'
     compile 'com.afollestad:material-dialogs:0.7.5.1'

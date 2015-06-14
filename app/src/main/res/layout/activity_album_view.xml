@@ -51,21 +51,19 @@
         app:border_width="2dp"
         app:border_color="@color/EXP_4"/>
 
-    <com.melnykov.fab.FloatingActionButton
+    <com.getbase.floatingactionbutton.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/playAlbumBtn"
         android:src="@drawable/ic_action_add"
         fab:fab_colorNormal="@color/EXP_4"
         fab:fab_colorPressed="@color/EXP_4"
-        fab:fab_colorRipple="@color/EXP_4"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="170dp"
         android:visibility="invisible"
         android:layout_marginRight="10dp"
         android:scaleType="center" />
-
 
 
 </RelativeLayout>

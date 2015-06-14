@@ -22,14 +22,13 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="5.0dp"/>
 
-    <com.melnykov.fab.FloatingActionButton
+    <com.getbase.floatingactionbutton.FloatingActionButton
         android:id="@+id/addSongFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_action_add"
         fab:fab_colorNormal="@color/Puerto_Rico"
         fab:fab_colorPressed="@color/Puerto_Rico"
-        fab:fab_colorRipple="@color/Puerto_Rico"
         android:visibility="visible"
         android:scaleType="center"
         android:layout_alignParentBottom="true"
@@ -38,14 +37,13 @@
         android:layout_marginBottom="10dp"
         android:layout_marginRight="5dp" />
 
-    <com.melnykov.fab.FloatingActionButton
+    <com.getbase.floatingactionbutton.FloatingActionButton
         android:id="@+id/goLiveBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_not_live"
         fab:fab_colorNormal="@color/Puerto_Rico"
         fab:fab_colorPressed="@color/Puerto_Rico"
-        fab:fab_colorRipple="@color/Puerto_Rico"
         android:visibility="visible"
         android:scaleType="center"
         android:layout_alignParentBottom="true"
