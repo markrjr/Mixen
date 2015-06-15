@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/Jelly_Bean"
-    tools:context="com.peak.mixen.MixenUsersFrag">
+    tools:context="com.peak.mixen.Fragments.MixenUsersFrag">
 
     <ListView
         android:id="@+id/queueLV"

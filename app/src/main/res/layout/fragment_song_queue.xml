@@ -1,13 +1,13 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.peak.mixen.SongQueueFrag"
+    tools:context="com.peak.mixen.Fragments.SongQueueFrag"
     android:id="@+id/relativeLayout"
     android:background="@color/Jelly_Bean">
 
@@ -22,37 +22,6 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="5.0dp"/>
 
-    <com.getbase.floatingactionbutton.FloatingActionButton
-        android:id="@+id/addSongFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_action_add"
-        fab:fab_colorNormal="@color/Puerto_Rico"
-        fab:fab_colorPressed="@color/Puerto_Rico"
-        android:visibility="visible"
-        android:scaleType="center"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginRight="5dp" />
-
-    <com.getbase.floatingactionbutton.FloatingActionButton
-        android:id="@+id/goLiveBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_not_live"
-        fab:fab_colorNormal="@color/Puerto_Rico"
-        fab:fab_colorPressed="@color/Puerto_Rico"
-        android:visibility="visible"
-        android:scaleType="center"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginLeft="5dp" />
-
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -66,9 +35,45 @@
         android:visibility="visible"
         android:gravity="center" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/go_live_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:src="@drawable/ic_not_live"
+        app:layout_anchor="@+id/appbar"
+        app:layout_anchorGravity="bottom|right|end"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/more_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:src="@drawable/ic_settings"
+        android:visibility="invisible"
+        app:layout_anchor="@+id/appbar"
+        app:layout_anchorGravity="bottom|right|end"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_song_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:src="@drawable/ic_action_add"
+        app:layout_anchor="@+id/appbar"
+        app:layout_anchorGravity="bottom|right|end"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
+
 
 
 

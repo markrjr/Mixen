@@ -1,20 +1,15 @@
-package com.peak.mixen;
+package com.peak.mixen.Fragments;
 
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.graphics.Palette;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -28,18 +23,20 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.lzyzsd.circleprogress.ArcProgress;
-import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.peak.mixen.MetaTrack;
+import com.peak.mixen.Mixen;
+import com.peak.mixen.MixenBase;
+import com.peak.mixen.MixenPlayerService;
+import com.peak.mixen.PlaybackSnapshot;
+import com.peak.mixen.R;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Random;
 
 

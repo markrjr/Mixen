@@ -86,7 +86,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public boolean serviceIsBusy = true;
     //Another catch all boolean for when the service is fetching data, and cannot handle another request.
 
-    //public ArrayList<Track> spotifyQueue;
     public ArrayList<MetaTrack> metaQueue;
     public PlaybackSnapshot playerServiceSnapshot;
 

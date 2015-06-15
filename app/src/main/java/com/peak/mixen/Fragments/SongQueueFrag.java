@@ -1,4 +1,4 @@
-package com.peak.mixen;
+package com.peak.mixen.Fragments;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
 import android.util.Log;
@@ -17,7 +18,6 @@ import android.view.ViewGroup;
 
 
 import android.support.annotation.Nullable;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -27,11 +27,16 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
-import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
 import com.nispok.snackbar.listeners.EventListener;
+import com.peak.mixen.MetaTrack;
+import com.peak.mixen.Mixen;
+import com.peak.mixen.MixenBase;
+import com.peak.mixen.MixenPlayerService;
+import com.peak.mixen.R;
+import com.peak.mixen.SearchSongs;
 import com.peak.mixen.Utils.SongQueueListAdapter;
 import com.peak.mixen.Utils.SongQueueListItem;
 import com.peak.salut.Callbacks.SalutCallback;
@@ -42,9 +47,6 @@ import com.peak.salut.Salut;
 import com.peak.salut.SalutServiceData;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-
-import kaaes.spotify.webapi.android.models.TrackSimple;
 
 public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
@@ -53,7 +55,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     public RelativeLayout baseLayout;
     public boolean snackBarIsVisible = false;
     public ArrayList<SongQueueListItem> cellList;
-    private FloatingActionButton addSongButton;
+    private FloatingActionButton addSongBtn;
     private FloatingActionButton networkBtn;
     private MaterialDialog findingMixensProgress;
     private MaterialDialog cleanUpDialog;
@@ -72,24 +74,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         baseLayout = (RelativeLayout) v.findViewById(R.id.relativeLayout);
         queueLV = (ListView) v.findViewById(R.id.queueLV);
-        addSongButton = (FloatingActionButton) v.findViewById(R.id.addSongFab);
-        networkBtn = (FloatingActionButton) v.findViewById(R.id.goLiveBtn);
+        addSongBtn = (FloatingActionButton) v.findViewById(R.id.add_song_button);
+        networkBtn = (FloatingActionButton) v.findViewById(R.id.go_live_button);
         infoTV = (TextView) v.findViewById(R.id.infoTV);
 
-        queueLV.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-
-            }
-
-            @Override
-            public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-
-            }
-        });
-
-        addSongButton.setOnClickListener(this);
+        addSongBtn.setOnClickListener(this);
         networkBtn.setOnClickListener(this);
 
         addSong = new Intent(getActivity(), SearchSongs.class);
@@ -107,7 +96,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         else
         {
             setupQueueAdapter(true);
-            addSongButton.setVisibility(View.INVISIBLE);
+            addSongBtn.setVisibility(View.INVISIBLE);
         }
 
         Intent startingIntent = getActivity().getIntent();
@@ -189,7 +178,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         public void call() {
                             Toast.makeText(Mixen.currentContext, "You're now connected to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
                             networkBtn.setImageDrawable(liveDrawable);
-                            addSongButton.setVisibility(View.VISIBLE);
+                            addSongBtn.setVisibility(View.VISIBLE);
                             findingMixensProgress.dismiss();
 
                         }
@@ -221,7 +210,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         public void call() {
                                             Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(i).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
                                             networkBtn.setImageDrawable(liveDrawable);
-                                            addSongButton.setVisibility(View.VISIBLE);
+                                            addSongBtn.setVisibility(View.VISIBLE);
                                             ;
                                         }
                                     }, new SalutCallback() {
@@ -403,7 +392,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
             if (!snackBarIsVisible) {
                 snackBarIsVisible = true;
-                addSongButton.setVisibility(View.INVISIBLE);
+                addSongBtn.setVisibility(View.INVISIBLE);
                 networkBtn.setVisibility(View.INVISIBLE);
 
                 SnackbarManager.show(
@@ -470,7 +459,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     @Override
                                     public void onDismissed(Snackbar snackbar) {
                                         snackBarIsVisible = false;
-                                        addSongButton.setVisibility(View.VISIBLE);
+                                        addSongBtn.setVisibility(View.VISIBLE);
                                         networkBtn.setVisibility(View.VISIBLE);
                                     }
                                 })
@@ -487,7 +476,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
             if (!snackBarIsVisible) {
                 snackBarIsVisible = true;
-                addSongButton.setVisibility(View.INVISIBLE);
+                addSongBtn.setVisibility(View.INVISIBLE);
                 networkBtn.setVisibility(View.INVISIBLE);
 
                 SnackbarManager.show(
@@ -554,7 +543,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     @Override
                                     public void onDismissed(Snackbar snackbar) {
                                         snackBarIsVisible = false;
-                                        addSongButton.setVisibility(View.VISIBLE);
+                                        addSongBtn.setVisibility(View.VISIBLE);
                                         networkBtn.setVisibility(View.VISIBLE);
                                     }
                                 })
@@ -611,13 +600,14 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == R.id.addSongFab || v.getId() == R.id.mixenBaseLayout)
+        if(v.getId() == R.id.add_song_button || v.getId() == R.id.mixenBaseLayout)
         {
             startActivityForResult(addSong, 5);
             addSong.setAction(Intent.ACTION_SEARCH);
+            Log.d(Mixen.TAG, "Button clicked.");
             return;
         }
-        else if(v.getId() == R.id.goLiveBtn)
+        else if(v.getId() == R.id.go_live_button)
         {
             setupMixenNetwork();
         }

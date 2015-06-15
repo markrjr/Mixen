@@ -46,6 +46,12 @@ buildscript {
     }
 }
 
+repositories {
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
 apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
@@ -62,7 +68,7 @@ dependencies {
     compile 'com.bluelinelabs:logansquare:1.0.6'
     compile project(':salut')
     //UI Libraries
-    compile 'com.getbase:floatingactionbutton:1.9.1'
+    compile 'com.android.support:design:22.2.0'
     compile 'it.neokree:MaterialTabs:0.11'
     compile 'com.nispok:snackbar:2.9.1'
     compile 'com.afollestad:material-dialogs:0.7.5.1'

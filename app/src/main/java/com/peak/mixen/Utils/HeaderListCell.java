@@ -9,8 +9,8 @@ import kaaes.spotify.webapi.android.models.TrackSimple;
 
 public class HeaderListCell implements Comparable<HeaderListCell> {
 
-	private String name;
-	private String category;
+	public String name;
+	public String category;
 	private boolean isSectionHeader;
 	public TrackSimple trackSimple;
 	public AlbumSimple albumSimple;

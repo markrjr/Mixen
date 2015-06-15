@@ -17,8 +17,9 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.nispok.snackbar.SnackbarManager;
-import com.peak.salut.Callbacks.SalutCallback;
-import com.peak.salut.Salut;
+import com.peak.mixen.Fragments.MixenPlayerFrag;
+import com.peak.mixen.Fragments.MixenUsersFrag;
+import com.peak.mixen.Fragments.SongQueueFrag;
 
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 
 public class MixenBase extends ActionBarActivity implements MaterialTabListener{
 
-    public static MaterialTabHost mixenTabs;
+    private MaterialTabHost mixenTabs;
     private ViewPager mPager;
     private ViewPagerAdapter pagerAdapter;
     private RelativeLayout baseLayout;

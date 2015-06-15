@@ -1,4 +1,4 @@
-package com.peak.mixen;
+package com.peak.mixen.Fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -17,6 +17,9 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import com.peak.mixen.Mixen;
+import com.peak.mixen.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;

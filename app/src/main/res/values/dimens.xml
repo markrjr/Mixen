@@ -11,8 +11,4 @@
     <dimen name="play_controls_notification">48.0dip</dimen>
     <dimen name="notification_padding">8.0dip</dimen>
 
-    <!-- Upvote and Downvote buttons -->
-    <dimen name="vote_buttons_small">48.0dip</dimen>
-
-
 </resources>

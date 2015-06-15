@@ -3,6 +3,7 @@ package com.peak.mixen;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,7 +15,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.peak.mixen.Utils.HeaderListAdapter;
@@ -41,7 +41,6 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
     private Album foundAlbum;
     private ProgressBar progressBar;
     private ImageView albumArtHeader;
-    private CircleImageView artistArtHeader;
     private FloatingActionButton fab;
 
     @Override
@@ -53,7 +52,6 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
 
         songsLV = (ListView) findViewById(R.id.songsLV);
         albumArtHeader = (ImageView) findViewById(R.id.albumArtHeader);
-        artistArtHeader = (CircleImageView) findViewById(R.id.artistArtHeader);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         fab = (FloatingActionButton) findViewById(R.id.playAlbumBtn);
 
@@ -118,54 +116,17 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
                     @Override
                     public void run() {
                         populateUI(album);
-                    }
-                });
-
-                if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-                {
-                    //If we're on a tablet, we're in landscape and the album view has a slightly different layout to take advantage of the extra space.
-                    getArtistArt(album.artists.get(0).id);
-                }
-                else
-                {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                        if(Mixen.isHost)
+                        {
                             fab.setVisibility(View.VISIBLE);
                         }
-                    });
-                }
-            }
-        });
-    }
-
-    public void getArtistArt(String artistID)
-    {
-        Mixen.spotify.getArtist(artistID, new SpotifyCallback<Artist>() {
-            @Override
-            public void failure(SpotifyError spotifyError) {
-                Log.e(Mixen.TAG, "Failed to get artist.");
-            }
-
-            @Override
-            public void success(final Artist artist, Response response) {
-
-                if(artist.images.size() == 0)
-                {
-                    return;
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Picasso.with(getApplicationContext())
-                                .load(artist.images.get(0).url)
-                                .into(artistArtHeader);
                     }
                 });
             }
         });
     }
+
+
 
     public void populateUI(final Album album)
     {
@@ -216,7 +177,9 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
         cellLists.add(sectionCell);
         for(TrackSimple track : albumTracks)
         {
-            cellLists.add(new HeaderListCell(track));
+            HeaderListCell headerListCell = new HeaderListCell(track);
+            headerListCell.category = SearchSongs.humanReadableTimeString(track.duration_ms);
+            cellLists.add(headerListCell);
         }
 
         HeaderListAdapter headerListAdapter = new HeaderListAdapter(getApplicationContext(), cellLists);

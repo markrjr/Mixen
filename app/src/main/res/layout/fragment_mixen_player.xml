@@ -6,7 +6,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:visibility="visible"
-    tools:context="com.peak.mixen.MixenPlayerFrag"
+    tools:context="com.peak.mixen.Fragments.MixenPlayerFrag"
     android:background="@color/Jelly_Bean">
 
 
