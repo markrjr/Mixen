@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 
 
 import android.support.annotation.Nullable;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -154,7 +155,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         wiFiFailureDiag = new MaterialDialog.Builder(getActivity())
                 .title("Bummer :(")
-                .content("We had setting things up. Try turning WiFi off and then back on again.")
+                .content("We had trouble setting things up. Try turning WiFi off and then back on again.")
                 .neutralText("Okay")
                 .build();
 
@@ -276,6 +277,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                             SharedPreferences.Editor prefs = Mixen.sharedPref.edit();
                             prefs.putString("username", Mixen.username).apply();
+                            prefs.commit();
 
                             setupMixenNetwork();
                         }
@@ -292,10 +294,13 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             new MaterialDialog.Builder(getActivity())
                     .title("Enabling WiFi...")
                     .content("Mixen needs to turn on WiFi in order to communicate with other devices. ")
-                    .neutralText("Okay")
-                    .dismissListener(new DialogInterface.OnDismissListener() {
+                    .positiveText("Okay")
+                    .negativeText("Nevermind")
+                    .callback(new MaterialDialog.ButtonCallback() {
                         @Override
-                        public void onDismiss(DialogInterface dialogInterface) {
+                        public void onPositive(MaterialDialog dialog) {
+                            super.onPositive(dialog);
+                            Salut.enableWiFi(getActivity());
                             new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -305,7 +310,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         }
                     })
                     .show();
-            Salut.enableWiFi(getActivity());
             return;
         }
 
@@ -604,7 +608,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         {
             startActivityForResult(addSong, 5);
             addSong.setAction(Intent.ACTION_SEARCH);
-            Log.d(Mixen.TAG, "Button clicked.");
             return;
         }
         else if(v.getId() == R.id.go_live_button)

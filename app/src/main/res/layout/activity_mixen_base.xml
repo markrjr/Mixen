@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         app:primaryColor="@color/Tundora"
-        app:accentColor="@color/EXP_3" />
+        app:accentColor="@color/EXP_4" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"

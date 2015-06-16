@@ -55,10 +55,7 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         fab = (FloatingActionButton) findViewById(R.id.playAlbumBtn);
 
-        if(Mixen.isHost) {
-            fab.setOnClickListener(this);
-            fab.setVisibility(View.VISIBLE);
-        }
+        fab.setOnClickListener(this);
 
         progressBar.getIndeterminateDrawable().setColorFilter(
                 getResources().getColor(R.color.Snow_White),

@@ -49,7 +49,7 @@
         android:layout_marginTop="55dp"
         custom:arc_text_size="0dp"
         custom:arc_suffix_text_size="0dp"
-        custom:arc_finished_color="@color/Puerto_Rico"
+        custom:arc_finished_color="@color/EXP_4"
         custom:arc_unfinished_color="@color/Tundora"/>
 
     <ImageButton
