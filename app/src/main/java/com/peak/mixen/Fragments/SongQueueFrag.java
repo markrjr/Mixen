@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 
 
 import android.support.annotation.Nullable;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -35,7 +34,8 @@ import com.nispok.snackbar.listeners.EventListener;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.MixenBase;
-import com.peak.mixen.MixenPlayerService;
+import com.peak.mixen.Service.MediaNotificationsHandler;
+import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
 import com.peak.mixen.SearchSongs;
 import com.peak.mixen.Utils.SongQueueListAdapter;
@@ -345,20 +345,22 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             else
             {
                 networkBtn.setImageDrawable(liveDrawable);
+                setupQueueAdapter(true);
                 Mixen.network.startNetworkService(new SalutDeviceCallback() {
                     @Override
                     public void call(SalutDevice device) {
                         Toast.makeText(getActivity(), device.readableName + " is now connected.", Toast.LENGTH_SHORT).show();
                         MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
+                        MixenBase.mixenUsersFrag.updateNetworkUsersQueue();
                     }
                 }, new SalutCallback() {
                     @Override
                     public void call() {
                         wiFiFailureDiag.show();
                         networkBtn.setImageDrawable(notLiveDrawable);
+                        setupQueueAdapter(false);
                     }
                 });
-                setupQueueAdapter(true);
             }
         }
         else

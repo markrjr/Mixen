@@ -27,8 +27,9 @@ import com.github.lzyzsd.circleprogress.ArcProgress;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.MixenBase;
-import com.peak.mixen.MixenPlayerService;
-import com.peak.mixen.PlaybackSnapshot;
+import com.peak.mixen.Service.MediaNotificationsHandler;
+import com.peak.mixen.Service.MixenPlayerService;
+import com.peak.mixen.Service.PlaybackSnapshot;
 import com.peak.mixen.R;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
@@ -207,6 +208,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                     @Override
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         MixenPlayerService.instance.currentTrack.albumArt = bitmap;
+                        MixenPlayerService.instance.mediaNotificationsHandler.updateMetaData();
+                        generateAlbumArtPalette(MixenPlayerService.instance.currentTrack);
                     }
 
                     @Override
@@ -284,7 +287,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
                     }
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(125);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -305,22 +308,18 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
             @Override
             public void onGenerated(Palette palette) {
 
-                Log.d(Mixen.TAG, "Generated colors.");
+                Log.v(Mixen.TAG, "Generated colors.");
 
-                int vibrantColor = palette.getVibrantColor(Mixen.appColors[new Random().nextInt(Mixen.appColors.length)]);
-                int arcBarRandom = palette.getDarkVibrantColor(getResources().getColor(R.color.Tundora));
+                final int artColor = palette.getVibrantColor(Mixen.appColors[new Random().nextInt(Mixen.appColors.length)]);
 
-
-                titleTV.setBackgroundColor(vibrantColor);
-                artistTV.setBackgroundColor(vibrantColor);
-                arcProgressBar.setBackgroundColor(vibrantColor);
-                playPauseButton.setBackgroundColor(vibrantColor);
-                songDurationTV.setBackgroundColor(vibrantColor);
-                songProgressTV.setBackgroundColor(vibrantColor);
-                baseLayout.setBackgroundColor(vibrantColor);
-
-                arcProgressBar.setUnfinishedStrokeColor(arcBarRandom);
-
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        baseLayout.setBackgroundColor(artColor);
+                        MixenBase.songQueueFrag.baseLayout.setBackgroundColor(artColor);
+                        MixenBase.mixenUsersFrag.baseLayout.setBackgroundColor(artColor);
+                    }
+                });
             }
         });
     }
@@ -341,7 +340,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
         setRotateAnimation();
         hideSongProgressViews();
-
     }
 
     protected void setUIToPaused()
@@ -401,7 +399,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         {
             if(albumArtIV.getAnimation() == null)
             {
-                recordPlayerAnim.setDuration(MixenPlayerService.instance.currentTrack.duration);
+                recordPlayerAnim.setDuration(MixenPlayerService.instance.currentTrack.duration * 2);
                 albumArtIV.startAnimation(recordPlayerAnim);
             }
             else

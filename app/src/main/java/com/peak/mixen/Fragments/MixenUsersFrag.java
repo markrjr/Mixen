@@ -28,7 +28,7 @@ public class MixenUsersFrag extends Fragment{
 
     private ListView queueLV;
     private TextView infoTV;
-    private RelativeLayout relativeLayout;
+    public RelativeLayout baseLayout;
     private ArrayAdapter queueAdapter;
 
     @Override
@@ -36,16 +36,21 @@ public class MixenUsersFrag extends Fragment{
 
         View v = inflater.inflate(R.layout.fragment_mixen_users, container, false);
 
-        relativeLayout = (RelativeLayout)v.findViewById(R.id.relativeLayout);
+        baseLayout = (RelativeLayout)v.findViewById(R.id.relativeLayout);
         queueLV = (ListView)v.findViewById(R.id.queueLV);
         infoTV = (TextView)v.findViewById(R.id.infoTV);
 
-        return relativeLayout;
+        return baseLayout;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        updateNetworkUsersQueue();
+    }
+
+    public void updateNetworkUsersQueue()
+    {
         if(Mixen.network != null && Mixen.network.isRunningAsHost)
         {
             if(Mixen.network.registeredClients.isEmpty())
@@ -54,10 +59,11 @@ public class MixenUsersFrag extends Fragment{
             }
             else if(queueAdapter == null)
             {
-                populateNetworkListView();
+                setupNetworkList();
             }
             else
             {
+                queueAdapter.notifyDataSetChanged();
                 queueLV.invalidate();
             }
         }
@@ -65,26 +71,16 @@ public class MixenUsersFrag extends Fragment{
         {
             infoTV.setText("You're not hosting yet. :(");
         }
-
     }
 
-    public void setColors(int bgColor)
-    {
-        relativeLayout.setBackgroundColor(bgColor);
-        queueLV.setBackgroundColor(bgColor);
-        infoTV.setBackgroundColor(bgColor);
-    }
-
-    public void populateNetworkListView()
+    private void setupNetworkList()
     {
 
         Log.d(Mixen.TAG, "Updating networked users queue.");
 
         infoTV.setVisibility(View.GONE);
 
-        final ArrayList<String> nearbyUsers = Mixen.network.getReadableRegisteredNames();
-
-        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_1, android.R.id.text1, nearbyUsers) {
+        queueAdapter = new ArrayAdapter(Mixen.currentContext, android.R.layout.simple_list_item_1, android.R.id.text1, Mixen.network.getReadableRegisteredNames()) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
@@ -92,11 +88,11 @@ public class MixenUsersFrag extends Fragment{
 
                 if(position == 0 && !Mixen.isHost)
                 {
-                    text1.setText(nearbyUsers.get(position) + " - Host");
+                    text1.setText(Mixen.network.getReadableRegisteredNames().get(position) + " - Host");
                 }
                 else
                 {
-                    text1.setText(nearbyUsers.get(position));
+                    text1.setText(Mixen.network.getReadableRegisteredNames().get(position));
                 }
 
                 return view;
