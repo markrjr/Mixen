@@ -1,15 +1,15 @@
-package com.peak.mixen;
+package com.peak.mixen.Service;
 
 import android.util.Log;
 
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
-import com.peak.mixen.Utils.SongQueueListAdapter;
+import com.peak.mixen.MetaTrack;
+import com.peak.mixen.Mixen;
+import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.salut.Callbacks.SalutCallback;
 
 import java.util.ArrayList;
-
-import kaaes.spotify.webapi.android.models.Track;
 
 @JsonObject
 public class PlaybackSnapshot {

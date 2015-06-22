@@ -1,4 +1,4 @@
-package com.peak.mixen;
+package com.peak.mixen.Activities;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +16,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.peak.mixen.Mixen;
+import com.peak.mixen.Service.MixenPlayerService;
+import com.peak.mixen.R;
 import com.peak.salut.Salut;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -117,7 +120,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
     public void startMixen()
     {
-        Config playerConfig = new Config(this, Mixen.spotifyToken, Mixen.CLIENT_ID);
+        Config playerConfig = new Config(this, Mixen.spotifyToken, Mixen.getClientId());
         MixenPlayerService.instance.spotifyPlayer = Spotify.getPlayer(playerConfig, MixenPlayerService.instance, new Player.InitializationObserver() {
             @Override
             public void onInitialized(Player player) {
@@ -136,9 +139,9 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
     private void authenticateSpotifyUser()
     {
-        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(Mixen.CLIENT_ID,
+        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(Mixen.getClientId(),
                 AuthenticationResponse.Type.TOKEN,
-                Mixen.REDIRECT_URI);
+                Mixen.getRedirectUri());
         builder.setScopes(new String[]{"user-read-private", "streaming"});
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, Mixen.MIXEN_SERVICE_PORT, request);
@@ -179,16 +182,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
                     }
                 })
                 .build();
-    }
-
-    public void clearAppSettings()
-    {
-        Mixen.sharedPref.edit().clear().apply();
-        Toast.makeText(getApplicationContext(),
-                "Removed all settings. Please restart the app.", Toast.LENGTH_SHORT)
-                .show();
-
-        this.finish();
     }
 
     private void createMixen()

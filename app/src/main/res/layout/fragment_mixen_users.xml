@@ -3,7 +3,7 @@
     android:id="@+id/relativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/Jelly_Bean"
+    android:background="@color/Dodger_Blue"
     tools:context="com.peak.mixen.Fragments.MixenUsersFrag">
 
     <ListView

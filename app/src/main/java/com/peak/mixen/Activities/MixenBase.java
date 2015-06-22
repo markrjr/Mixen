@@ -1,4 +1,4 @@
-package com.peak.mixen;
+package com.peak.mixen.Activities;
 
 import android.content.Intent;
 import android.os.Handler;
@@ -20,6 +20,9 @@ import com.nispok.snackbar.SnackbarManager;
 import com.peak.mixen.Fragments.MixenPlayerFrag;
 import com.peak.mixen.Fragments.MixenUsersFrag;
 import com.peak.mixen.Fragments.SongQueueFrag;
+import com.peak.mixen.Mixen;
+import com.peak.mixen.Service.MixenPlayerService;
+import com.peak.mixen.R;
 
 
 import java.util.ArrayList;

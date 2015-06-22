@@ -1,4 +1,4 @@
-package com.peak.mixen;
+package com.peak.mixen.Service;
 
 
 import java.io.IOException;
@@ -14,13 +14,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.telephony.PhoneStateListener;
@@ -31,7 +28,12 @@ import android.widget.RemoteViews;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bluelinelabs.logansquare.LoganSquare;
-import com.peak.mixen.Utils.SongQueueListAdapter;
+import com.peak.mixen.Activities.MixenBase;
+import com.peak.mixen.Activities.SearchSongs;
+import com.peak.mixen.Activities.StartScreen;
+import com.peak.mixen.MetaTrack;
+import com.peak.mixen.Mixen;
+import com.peak.mixen.R;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
@@ -40,12 +42,6 @@ import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.PlayerStateCallback;
 import com.spotify.sdk.android.player.Spotify;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
-
-import kaaes.spotify.webapi.android.models.Track;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 public class MixenPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SalutDataCallback,
                                                             ConnectionStateCallback, PlayerNotificationCallback{
@@ -62,7 +58,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public static final String replayTrack = "ACTION_RESTART_TRACK_FROM_BEGINNING";
     public static final String init = "ACTION_INIT_MIXEN_PLAYER_SERVICE";
 
-
     public static MixenPlayerService instance;
     public Player spotifyPlayer;
     public MetaTrack currentTrack;
@@ -71,9 +66,11 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     private NoisyAudioReciever noisyAudioReciever;
     private IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-    private AudioManager audioManager;
+    protected AudioManager audioManager;
+    private TelephonyManager telephonyManager;
+    private PhoneListener checkForIncomingCalls;
     private int originalMusicVolume;
-    private boolean isBuffering = false;
+    private boolean pausedUnexpectedly = false;
 
     public boolean playerHasTrack = false;
     //A catch all boolean for when the player may not actually be playing, but still has a track loaded.
@@ -81,7 +78,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public int queueSongPosition;
 
     public boolean pausedForPhoneCall = false;
-    public boolean pausedUnexpectedly = false;
     public boolean isRunning = false;
     public boolean serviceIsBusy = true;
     //Another catch all boolean for when the service is fetching data, and cannot handle another request.
@@ -123,16 +119,17 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         metaQueue = new ArrayList<>();
         playerServiceSnapshot = new PlaybackSnapshot(PlaybackSnapshot.INIT);
 
-        if(Mixen.isHost)
+        if(Mixen.isHost && telephonyManager == null)
         {
-            setupPhoneListener();
+            telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
             audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
             noisyAudioReciever = new NoisyAudioReciever();
+            checkForIncomingCalls = new PhoneListener(this);
+            telephonyManager.listen(checkForIncomingCalls, PhoneStateListener.LISTEN_CALL_STATE);
         }
 
         ComponentName mixenService = new ComponentName(getApplicationContext(), MixenPlayerService.class);
         PendingIntent mixenIntent = PendingIntent.getService(getApplicationContext(), 11, new Intent(), PendingIntent.FLAG_UPDATE_CURRENT);
-
 
         mediaSession = new MediaSessionCompat(getApplicationContext(), "Mixen Player Service", mixenService, mixenIntent);
 
@@ -211,6 +208,19 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             case replayTrack:
                 //restartTrackFromBeginning();
                 return;
+        }
+    }
+
+    private void removePlayedTracks()
+    {
+        if(metaQueue.size() > 5 && queueSongPosition > 2)
+        {
+            metaQueue.remove(0);
+            metaQueue.remove(1);
+            queueSongPosition--;
+            queueSongPosition--;
+
+            MixenBase.songQueueFrag.updateQueueUI();
         }
     }
 
@@ -454,7 +464,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             if(audioChange == AudioManager.AUDIOFOCUS_LOSS)
             {
                 doAction(getApplicationContext(), MixenPlayerService.pause);
-                pausedUnexpectedly = true;
                 audioManager.abandonAudioFocus(this);
                 Log.d(Mixen.TAG, "Abandoning audio focus.");
             }
@@ -466,21 +475,24 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             }
             else if(audioChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)
             {
-                //originalMusicVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC); //Also works, which is better?
                 doAction(getApplicationContext(), MixenPlayerService.pause);
                 pausedUnexpectedly = true;
+                //We'll soon regain audio focus so do not abandon it.
+            }
+            else if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
+            {
+                if(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) != originalMusicVolume)
+                {
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalMusicVolume, AudioManager.FLAG_SHOW_UI);
+                    Log.v(Mixen.TAG, "Unducking Audio");
+                }
             }
         }
         else
         {
             if(audioChange == AudioManager.AUDIOFOCUS_GAIN)
             {
-                if(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) != originalMusicVolume && !pausedUnexpectedly)
-                {
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalMusicVolume, AudioManager.FLAG_SHOW_UI);
-                    Log.v(Mixen.TAG, "Unducking Audio");
-                }
-                else if(pausedUnexpectedly && !pausedForPhoneCall)
+                if(!pausedForPhoneCall && pausedUnexpectedly)
                 {
                     doAction(getApplicationContext(), MixenPlayerService.play);
                     pausedUnexpectedly = false;
@@ -490,71 +502,12 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         }
     }
 
-//    @Override
-//    public boolean onInfo(MediaPlayer mediaPlayer, int action, int extra) {
-//
-//        if (action == MediaPlayer.MEDIA_INFO_BUFFERING_START) {
-//            isBuffering = true;
-//            if(!playerIsPlaying())
-//            {
-//                MixenBase.mixenPlayerFrag.hideUIControls(false);
-//            }
-//            else
-//            {
-//                MixenBase.mixenPlayerFrag.hideUIControls(true);
-//            }
-//
-//            bufferTimes++;
-//            if(bufferTimes >= 3)
-//            {
-//                bufferTimes = 0;
-//                player.pause();
-//                Log.d(Mixen.TAG, "Buffer Times Exceeded.");
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        player.seekTo(player.getCurrentPosition());
-//                    }
-//                }, 5000);
-//            }
-//
-//
-//            Log.i(Mixen.TAG, "Buffering of media has begun.");
-//
-//        } else if (action == MediaPlayer.MEDIA_INFO_BUFFERING_END && player.isPlaying()) {
-//            isBuffering = false;
-//            MixenBase.mixenPlayerFrag.restoreUIControls();
-//
-//            Log.i(Mixen.TAG, "Buffering has stopped, and playback should have resumed.");
-//        }
-//        return true;
-//    }
-
-//    @Override
-//    public void onSeekComplete(MediaPlayer mediaPlayer) {
-//        //If the user fast forwards on rewinds, after the required seeking operating completes, restart the media player at
-//        //the seek-ed to position.
-//
-//        Log.d(Mixen.TAG, "Seek operation complete.");
-//        if (hasAudioFocus())
-//        {
-//            mediaPlayer.start();
-//            setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
-//
-//            MixenBase.mixenPlayerFrag.restoreUIControls();
-//            MixenBase.mixenPlayerFrag.updateProgressBar();
-//            if(MixenBase.userHasLeftApp)
-//            {
-//                startForeground(Mixen.MIXEN_NOTIFY_CODE, updateNotification());
-//            }
-//        }
-//
-//    }
-
     public void onTrackCompletion()
     {
         Log.d(Mixen.TAG, "Playback has completed.");
         playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.COMPLETED);
+
+        removePlayedTracks();
 
         if(!playerHasTrack)
         {
@@ -563,8 +516,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         }
 
         resetAndStopPlayer();
-
-        //TODO Delete x amount of tracks if after x amount of completions.
 
         if (getNextTrack() == null) {
             //If the queue does not have a track after this one, stop everything.
@@ -716,60 +667,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         if(Mixen.isHost)
         {
             playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.PAUSED);
-        }
-    }
-
-
-    public void setupPhoneListener() {
-
-        PhoneStateListener phoneStateListener = new PhoneStateListener() {
-            @Override
-            public void onCallStateChanged(int state, String incomingNumber) {
-                if (state == TelephonyManager.CALL_STATE_RINGING) {
-                    //Incoming call.
-
-                    if (isRunning && MixenPlayerService.instance.playerIsPlaying) {
-                        doAction(getApplicationContext(), pause);
-                        audioManager.abandonAudioFocus(MixenPlayerService.this);
-                        pausedForPhoneCall = true;
-                        Log.d(Mixen.TAG, "Incoming call, pausing playback.");
-
-                    }
-
-                } else if (state == TelephonyManager.CALL_STATE_IDLE) {
-                    if (isRunning && pausedForPhoneCall) {
-
-                            new Handler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    doAction(getApplicationContext(), play);
-                                    pausedForPhoneCall = false;
-                                    Log.d(Mixen.TAG, "Resuming playback.");
-                                }
-                            }, 1000);
-                        //Accounts for the delay in switching states from a phone call that has just ended.
-                    }
-
-                } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-                    //A call is dialing, active or on hold
-                    //do all necessary action to pause the audio
-
-                    if (isRunning && MixenPlayerService.instance.playerIsPlaying) {
-                        doAction(getApplicationContext(), pause);
-                        audioManager.abandonAudioFocus(MixenPlayerService.this);
-                        pausedForPhoneCall = true;
-                        Log.d(Mixen.TAG, "Ongoing call, pausing playback.");
-                    }
-
-                    super.onCallStateChanged(state, incomingNumber);
-                }
-            }
-        }; //End PhoneStateListener
-
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        if(telephonyManager != null)
-        {
-            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
         }
     }
 

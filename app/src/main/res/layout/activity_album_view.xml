@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
-    tools:context="com.peak.mixen.AlbumView"
+    tools:context="com.peak.mixen.Activities.AlbumView"
     android:background="@color/Outer_Space"
     android:id="@+id/albumViewLayout">
 
@@ -15,7 +15,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginRight="-5dp"
         android:layout_marginLeft="-5dp"
-        android:layout_marginTop="-15dp"
+        android:layout_marginTop="-35dp"
         android:visibility="invisible" />
 
     <ListView
@@ -27,8 +27,8 @@
         android:headerDividersEnabled="true"
         android:footerDividersEnabled="false"
         android:overScrollMode="never"
-        android:layout_marginTop="200dp"
-        android:background="@color/Outer_Space" />
+        android:background="@color/Outer_Space"
+        android:layout_below="@+id/progressBar" />
 
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"
@@ -44,12 +44,13 @@
         android:layout_height="wrap_content"
         android:id="@+id/playAlbumBtn"
         android:src="@drawable/ic_action_add"
+        android:visibility="invisible"
+        app:backgroundTint="@color/EXP_4"
+        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="170dp"
-        android:visibility="invisible"
-        android:layout_marginRight="10dp"
-        app:backgroundTint="@color/EXP_4"/>
+        android:layout_marginTop="265dp"
+        android:layout_marginRight="10dp" />
 
 
 </RelativeLayout>

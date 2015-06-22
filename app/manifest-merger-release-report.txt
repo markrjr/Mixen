@@ -85,11 +85,11 @@ MERGED from com.android.support:support-v4:22.2.0:22:5
 		ADDED from AndroidManifest.xml:20:9
 	tools:replace
 		ADDED from AndroidManifest.xml:21:9
-service#com.peak.mixen.MixenPlayerService
+service#com.peak.mixen.Service.MixenPlayerService
 ADDED from AndroidManifest.xml:22:9
 	android:name
 		ADDED from AndroidManifest.xml:22:18
-activity#com.peak.mixen.StartScreen
+activity#com.peak.mixen.Activities.StartScreen
 ADDED from AndroidManifest.xml:25:9
 	android:screenOrientation
 		ADDED from AndroidManifest.xml:28:13
@@ -127,7 +127,7 @@ ADDED from AndroidManifest.xml:40:17
 		ADDED from AndroidManifest.xml:41:21
 	android:scheme
 		ADDED from AndroidManifest.xml:42:21
-activity#com.peak.mixen.SearchSongs
+activity#com.peak.mixen.Activities.SearchSongs
 ADDED from AndroidManifest.xml:45:9
 	android:screenOrientation
 		ADDED from AndroidManifest.xml:49:13
@@ -149,7 +149,7 @@ action#android.intent.action.SEARCH
 ADDED from AndroidManifest.xml:55:17
 	android:name
 		ADDED from AndroidManifest.xml:55:25
-activity#com.peak.mixen.MixenBase
+activity#com.peak.mixen.Activities.MixenBase
 ADDED from AndroidManifest.xml:58:9
 	android:screenOrientation
 		ADDED from AndroidManifest.xml:61:13
@@ -165,7 +165,7 @@ ADDED from AndroidManifest.xml:64:9
 		ADDED from AndroidManifest.xml:66:13
 	android:name
 		ADDED from AndroidManifest.xml:65:13
-activity#com.peak.mixen.AlbumView
+activity#com.peak.mixen.Activities.AlbumView
 ADDED from AndroidManifest.xml:67:9
 	android:screenOrientation
 		ADDED from AndroidManifest.xml:70:13

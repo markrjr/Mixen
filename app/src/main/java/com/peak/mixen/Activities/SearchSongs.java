@@ -1,4 +1,4 @@
-package com.peak.mixen;
+package com.peak.mixen.Activities;
 
 
 import android.app.Activity;
@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.SearchRecentSuggestions;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -19,8 +20,13 @@ import android.widget.ProgressBar;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
+import com.peak.mixen.MetaTrack;
+import com.peak.mixen.Mixen;
+import com.peak.mixen.Service.MixenPlayerService;
+import com.peak.mixen.R;
 import com.peak.mixen.Utils.HeaderListAdapter;
 import com.peak.mixen.Utils.HeaderListCell;
+import com.peak.mixen.RecentSearchesProvider;
 
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -163,6 +169,9 @@ public class SearchSongs extends ActionBarActivity {
                 songsLV.setVisibility(View.INVISIBLE);
 
                 searchSpotify(query);
+                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                        RecentSearchesProvider.AUTHORITY, RecentSearchesProvider.MODE);
+                suggestions.saveRecentQuery(query, null);
 
             } else {
                 SnackbarManager.show(Snackbar.with(this).text("Please use only letters and numbers in your query."));

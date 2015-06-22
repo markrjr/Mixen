@@ -1,9 +1,5 @@
 package com.peak.mixen.Utils;
 
-import android.support.annotation.Nullable;
-
-import com.peak.mixen.SearchSongs;
-
 import kaaes.spotify.webapi.android.models.AlbumSimple;
 import kaaes.spotify.webapi.android.models.TrackSimple;
 

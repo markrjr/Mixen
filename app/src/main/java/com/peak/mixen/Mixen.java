@@ -52,13 +52,21 @@ public class Mixen {
 
     public static long spotifyTokenExpiry;
 
-    protected static final String CLIENT_ID = "fb5c429de70a4aa184ea97dbaa5e8b98";
+    private static final String CLIENT_ID = "fb5c429de70a4aa184ea97dbaa5e8b98";
 
-    protected static final String REDIRECT_URI = "mixen://spotify-auth-callback";
+    private static final String REDIRECT_URI = "mixen://spotify-auth-callback";
 
     public static Context currentContext;
 
     public static String username;
+
+    public static String getClientId() {
+        return CLIENT_ID;
+    }
+
+    public static String getRedirectUri() {
+        return REDIRECT_URI;
+    }
 
     public static boolean isConnected(Context context, int timeout) {
         ConnectivityManager cm = (ConnectivityManager)context

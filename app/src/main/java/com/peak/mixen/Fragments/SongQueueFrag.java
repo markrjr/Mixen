@@ -33,11 +33,11 @@ import com.nispok.snackbar.listeners.ActionClickListener;
 import com.nispok.snackbar.listeners.EventListener;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
-import com.peak.mixen.MixenBase;
-import com.peak.mixen.Service.MediaNotificationsHandler;
+import com.peak.mixen.Activities.MixenBase;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
-import com.peak.mixen.SearchSongs;
+import com.peak.mixen.Activities.SearchSongs;
+import com.peak.mixen.Activities.SettingsScreen;
 import com.peak.mixen.Utils.SongQueueListAdapter;
 import com.peak.mixen.Utils.SongQueueListItem;
 import com.peak.salut.Callbacks.SalutCallback;
@@ -58,6 +58,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     public ArrayList<SongQueueListItem> cellList;
     private FloatingActionButton addSongBtn;
     private FloatingActionButton networkBtn;
+    private FloatingActionButton settingsBtn;
     private MaterialDialog findingMixensProgress;
     private MaterialDialog cleanUpDialog;
     private MaterialDialog wiFiFailureDiag;
@@ -77,10 +78,12 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         queueLV = (ListView) v.findViewById(R.id.queueLV);
         addSongBtn = (FloatingActionButton) v.findViewById(R.id.add_song_button);
         networkBtn = (FloatingActionButton) v.findViewById(R.id.go_live_button);
+        settingsBtn = (FloatingActionButton) v.findViewById(R.id.settings);
         infoTV = (TextView) v.findViewById(R.id.infoTV);
 
         addSongBtn.setOnClickListener(this);
         networkBtn.setOnClickListener(this);
+        settingsBtn.setOnClickListener(this);
 
         addSong = new Intent(getActivity(), SearchSongs.class);
         liveDrawable = getResources().getDrawable(R.drawable.ic_live);
@@ -260,11 +263,13 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     }
 
-    public void setUsername()
+    private void setUsername()
     {
 
         new MaterialDialog.Builder(getActivity())
                 .title("Who are you?")
+                .cancelable(false)
+                .autoDismiss(false)
                 .content(R.string.createDescript)
                 .inputType(InputType.TYPE_CLASS_TEXT)
                 .input(R.string.username_hint, R.string.blank_string, new MaterialDialog.InputCallback() {
@@ -280,6 +285,12 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                             prefs.commit();
 
                             setupMixenNetwork();
+                            materialDialog.dismiss();
+                        }
+                        else
+                        {
+                            materialDialog.getContentView().setText(getResources().getString(R.string.username_protocol));
+                            materialDialog.getContentView().setTextColor(getResources().getColor(R.color.Radical_Red));
                         }
                     }
                 })
@@ -560,7 +571,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         }
     }
 
-
     private void setupQueueAdapter(final boolean forNetwork) {
 
         if(forNetwork)
@@ -580,6 +590,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                     text1.setText(MixenPlayerService.instance.metaQueue.get(position).name);
                     text2.setText(MixenPlayerService.instance.metaQueue.get(position).artist);
+
                     return view;
                 }
             };
@@ -615,6 +626,10 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         else if(v.getId() == R.id.go_live_button)
         {
             setupMixenNetwork();
+        }
+        else if(v.getId() == R.id.settings)
+        {
+            startActivity(new Intent(getActivity(), SettingsScreen.class));
         }
     }
 

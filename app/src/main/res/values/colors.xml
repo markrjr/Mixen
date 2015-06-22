@@ -27,7 +27,7 @@
     <color name="Outer_Space">#1A1F1E</color>
     <color name="Cocoa_Brown">#29221F</color>
     <color name="Darker_Gray">#AAAAAA</color>
-
+    <color name="Mandy">#E04F60</color>
 
 
     <color name="EXP_3">#2DA89C</color>
@@ -37,11 +37,9 @@
         <item>@color/Icon_Orange</item>
         <item>@color/Rebecca_Purple</item>
         <item>@color/Jacksons_Purple</item>
-        <item>@color/Alice_Blue</item>
         <item>@color/Monza</item>
         <item>@color/Jelly_Bean</item>
         <item>@color/Madison</item>
-        <item>@color/Edward</item>
         <item>@color/Niagara</item>
         <item>@color/Ocean_Green</item>
         <item>@color/San_Marino</item>

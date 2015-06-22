@@ -9,7 +9,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.peak.mixen.Fragments.SongQueueFrag"
     android:id="@+id/relativeLayout"
-    android:background="@color/Jelly_Bean">
+    android:background="@color/Dodger_Blue">
 
     <ListView
         android:layout_width="fill_parent"
@@ -46,14 +46,31 @@
         app:backgroundTint="@color/Tundora"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="false"
+        android:layout_alignParentEnd="false" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:src="@drawable/ic_more"
+        app:layout_anchor="@+id/appbar"
+        app:layout_anchorGravity="bottom|right|end"
+        app:backgroundTint="@color/Tundora"
+        android:visibility="visible"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentStart="false"
+        android:layout_centerHorizontal="true" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/add_song_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:src="@drawable/ic_action_add"
+        android:src="@drawable/ic_add_music"
         app:layout_anchor="@+id/appbar"
         app:layout_anchorGravity="bottom|right|end"
         app:backgroundTint="@color/Tundora"

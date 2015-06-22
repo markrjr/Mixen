@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +25,7 @@ import android.widget.TextView;
 import com.github.lzyzsd.circleprogress.ArcProgress;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
-import com.peak.mixen.MixenBase;
-import com.peak.mixen.Service.MediaNotificationsHandler;
+import com.peak.mixen.Activities.MixenBase;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.Service.PlaybackSnapshot;
 import com.peak.mixen.R;
@@ -53,9 +51,10 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
     public ProgressBar bufferPB;
     public boolean isRunning;
     public boolean progressBarThreadIsRunning = false;
+    public RotateAnimation recordPlayerAnim;
+
 
     private boolean pressedPreviousBefore = false;
-    public RotateAnimation recordPlayerAnim;
     private Drawable playDrawable;
     private Drawable pauseDrawable;
     private Thread progressBarUpdateThread;
@@ -92,16 +91,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         RelativeLayout voteControls = (RelativeLayout) currentView.findViewById(R.id.voteControls);
         RelativeLayout playerControls = (RelativeLayout) currentView.findViewById(R.id.playerControls);
 
-
-        titleTV.setSelected(true);
-        titleTV.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-        titleTV.setSingleLine(true);
-
-        artistTV.setSelected(true);
-        artistTV.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-        artistTV.setSingleLine(true);
-
         recordPlayerAnim = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        recordPlayerAnim.setDuration(120000);
         recordPlayerAnim.setRepeatCount(Animation.INFINITE);
 
         playPauseButton.setOnClickListener(this);
@@ -208,7 +199,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                     @Override
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         MixenPlayerService.instance.currentTrack.albumArt = bitmap;
-                        MixenPlayerService.instance.mediaNotificationsHandler.updateMetaData();
                         generateAlbumArtPalette(MixenPlayerService.instance.currentTrack);
                     }
 
@@ -317,7 +307,10 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                     public void run() {
                         baseLayout.setBackgroundColor(artColor);
                         MixenBase.songQueueFrag.baseLayout.setBackgroundColor(artColor);
-                        MixenBase.mixenUsersFrag.baseLayout.setBackgroundColor(artColor);
+                        if(Mixen.isHost)
+                        {
+                            MixenBase.mixenUsersFrag.baseLayout.setBackgroundColor(artColor);
+                        }
                     }
                 });
             }
@@ -399,7 +392,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         {
             if(albumArtIV.getAnimation() == null)
             {
-                recordPlayerAnim.setDuration(MixenPlayerService.instance.currentTrack.duration * 2);
                 albumArtIV.startAnimation(recordPlayerAnim);
             }
             else
