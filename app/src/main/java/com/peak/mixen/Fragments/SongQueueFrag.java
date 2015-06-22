@@ -31,6 +31,8 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
 import com.nispok.snackbar.listeners.EventListener;
+import com.peak.mixen.Activities.StartScreen;
+import com.peak.mixen.Activities.TutorialScreen;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.Activities.MixenBase;
@@ -52,6 +54,7 @@ import java.util.ArrayList;
 public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     public static final int ADD_SONG_REQUEST = 5;
+    public static final int TUTORIAL_REQUEST = 87;
     public ListView queueLV;
     public RelativeLayout baseLayout;
     public boolean snackBarIsVisible = false;
@@ -93,6 +96,30 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         cellList = new ArrayList<>();
 
+        if(!Mixen.hasSeenTutorial)
+        {
+            Intent tutorialIntent = new Intent(this.getActivity(), TutorialScreen.class);
+            startActivityForResult(tutorialIntent, TUTORIAL_REQUEST);
+        }
+        else
+        {
+            setupFragment();
+        }
+
+        return baseLayout;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(queueAdapter != null)
+        {
+            updateQueueUI();
+        }
+    }
+
+    private void setupFragment()
+    {
         if(Mixen.isHost)
         {
             setupQueueAdapter(false);
@@ -105,17 +132,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             setupQueueAdapter(true);
             addSongBtn.setVisibility(View.INVISIBLE);
             setupMixenNetwork();
-        }
-
-        return baseLayout;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if(queueAdapter != null)
-        {
-            updateQueueUI();
         }
     }
 
@@ -617,7 +633,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         if(v.getId() == R.id.add_song_button || v.getId() == R.id.mixenBaseLayout)
         {
-            startActivityForResult(addSong, 5);
+            startActivityForResult(addSong, ADD_SONG_REQUEST);
             addSong.setAction(Intent.ACTION_SEARCH);
             return;
         }
@@ -643,6 +659,17 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 updateQueueUI();
                 //We really don't care about the Intent data here, we just need some way to know
                 //when the user has come back from searching for songs so that we can update the UI.
+            }
+        }
+
+        if(requestCode == TUTORIAL_REQUEST){
+
+            if(resultCode == Activity.RESULT_OK){
+                //We've finished the tutorial.
+                Mixen.hasSeenTutorial = true;
+                SharedPreferences.Editor prefs = Mixen.sharedPref.edit();
+                prefs.putBoolean("hasSeenTutorial", Mixen.hasSeenTutorial).apply();
+                setupFragment();
             }
         }
 

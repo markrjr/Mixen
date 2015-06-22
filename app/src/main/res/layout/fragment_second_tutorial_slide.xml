@@ -1,0 +1,54 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="com.peak.mixen.Fragments.SecondTutorialSlide"
+    android:background="@color/Tundora">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Adding Songs"
+        android:id="@+id/textView"
+        android:layout_gravity="center_horizontal|top"
+        android:textColor="@color/Snow_White"
+        android:textSize="36dp"
+        android:layout_marginTop="50dp"
+        android:fontFamily="sans-serif-light" />
+
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:id="@+id/imageView3"
+        android:layout_gravity="center"
+        android:src="@drawable/music_fab_cropped"
+        android:layout_marginBottom="100dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Music"
+        android:id="@+id/textView3"
+        android:layout_gravity="center"
+        android:textColor="@color/Snow_White"
+        android:layout_marginBottom="50dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Click and search."
+        android:id="@+id/textView5"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginTop="110dp"
+        android:textColor="@color/Snow_White"
+        android:textSize="18dp" />
+
+    <ImageView
+        android:layout_width="300dp"
+        android:layout_height="225dp"
+        android:id="@+id/imageView4"
+        android:layout_gravity="center"
+        android:src="@drawable/tutorial2"
+        android:layout_marginLeft="5dp"
+        android:background="@drawable/fab_label_background"
+        android:layout_marginTop="100dp" />
+
+</FrameLayout>

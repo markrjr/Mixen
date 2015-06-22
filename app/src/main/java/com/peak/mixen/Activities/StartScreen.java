@@ -34,7 +34,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
     public static StartScreen instance;
     public MaterialDialog indeterminateProgressDiag;
     private MaterialDialog explanationDiag;
-    private boolean isActuallyFirstRun;
+    public boolean isActuallyFirstRun;
     public static boolean hasSpotifyToken;
     public static boolean wiFiBeforeLaunch;
 
@@ -89,6 +89,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
         isActuallyFirstRun = true;
 
         Mixen.username = Mixen.sharedPref.getString("username", "Anonymous");
+        Mixen.hasSeenTutorial = Mixen.sharedPref.getBoolean("hasSeenTutorial", false);
 
         if(!Mixen.username.equals("Anonymous"))
             isActuallyFirstRun = false;
@@ -111,8 +112,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 hasSpotifyToken = true;
             }
         }
-
-
 
         return hasSpotifyToken;
 

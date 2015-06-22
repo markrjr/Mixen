@@ -1,0 +1,72 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="com.peak.mixen.Fragments.SecondTutorialSlide"
+    android:background="@color/Dodger_Blue">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Going Live"
+        android:id="@+id/textView"
+        android:layout_gravity="center_horizontal|top"
+        android:textColor="@color/Snow_White"
+        android:textSize="36dp"
+        android:layout_marginTop="50dp"
+        android:fontFamily="sans-serif-light" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="When you&apos;re ready to share, click the Go Live button."
+        android:id="@+id/textView5"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginTop="110dp"
+        android:textColor="@color/Snow_White"
+        android:textSize="18dp"
+        android:gravity="center"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp" />
+
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:id="@+id/imageView6"
+        android:layout_gravity="center"
+        android:src="@drawable/go_live_fab"
+        android:layout_marginBottom="75dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ready to mix it up?"
+        android:id="@+id/textView7"
+        android:layout_gravity="center"
+        android:layout_marginTop="205dp"
+        android:textColor="@color/Snow_White"
+        android:textSize="18dp"
+        android:gravity="center"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Questions, concerns, wishes, hopes, and desires? Get them taken care of on our Google Plus page."
+        android:id="@+id/textView8"
+        android:layout_gravity="center"
+        android:textColor="@color/Snow_White"
+        android:textSize="18dp"
+        android:gravity="center"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="25dp" />
+
+    <ImageView
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:id="@+id/google_plus_link"
+        android:layout_gravity="center"
+        android:src="@drawable/google_plus"
+        android:layout_marginTop="125dp" />
+
+</FrameLayout>

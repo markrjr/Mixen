@@ -17,9 +17,8 @@ public class PlaybackSnapshot {
     public static final int PLAYING = 0;
     public static final int PAUSED = 1;
     public static final int STOPPED = 2;
-    public static final int PREPARING = 3;
     public static final int COMPLETED = 4;
-    public static final int BUSY = 5;
+    public static final int NONE = 5;
     public static final int READY = 6;
     public static final int RESUME = 7;
     public static final int INIT = 47;
@@ -27,6 +26,8 @@ public class PlaybackSnapshot {
 
     public static final int QUEUE_UPDATE = 23;
     public static final int PLAYBACK_UPDATE = 93;
+    public static final int OTHER_DATA = 93;
+
 
     @JsonField
     public ArrayList<MetaTrack> remoteQueue;
@@ -40,6 +41,8 @@ public class PlaybackSnapshot {
     public int snapshotType;
     @JsonField
     public MetaTrack trackToAdd;
+    @JsonField
+    public static boolean explictAllowed = true;
 
     public PlaybackSnapshot(){}
 
@@ -82,6 +85,13 @@ public class PlaybackSnapshot {
     {
         this.playServiceState = playerServiceState;
         this.snapshotType = PLAYBACK_UPDATE;
+        updateNetworkPlaybackData();
+    }
+
+    public void updateNetworkPlayerSettings()
+    {
+        this.snapshotType = OTHER_DATA;
+        this.playServiceState = NONE;
         updateNetworkPlaybackData();
     }
 

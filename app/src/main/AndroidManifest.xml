@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.peak.mixen" >
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -15,10 +16,11 @@
         android:allowBackup="true"
         android:icon="@drawable/mixen_icon"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
-
-        <provider android:name=".RecentSearchesProvider"
-        android:authorities="com.peak.mixen.RecentSearchesProvider" />
+        android:theme="@style/AppTheme"
+        tools:replace="android:icon" >
+        <provider
+            android:name=".RecentSearchesProvider"
+            android:authorities="com.peak.mixen.RecentSearchesProvider" />
 
         <service android:name=".Service.MixenPlayerService" />
 
@@ -73,6 +75,11 @@
         <activity
             android:name=".Activities.SettingsScreen"
             android:label="@string/title_activity_settings_screen"
+            android:screenOrientation="nosensor" >
+        </activity>
+        <activity
+            android:name=".Activities.TutorialScreen"
+            android:label="@string/title_activity_tutorial_screen"
             android:screenOrientation="nosensor" >
         </activity>
     </application>

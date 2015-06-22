@@ -9,10 +9,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.R;
+import com.peak.mixen.Service.MixenPlayerService;
+import com.peak.mixen.Service.PlaybackSnapshot;
 
 
 public class SettingsScreen extends ActionBarActivity implements View.OnClickListener{
@@ -29,11 +33,34 @@ public class SettingsScreen extends ActionBarActivity implements View.OnClickLis
         Button resetAppBtn = (Button)findViewById(R.id.reset_app);
         CheckBox enableAmoled = (CheckBox)findViewById(R.id.enable_amoled);
         CheckBox enableCleanOnly = (CheckBox)findViewById(R.id.enable_clean_only);
+        enableCleanOnly.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if(isChecked)
+                {
+                    Toast.makeText(getApplicationContext(), "Only clean songs are now allowed.", Toast.LENGTH_SHORT).show();
+                    PlaybackSnapshot.explictAllowed = false;
+                    MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "All types of songs are now allowed.", Toast.LENGTH_SHORT).show();
+                    PlaybackSnapshot.explictAllowed = true;
+                    MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayerSettings();
+                }
+            }
+        });
 
         resetUserBtn.setOnClickListener(this);
         resetAppBtn.setOnClickListener(this);
         enableAmoled.setClickable(false);
         enableCleanOnly.setClickable(false);
+
+        if(Mixen.network != null && Mixen.network.isRunningAsHost)
+        {
+            enableCleanOnly.setClickable(true);
+            enableCleanOnly.setAlpha(1);
+        }
 
         if(!hasShownWarning)
             showWarningDiag();
@@ -53,7 +80,7 @@ public class SettingsScreen extends ActionBarActivity implements View.OnClickLis
 
         new MaterialDialog.Builder(SettingsScreen.this)
                 .title("Warning")
-                .content("Some of the settings here are experimental and all require a restart of the app.")
+                .content("Some of the settings here are experimental and may require a restart of the app.")
                 .neutralText("Okay")
                 .show();
 

@@ -24,6 +24,7 @@ import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
+import com.peak.mixen.Service.PlaybackSnapshot;
 import com.peak.mixen.Utils.HeaderListAdapter;
 import com.peak.mixen.Utils.HeaderListCell;
 import com.peak.mixen.RecentSearchesProvider;
@@ -50,8 +51,7 @@ public class SearchSongs extends ActionBarActivity {
 
     private ProgressBar indeterminateProgress;
     private ListView songsLV;
-    public boolean isFirstSong;
-    public static SearchSongs instance;
+    public static boolean isFirstSong;
     private ArrayList<HeaderListCell> fullCellList;
     private ArrayList<HeaderListCell> specificCellList;
     private List<AlbumSimple> foundAlbums;
@@ -101,8 +101,6 @@ public class SearchSongs extends ActionBarActivity {
                 .build();
 
         setupListAdapter(fullCellList);
-
-        instance = this;
     }
 
     private void searchSpotify(String query) {
@@ -284,9 +282,9 @@ public class SearchSongs extends ActionBarActivity {
             MixenPlayerService.instance.metaQueue.add(track);
             MixenPlayerService.instance.queueSongPosition = 0;
             MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
-            instance.isFirstSong = true;
+            isFirstSong = true;
         } else {
-            instance.isFirstSong = false;
+            isFirstSong = false;
             MixenPlayerService.instance.metaQueue.add(track);
             if (!MixenPlayerService.instance.serviceIsBusy && !MixenPlayerService.instance.playerHasTrack) {
                 //If songs are in the queue, but have completed playback and a new one is suddenly added.
@@ -308,6 +306,19 @@ public class SearchSongs extends ActionBarActivity {
 
     public static void addTrackToQueue(final Activity activity, final MetaTrack metaTrack, boolean showSnackBar)
     {
+
+        if(metaTrack.explicit && Mixen.network != null && !PlaybackSnapshot.explictAllowed)
+        {
+            if(Mixen.network.isRunningAsHost || Mixen.network.registeredHost != null)
+            {
+                SnackbarManager.show(
+                        Snackbar.with(activity)
+                                .text("Explicit tracks have been disabled by the host.")
+                        , activity);
+                return;
+            }
+        }
+
         for(MetaTrack queuedTrack : MixenPlayerService.instance.metaQueue)
         {
             if(metaTrack.spotifyID.equals(queuedTrack.spotifyID))
@@ -412,6 +423,7 @@ public class SearchSongs extends ActionBarActivity {
         }
         else
         {
+            setResult(RESULT_OK);
             super.onBackPressed();
         }
     }

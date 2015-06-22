@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -194,6 +193,12 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     public void prepareUI()
     {
+        if(MixenPlayerService.instance.currentTrack == null)
+        {
+            //TODO Investigate. See if PlaybackSnapShot is getting past when should be flagged as an init or ready call.
+            return;
+        }
+
         Picasso.with(getActivity())
                 .load(MixenPlayerService.instance.currentTrack.albumArtURL)
                 .into(new Target() {
@@ -201,7 +206,10 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         MixenPlayerService.instance.currentTrack.albumArt = bitmap;
                         generateAlbumArtPalette(bitmap);
-                        MixenPlayerService.instance.setMetaData();
+                        if(Mixen.isHost)
+                        {
+                            MixenPlayerService.instance.setMetaData();
+                        }
                     }
 
                     @Override
@@ -309,8 +317,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                     public void run() {
                         baseLayout.setBackgroundColor(artColor);
                         MixenBase.songQueueFrag.baseLayout.setBackgroundColor(artColor);
-                        if(Mixen.isHost)
-                        {
+                        if (Mixen.isHost) {
                             MixenBase.mixenUsersFrag.baseLayout.setBackgroundColor(artColor);
                         }
                     }

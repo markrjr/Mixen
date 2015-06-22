@@ -31,7 +31,7 @@
     <string name="empty_queue">The queue is empty! Add a song to get started.</string>
     <string name="title_activity_tabbed_song_queue">TabbedSongQueue</string>
     <string name="mixen_network_search">Searching for nearby Mixens...</string>
-    <string name="revision_number">Revision 7 (Spotify)</string>
+    <string name="revision_number">Revision 8 (Spotify)</string>
     <string name="build_type">Beta Build</string>
     <string name="title_activity_mixen_base">MixenBase</string>
     <string name="empty_users_queue">There are no users connected yet.</string>
@@ -40,6 +40,33 @@
     <string name="blank_string"></string>
     <string name="title_activity_settings_screen">SettingsScreen</string>
     <string name="settings">Settings</string>
+
+    <string name="welcome_tutorial_message">This is the song queue, from here, you can do a lot, but let\'s start by adding a song with the music button.</string>
+    <string name="search_tutorial_message">To look for a song, enter it\'s name, recent searches will also show up here.</string>
+    <string name="add_song_tutorial_message">When you\'ve found the song that you want, tap on the song add it to the queue, or tap the plus button to add the entire album.</string>
+    <string name="live_tutorial_message">When you\'ve added all your favorite songs, you can go live by clicking the WiFi button. This lets others see your playlist and join in.</string>
+    <string name="finale_tutorial_message">Welp, that\'s all, so go ahead and mix it up!</string>
+
+    <string-array name="tutorial_titles">
+    <item>@string/welcome_tutorial_message</item>
+    <item>@color/Rebecca_Purple</item>
+    <item>@color/Jacksons_Purple</item>
+    <item>@color/Monza</item>
+    <item>@color/Jelly_Bean</item>
+    <item>@color/Madison</item>
+    <item>@color/Niagara</item>
+    <item>@color/Ocean_Green</item>
+    <item>@color/San_Marino</item>
+    <item>@color/Valencia</item>
+    <item>@color/Sunset_Orange</item>
+    <item>@color/Radical_Red</item>
+    <item>@color/Picton_Blue</item>
+    <item>@color/Lynch</item>
+    </string-array>
+    <string name="title_activity_tutorial_screen">TutorialScreen</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

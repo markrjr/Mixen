@@ -68,6 +68,7 @@ dependencies {
     compile 'com.bluelinelabs:logansquare:1.0.6'
     compile project(':salut')
     //UI Libraries
+    compile 'com.github.paolorotolo:appintro:2.0.0'
     compile 'it.neokree:MaterialTabs:0.11'
     compile 'com.nispok:snackbar:2.9.1'
     compile 'com.afollestad:material-dialogs:0.7.5.1'

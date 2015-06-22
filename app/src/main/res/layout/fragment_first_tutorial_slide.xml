@@ -1,0 +1,78 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="com.peak.mixen.Fragments.FirstTutorialSlide"
+    android:background="@color/Dodger_Blue">
+    
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome to Mixen"
+        android:id="@+id/textView"
+        android:layout_gravity="center_horizontal|top"
+        android:textColor="@color/Snow_White"
+        android:textSize="36dp"
+        android:layout_marginTop="50dp"
+        android:fontFamily="sans-serif-light" />
+
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:id="@+id/imageView2"
+        android:layout_gravity="center"
+        android:src="@drawable/more_fab"
+        android:layout_marginBottom="100dp" />
+
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:id="@+id/imageView3"
+        android:layout_gravity="center"
+        android:src="@drawable/music_fab"
+        android:layout_marginTop="25dp" />
+
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:id="@+id/imageView"
+        android:layout_gravity="center"
+        android:src="@drawable/go_live_fab"
+        android:layout_marginTop="150dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Settings"
+        android:id="@+id/textView2"
+        android:layout_gravity="center"
+        android:layout_marginBottom="50dp"
+        android:textColor="@color/Snow_White" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Music"
+        android:id="@+id/textView3"
+        android:layout_gravity="center"
+        android:layout_marginTop="75dp"
+        android:textColor="@color/Snow_White" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Go Live"
+        android:id="@+id/textView4"
+        android:layout_gravity="center"
+        android:layout_marginTop="200dp"
+        android:textColor="@color/Snow_White" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="You&apos;re about to see these buttons."
+        android:id="@+id/textView5"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginTop="110dp"
+        android:textColor="@color/Snow_White"
+        android:textSize="18dp" />
+
+</FrameLayout>

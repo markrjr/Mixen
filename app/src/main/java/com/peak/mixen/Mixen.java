@@ -60,6 +60,9 @@ public class Mixen {
 
     public static String username;
 
+    public static boolean hasSeenTutorial;
+
+
     public static String getClientId() {
         return CLIENT_ID;
     }

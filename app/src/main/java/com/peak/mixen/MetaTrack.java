@@ -35,6 +35,8 @@ public class MetaTrack {
     public int downVotes = 0;
     @JsonField
     public String addedBy;
+    @JsonField
+    public boolean explicit;
     public Bitmap albumArt;
 
     public MetaTrack(){}
@@ -49,6 +51,7 @@ public class MetaTrack {
         this.spotifyID = track.id;
         this.duration = (int)track.duration_ms;
         this.addedBy = Mixen.username;
+        this.explicit = track.explicit;
     }
 
     public MetaTrack(TrackSimple track)
@@ -59,5 +62,6 @@ public class MetaTrack {
         this.spotifyID = track.id;
         this.duration = (int)track.duration_ms;
         this.addedBy = Mixen.username;
+        this.explicit = track.explicit;
     }
 }

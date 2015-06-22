@@ -25,6 +25,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bluelinelabs.logansquare.LoganSquare;
@@ -721,6 +722,8 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     public void handleNetworkData(PlaybackSnapshot hostPlaybackSnapshot)
     {
+        boolean explictAllowed = PlaybackSnapshot.explictAllowed;
+
         playerServiceSnapshot = hostPlaybackSnapshot;
 
         if(playerServiceSnapshot.snapshotType == PlaybackSnapshot.QUEUE_UPDATE)
@@ -730,6 +733,16 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             metaQueue = hostPlaybackSnapshot.remoteQueue;
             MixenBase.mixenPlayerFrag.updateUpNext();
             MixenBase.songQueueFrag.updateQueueUI();
+        }
+        else if (playerServiceSnapshot.snapshotType == PlaybackSnapshot.OTHER_DATA)
+        {
+            if(playerServiceSnapshot.explictAllowed != explictAllowed)
+            {
+                Toast.makeText(getApplicationContext(), "The host has restricted the party to clean songs only.", Toast.LENGTH_SHORT).show();
+                playerServiceSnapshot.explictAllowed = explictAllowed;
+            }
+
+            return;
         }
 
         switch(hostPlaybackSnapshot.playServiceState)
