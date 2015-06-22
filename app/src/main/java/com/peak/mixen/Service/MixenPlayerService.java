@@ -128,10 +128,12 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             telephonyManager.listen(checkForIncomingCalls, PhoneStateListener.LISTEN_CALL_STATE);
         }
 
-        ComponentName mixenService = new ComponentName(getApplicationContext(), MixenPlayerService.class);
-        PendingIntent mixenIntent = PendingIntent.getService(getApplicationContext(), 11, new Intent(), PendingIntent.FLAG_UPDATE_CURRENT);
+        ComponentName notificationsHandler = new ComponentName(getApplicationContext(), MediaNotificationsHandler.class);
+        PendingIntent mixenIntent = PendingIntent.getService(getApplicationContext(), 11, new Intent(this, MixenBase.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
-        mediaSession = new MediaSessionCompat(getApplicationContext(), "Mixen Player Service", mixenService, mixenIntent);
+        mediaSession = new MediaSessionCompat(getApplicationContext(), "Mixen Player Service", notificationsHandler, mixenIntent);
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setCallback(new MediaNotificationsHandler(this));
 
         isRunning = true;
         instance = this;
@@ -140,7 +142,18 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         playerServiceSnapshot = new PlaybackSnapshot(PlaybackSnapshot.READY);
     }
 
-    public void setMediaMetaData(int playbackState)
+    public void setMetaDataAndState(int playbackState)
+    {
+        mediaSession.setPlaybackState(getMediaPlaybackState(playbackState));
+        mediaSession.setMetadata(getMediaMetaData());
+    }
+
+    public void setMetaData()
+    {
+        mediaSession.setMetadata(getMediaMetaData());
+    }
+
+    private MediaMetadataCompat getMediaMetaData()
     {
 
         MediaMetadataCompat mediaData = new MediaMetadataCompat.Builder()
@@ -154,21 +167,20 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, currentTrack.albumArt)
                 .build();
 
+        return mediaData;
+    }
+
+    private PlaybackStateCompat getMediaPlaybackState(int playbackState)
+    {
         PlaybackStateCompat.Builder state = new PlaybackStateCompat.Builder();
-                state.setActions(
-                        PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PLAY_PAUSE |
-                                PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID | PlaybackStateCompat.ACTION_PAUSE |
-                                PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
+        state.setActions(
+                PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PLAY_PAUSE |
+                        PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID | PlaybackStateCompat.ACTION_PAUSE |
+                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
 
-                state.setState(playbackState, (long) MixenBase.mixenPlayerFrag.arcProgressBar.getProgress(), 1f);
+        state.setState(playbackState, (long) MixenBase.mixenPlayerFrag.arcProgressBar.getProgress(), 1f);
 
-        mediaSession.setPlaybackState(state.build());
-        mediaSession.setMetadata(mediaData);
-
-        if(!mediaSession.isActive())
-        {
-            mediaSession.setActive(true);
-        }
+        return state.build();
     }
 
     public void handleIntent(Intent intent)
@@ -302,7 +314,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.STOPPED);
             MixenBase.mixenPlayerFrag.cleanUpUI();
             audioManager.abandonAudioFocus(this);
-            setMediaMetaData(PlaybackStateCompat.STATE_STOPPED);
+            setMetaDataAndState(PlaybackStateCompat.STATE_STOPPED);
             mediaSession.setActive(false);
         }
 
@@ -534,7 +546,8 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         playerHasTrack = true;
         playerServiceSnapshot.updateNetworkPlayer(PlaybackSnapshot.PLAYING, queueSongPosition, currentTrack);
         MixenBase.mixenPlayerFrag.restoreUIControls();
-        setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
+        setMetaDataAndState(PlaybackStateCompat.STATE_PLAYING);
+        mediaSession.setActive(true);
         registerReceiver(noisyAudioReciever, intentFilter);
 
         if(MixenBase.userHasLeftApp)
@@ -640,7 +653,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         {
             spotifyPlayer.resume();
             MixenBase.mixenPlayerFrag.showOrHidePlayBtn(null);
-            setMediaMetaData(PlaybackStateCompat.STATE_PLAYING);
+            setMetaDataAndState(PlaybackStateCompat.STATE_PLAYING);
             MixenBase.mixenPlayerFrag.updateProgressBar();
             if(MixenBase.userHasLeftApp)
             {
@@ -657,7 +670,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     {
         spotifyPlayer.pause();
         MixenBase.mixenPlayerFrag.showOrHidePlayBtn(null);
-        setMediaMetaData(PlaybackStateCompat.STATE_PAUSED);
+        setMetaDataAndState(PlaybackStateCompat.STATE_PAUSED);
         if(MixenBase.userHasLeftApp)
         {
             NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

@@ -72,7 +72,8 @@
         </activity>
         <activity
             android:name=".Activities.SettingsScreen"
-            android:label="@string/title_activity_settings_screen" >
+            android:label="@string/title_activity_settings_screen"
+            android:screenOrientation="nosensor" >
         </activity>
     </application>
 

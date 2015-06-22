@@ -8,4 +8,6 @@
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="android.support.v7.widget.SearchView"/>
 
+    <item android:id="@+id/clear_search_history" android:title="Clear History"
+        android:orderInCategory="100" app:showAsAction="never" />
 </menu>

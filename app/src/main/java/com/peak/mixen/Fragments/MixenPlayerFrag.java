@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -199,7 +200,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                     @Override
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         MixenPlayerService.instance.currentTrack.albumArt = bitmap;
-                        generateAlbumArtPalette(MixenPlayerService.instance.currentTrack);
+                        generateAlbumArtPalette(bitmap);
+                        MixenPlayerService.instance.setMetaData();
                     }
 
                     @Override
@@ -291,16 +293,16 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     }
 
-    public void generateAlbumArtPalette(MetaTrack song)
+    public void generateAlbumArtPalette(Bitmap albumArt)
     {
 
-        Palette.generateAsync(song.albumArt, new Palette.PaletteAsyncListener() {
+        Palette.generateAsync(albumArt, new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
 
                 Log.v(Mixen.TAG, "Generated colors.");
 
-                final int artColor = palette.getVibrantColor(Mixen.appColors[new Random().nextInt(Mixen.appColors.length)]);
+                final int artColor = palette.getMutedColor(Mixen.appColors[new Random().nextInt(Mixen.appColors.length)]);
 
                 getActivity().runOnUiThread(new Runnable() {
                     @Override

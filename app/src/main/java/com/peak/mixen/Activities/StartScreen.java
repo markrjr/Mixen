@@ -307,13 +307,11 @@ public class StartScreen extends Activity implements View.OnClickListener{
         else if(v.getId() == R.id.findMixen)
         {
             Mixen.isHost = false;
-            createNewMixen.putExtra("FIND", true);
             startActivity(createNewMixen);
         }
         else if(v.getId() == R.id.createMixenButton)
         {
             Mixen.isHost = true;
-            createNewMixen.putExtra("FIND", false);
             if(isActuallyFirstRun)
             {
                 explanationDiag.show();

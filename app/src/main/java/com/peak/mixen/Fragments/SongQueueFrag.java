@@ -96,17 +96,14 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         if(Mixen.isHost)
         {
             setupQueueAdapter(false);
+            if(Mixen.username == null || Mixen.username.equals("Anonymous")) {
+                setUsername(true);
+            }
         }
         else
         {
             setupQueueAdapter(true);
             addSongBtn.setVisibility(View.INVISIBLE);
-        }
-
-        Intent startingIntent = getActivity().getIntent();
-
-        if(startingIntent != null && startingIntent.getExtras().getBoolean("FIND"))
-        {
             setupMixenNetwork();
         }
 
@@ -263,7 +260,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     }
 
-    private void setUsername()
+    private void setUsername(final boolean fromOnCreate)
     {
 
         new MaterialDialog.Builder(getActivity())
@@ -277,18 +274,20 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     public void onInput(MaterialDialog materialDialog, CharSequence charSequence) {
                         if (charSequence.length() != 0 && charSequence.toString().matches("^[a-zA-Z0-9]*$")) {
 
-                            Log.i(Mixen.TAG, "Creating a Mixen service for: " + charSequence.toString());
                             Mixen.username = charSequence.toString();
 
                             SharedPreferences.Editor prefs = Mixen.sharedPref.edit();
                             prefs.putString("username", Mixen.username).apply();
                             prefs.commit();
 
-                            setupMixenNetwork();
+                            if (!fromOnCreate)
+                            {
+                                Log.i(Mixen.TAG, "Creating a Mixen service for: " + charSequence.toString());
+                                setupMixenNetwork();
+                            }
+
                             materialDialog.dismiss();
-                        }
-                        else
-                        {
+                        } else {
                             materialDialog.getContentView().setText(getResources().getString(R.string.username_protocol));
                             materialDialog.getContentView().setTextColor(getResources().getColor(R.color.Radical_Red));
                         }
@@ -324,9 +323,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             return;
         }
 
-        if(Mixen.username == null || Mixen.username.equals("Anonymous"))
-        {
-            setUsername();
+        if(Mixen.username == null || Mixen.username.equals("Anonymous")) {
+            setUsername(false);
             return;
         }
 
