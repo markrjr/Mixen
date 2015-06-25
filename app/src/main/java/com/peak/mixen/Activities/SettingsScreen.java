@@ -17,6 +17,8 @@ import com.peak.mixen.Mixen;
 import com.peak.mixen.R;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.Service.PlaybackSnapshot;
+import com.tapstream.sdk.Event;
+import com.tapstream.sdk.Tapstream;
 
 
 public class SettingsScreen extends ActionBarActivity implements View.OnClickListener{
@@ -41,12 +43,16 @@ public class SettingsScreen extends ActionBarActivity implements View.OnClickLis
                     Toast.makeText(getApplicationContext(), "Only clean songs are now allowed.", Toast.LENGTH_SHORT).show();
                     PlaybackSnapshot.explictAllowed = false;
                     MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
+                    Event e = new Event("Set Explicit Disabled", true);
+                    Tapstream.getInstance().fireEvent(e);
                 }
                 else
                 {
                     Toast.makeText(getApplicationContext(), "All types of songs are now allowed.", Toast.LENGTH_SHORT).show();
                     PlaybackSnapshot.explictAllowed = true;
                     MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayerSettings();
+                    Event e = new Event("Set Explicit Enabled", true);
+                    Tapstream.getInstance().fireEvent(e);
                 }
             }
         });

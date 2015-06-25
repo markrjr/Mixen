@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.peak.mixen.BuildConfig;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
@@ -26,6 +27,7 @@ import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.Spotify;
+import com.tapstream.sdk.Tapstream;
 
 
 public class StartScreen extends Activity implements View.OnClickListener{
@@ -67,6 +69,8 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         checkifFirstRun();
 
+        initAnalytics();
+
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
             new MaterialDialog.Builder(getApplicationContext())
@@ -79,9 +83,26 @@ public class StartScreen extends Activity implements View.OnClickListener{
         findMixen.setOnClickListener(this);
         appNameTV.setOnClickListener(this);
 
-        wiFiBeforeLaunch = Salut.isWiFiEnabled(getApplicationContext());
+        wiFiBeforeLaunch = !Salut.isWiFiEnabled(getApplicationContext());
+        //The !(not) is because if for instance WiFi was disabled beforehand, that method will return false.
+        //But, we use this boolean later in order to set WiFi back to it's original state. So if we want to disable
+        //WiFi we would have to set this to the opposite because that's our intent not it's current state.
 
         instance = this;
+    }
+
+    private void initAnalytics()
+    {
+        com.tapstream.sdk.Config config = new com.tapstream.sdk.Config();
+        if(BuildConfig.DEBUG)
+        {
+            config.setOpenEventName("Mixen Debug Open");
+        }
+        else
+        {
+            config.setOpenEventName("Mixen Release Open");
+        }
+        Tapstream.create(getApplication(), "mixen", Mixen.getSDKSecret(), config);
     }
 
     private void checkifFirstRun()
@@ -142,6 +163,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 AuthenticationResponse.Type.TOKEN,
                 Mixen.getRedirectUri());
         builder.setScopes(new String[]{"user-read-private", "streaming"});
+        builder.setShowDialog(false);
         AuthenticationRequest request = builder.build();
         AuthenticationClient.openLoginActivity(this, Mixen.MIXEN_SERVICE_PORT, request);
     }
@@ -265,6 +287,11 @@ public class StartScreen extends Activity implements View.OnClickListener{
         {
             stopService(new Intent(this, MixenPlayerService.class));
         }
+
+        if(!wiFiBeforeLaunch)
+        {
+            Salut.disableWiFi(getApplicationContext());
+        }
     }
 
     @Override
@@ -336,11 +363,15 @@ public class StartScreen extends Activity implements View.OnClickListener{
                     Mixen.sharedPref.edit().putString("SESSION_TOKEN", Mixen.spotifyToken).apply();
                     Mixen.sharedPref.edit().putLong("SESSION_TOKEN_EXPIRE", Mixen.spotifyTokenExpiry).apply();
                     startMixen();
-                    break;
+                    return;
+
+                case ERROR:
+                    showSpotifyErrorDiag();
+                    return;
 
                 default:
-                    showSpotifyErrorDiag();
-                    break;
+                    restoreControls();
+                    return;
             }
         }
     }

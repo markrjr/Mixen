@@ -56,6 +56,8 @@ public class Mixen {
 
     private static final String REDIRECT_URI = "mixen://spotify-auth-callback";
 
+    private static final String SDK_SECRET = "tzQx7qKVRn-vUjQyesGeRA";
+
     public static Context currentContext;
 
     public static String username;
@@ -69,6 +71,10 @@ public class Mixen {
 
     public static String getRedirectUri() {
         return REDIRECT_URI;
+    }
+
+    public static String getSDKSecret() {
+        return SDK_SECRET;
     }
 
     public static boolean isConnected(Context context, int timeout) {

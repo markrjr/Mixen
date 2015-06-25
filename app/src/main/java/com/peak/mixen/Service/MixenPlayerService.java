@@ -713,7 +713,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             }
             else if(Mixen.network.thisDevice.isRegistered)
             {
-                Mixen.network.unregisterClient(null);
+                Mixen.network.unregisterClient(StartScreen.wiFiBeforeLaunch);
             }
         }
 

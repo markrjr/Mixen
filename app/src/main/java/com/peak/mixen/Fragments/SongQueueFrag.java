@@ -150,7 +150,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         if(Mixen.network != null)
                         {
                             Mixen.network.cancelConnecting();
-                            Mixen.network.stopServiceDiscovery();
                             SongQueueFrag.this.getActivity().finish();
                         }
                     }
@@ -334,6 +333,12 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                 }
                             }, 1500);
                         }
+
+                        @Override
+                        public void onNegative(MaterialDialog dialog) {
+                            super.onNegative(dialog);
+                            SongQueueFrag.this.getActivity().finish();
+                        }
                     })
                     .show();
             return;
@@ -363,14 +368,12 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             {
                 networkBtn.setImageDrawable(notLiveDrawable);
                 Toast.makeText(getActivity(), "We're no longer live.", Toast.LENGTH_SHORT).show();
-                Mixen.network.stopNetworkService(false);
+                Mixen.network.stopNetworkService(StartScreen.wiFiBeforeLaunch);
                 setupQueueAdapter(false);
 
             }
             else
             {
-                networkBtn.setImageDrawable(liveDrawable);
-                setupQueueAdapter(true);
                 Mixen.network.startNetworkService(new SalutDeviceCallback() {
                     @Override
                     public void call(SalutDevice device) {
@@ -381,9 +384,14 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 }, new SalutCallback() {
                     @Override
                     public void call() {
+                        Toast.makeText(getActivity(), "We're now live.", Toast.LENGTH_SHORT).show();
+                        networkBtn.setImageDrawable(liveDrawable);
+                        setupQueueAdapter(true);
+                    }
+                }, new SalutCallback() {
+                    @Override
+                    public void call() {
                         wiFiFailureDiag.show();
-                        networkBtn.setImageDrawable(notLiveDrawable);
-                        setupQueueAdapter(false);
                     }
                 });
             }
@@ -394,7 +402,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             {
                 networkBtn.setImageDrawable(notLiveDrawable);
                 Toast.makeText(getActivity(), "Disconnected from " + Mixen.network.registeredHost.readableName + " 's Mixen.", Toast.LENGTH_SHORT).show();
-                Mixen.network.unregisterClient(null);
+                Mixen.network.unregisterClient(StartScreen.wiFiBeforeLaunch);
                 this.getActivity().finish();
             }
             else
