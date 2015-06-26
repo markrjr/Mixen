@@ -26,7 +26,7 @@ public class PlaybackSnapshot {
 
     public static final int QUEUE_UPDATE = 23;
     public static final int PLAYBACK_UPDATE = 93;
-    public static final int OTHER_DATA = 93;
+    public static final int OTHER_DATA = 17;
 
 
     @JsonField

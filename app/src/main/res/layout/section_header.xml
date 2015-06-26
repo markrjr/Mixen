@@ -15,6 +15,7 @@
         android:layout_marginBottom="15dp"
         android:autoText="false"
         android:textColor="@color/EXP_4"
-        android:paddingBottom="10dp" />
+        android:paddingBottom="10dp"
+        android:layout_marginLeft="5dp" />
     
 </LinearLayout>

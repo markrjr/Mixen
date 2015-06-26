@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -12,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -79,6 +82,12 @@ public class StartScreen extends Activity implements View.OnClickListener{
                     .neutralText("Okay");
         }
 
+        if(Mixen.amoledMode)
+        {
+            RelativeLayout baseLayout = (RelativeLayout)findViewById(R.id.startScreenBase);
+            baseLayout.setBackgroundColor(Color.BLACK);
+        }
+
         createMixen.setOnClickListener(this);
         findMixen.setOnClickListener(this);
         appNameTV.setOnClickListener(this);
@@ -111,6 +120,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         Mixen.username = Mixen.sharedPref.getString("username", "Anonymous");
         Mixen.hasSeenTutorial = Mixen.sharedPref.getBoolean("hasSeenTutorial", false);
+        Mixen.amoledMode = Mixen.sharedPref.getBoolean("amoledMode", false);
 
         if(!Mixen.username.equals("Anonymous"))
             isActuallyFirstRun = false;
@@ -163,9 +173,9 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 AuthenticationResponse.Type.TOKEN,
                 Mixen.getRedirectUri());
         builder.setScopes(new String[]{"user-read-private", "streaming"});
-        builder.setShowDialog(false);
+        builder.setShowDialog(true);
         AuthenticationRequest request = builder.build();
-        AuthenticationClient.openLoginActivity(this, Mixen.MIXEN_SERVICE_PORT, request);
+        AuthenticationClient.openLoginInBrowser(this, request);
     }
 
     private void createDialogs()
@@ -208,6 +218,8 @@ public class StartScreen extends Activity implements View.OnClickListener{
     private void createMixen()
     {
         indeterminateProgressDiag.show();
+        //This needs to be post delayed because the MixenPlayerService hasn't been initialized on the intial called of this function.
+        //TODO Fix.
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -259,6 +271,36 @@ public class StartScreen extends Activity implements View.OnClickListener{
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        Uri uri = intent.getData();
+        if (uri != null)
+        {
+            AuthenticationResponse response = AuthenticationResponse.fromUri(uri);
+
+            switch (response.getType()) {
+                // Response was successful and contains auth token.
+                case TOKEN:
+                    Mixen.spotifyToken = response.getAccessToken();
+                    Mixen.spotifyTokenExpiry = System.currentTimeMillis();
+                    Mixen.sharedPref.edit().putString("SESSION_TOKEN", Mixen.spotifyToken).apply();
+                    Mixen.sharedPref.edit().putLong("SESSION_TOKEN_EXPIRE", Mixen.spotifyTokenExpiry).apply();
+                    startMixen();
+                    return;
+
+                case ERROR:
+                    showSpotifyErrorDiag();
+                    return;
+
+                default:
+                    restoreControls();
+                    return;
+            }
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_mixen_base, menu);
@@ -277,6 +319,16 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 return super.onOptionsItemSelected(item);
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(getIntent() != null && getIntent().getData() == null && indeterminateProgressDiag.isShowing())
+        {
+            indeterminateProgressDiag.dismiss();
+            //User canceled auth flow. Am I doing this wrong if I manually have to detect this?
+        }
     }
 
     @Override
@@ -344,34 +396,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
             }
             else{
                 createMixen();
-            }
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == Mixen.MIXEN_SERVICE_PORT) {
-            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, data);
-
-            switch (response.getType()) {
-                // Response was successful and contains auth token.
-                case TOKEN:
-                    Mixen.spotifyToken = response.getAccessToken();
-                    Mixen.spotifyTokenExpiry = System.currentTimeMillis();
-                    Mixen.sharedPref.edit().putString("SESSION_TOKEN", Mixen.spotifyToken).apply();
-                    Mixen.sharedPref.edit().putLong("SESSION_TOKEN_EXPIRE", Mixen.spotifyTokenExpiry).apply();
-                    startMixen();
-                    return;
-
-                case ERROR:
-                    showSpotifyErrorDiag();
-                    return;
-
-                default:
-                    restoreControls();
-                    return;
             }
         }
     }

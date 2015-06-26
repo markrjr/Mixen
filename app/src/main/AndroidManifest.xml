@@ -41,7 +41,8 @@
 
         <activity
             android:name=".Activities.StartScreen"
-            android:screenOrientation="nosensor" >
+            android:screenOrientation="nosensor"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -60,7 +61,6 @@
         </activity>
         <activity
             android:name=".Activities.SearchSongs"
-            android:label="@string/title_activity_search_songs"
             android:launchMode="singleTop"
             android:screenOrientation="nosensor" >
             <meta-data
@@ -73,7 +73,6 @@
         </activity>
         <activity
             android:name=".Activities.MixenBase"
-            android:label="@string/title_activity_mixen_base"
             android:launchMode="singleTask"
             android:screenOrientation="nosensor" >
         </activity>
@@ -82,18 +81,15 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
             android:name=".Activities.AlbumView"
-            android:label="@string/title_activity_album_view"
             android:launchMode="singleTop"
             android:screenOrientation="nosensor" >
         </activity>
         <activity
             android:name=".Activities.SettingsScreen"
-            android:label="@string/title_activity_settings_screen"
             android:screenOrientation="nosensor" >
         </activity>
         <activity
             android:name=".Activities.TutorialScreen"
-            android:label="@string/title_activity_tutorial_screen"
             android:screenOrientation="nosensor" >
         </activity>
     </application>

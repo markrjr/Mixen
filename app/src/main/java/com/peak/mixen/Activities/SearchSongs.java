@@ -6,9 +6,14 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,6 +21,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
@@ -81,6 +87,14 @@ public class SearchSongs extends ActionBarActivity {
         indeterminateProgress = (ProgressBar) findViewById(R.id.progressBar);
         indeterminateProgress.setVisibility(View.GONE);
 
+        if(Mixen.amoledMode)
+        {
+            songsLV.setDivider(new ColorDrawable(getResources().getColor(R.color.EXP_4)));
+            songsLV.setDividerHeight(10);
+            RelativeLayout baseLayout = (RelativeLayout)findViewById(R.id.searchBase);
+            baseLayout.setBackgroundColor(Color.BLACK);
+        }
+
         indeterminateProgress.getIndeterminateDrawable().setColorFilter(
                 getResources().getColor(R.color.Snow_White),
                 android.graphics.PorterDuff.Mode.SRC_IN);
@@ -88,6 +102,13 @@ public class SearchSongs extends ActionBarActivity {
         fullCellList = new ArrayList<>();
         specificCellList = new ArrayList<>();
 
+        setupDiags();
+        setupListAdapter(fullCellList);
+    }
+
+
+    private void setupDiags()
+    {
         spotifyErrorDiag = new MaterialDialog.Builder(this)
                 .title("Bummer :(")
                 .showListener(new DialogInterface.OnShowListener() {
@@ -100,10 +121,10 @@ public class SearchSongs extends ActionBarActivity {
                 .neutralText("Okay")
                 .build();
 
-        setupListAdapter(fullCellList);
     }
 
     private void searchSpotify(String query) {
+
         fullCellList.removeAll(fullCellList);
 
         Mixen.spotify.searchTracks(query, new SpotifyCallback<TracksPager>() {
@@ -392,7 +413,6 @@ public class SearchSongs extends ActionBarActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_search_songs, menu);
 
-
         // Associate searchable configuration with the SearchView
         SearchManager searchManager =
                 (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -403,6 +423,19 @@ public class SearchSongs extends ActionBarActivity {
 
         searchField = menu.findItem(R.id.search);
         searchField.expandActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchField.collapseActionView();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         return true;
 

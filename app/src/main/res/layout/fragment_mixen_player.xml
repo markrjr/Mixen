@@ -81,7 +81,6 @@
         android:layout_marginTop="60dp"
         android:alpha="0.3" />
 
-
     <TextView
         android:id="@+id/songProgressTV"
         android:layout_width="wrap_content"
@@ -128,6 +127,7 @@
             android:focusableInTouchMode="false"
             android:layout_marginRight="20dp" />
 
+
         <ImageButton
             android:id="@+id/upVoteBtn"
             android:layout_width="wrap_content"
@@ -140,6 +140,7 @@
             android:visibility="visible"
             android:layout_centerVertical="true"
             android:layout_marginLeft="20dp" />
+
 
         <TextView
             android:layout_width="wrap_content"

@@ -2,6 +2,8 @@ package com.peak.mixen.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.nispok.snackbar.Snackbar;
@@ -53,6 +56,15 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
         albumArtHeader = (ImageView) findViewById(R.id.albumArtHeader);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         fab = (FloatingActionButton) findViewById(R.id.playAlbumBtn);
+
+        if(Mixen.amoledMode)
+        {
+            songsLV.setDivider(new ColorDrawable(getResources().getColor(R.color.EXP_4)));
+            songsLV.setDividerHeight(10);
+            songsLV.setBackgroundColor(Color.BLACK);
+            RelativeLayout baseLayout = (RelativeLayout)findViewById(R.id.albumViewLayout);
+            baseLayout.setBackgroundColor(Color.BLACK);
+        }
 
         fab.setOnClickListener(this);
 

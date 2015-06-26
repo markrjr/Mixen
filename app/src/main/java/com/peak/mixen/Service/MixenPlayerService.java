@@ -733,6 +733,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             metaQueue = hostPlaybackSnapshot.remoteQueue;
             MixenBase.mixenPlayerFrag.updateUpNext();
             MixenBase.songQueueFrag.updateQueueUI();
+            //TODO Check to see if synced to prevent going to the switch statement below.
         }
         else if (playerServiceSnapshot.snapshotType == PlaybackSnapshot.OTHER_DATA)
         {
@@ -741,7 +742,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 Toast.makeText(getApplicationContext(), "The host has restricted the party to clean songs only.", Toast.LENGTH_SHORT).show();
                 playerServiceSnapshot.explictAllowed = explictAllowed;
             }
-
             return;
         }
 

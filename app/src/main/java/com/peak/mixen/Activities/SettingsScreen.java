@@ -1,6 +1,9 @@
 package com.peak.mixen.Activities;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.InputType;
@@ -10,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -24,6 +28,8 @@ import com.tapstream.sdk.Tapstream;
 public class SettingsScreen extends ActionBarActivity implements View.OnClickListener{
 
     private static boolean hasShownWarning;
+    private CheckBox enableAmoled;
+    private CheckBox enableCleanOnly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,33 +39,22 @@ public class SettingsScreen extends ActionBarActivity implements View.OnClickLis
 
         Button resetUserBtn = (Button)findViewById(R.id.reset_username);
         Button resetAppBtn = (Button)findViewById(R.id.reset_app);
-        CheckBox enableAmoled = (CheckBox)findViewById(R.id.enable_amoled);
-        CheckBox enableCleanOnly = (CheckBox)findViewById(R.id.enable_clean_only);
-        enableCleanOnly.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked)
-                {
-                    Toast.makeText(getApplicationContext(), "Only clean songs are now allowed.", Toast.LENGTH_SHORT).show();
-                    PlaybackSnapshot.explictAllowed = false;
-                    MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
-                    Event e = new Event("Set Explicit Disabled", true);
-                    Tapstream.getInstance().fireEvent(e);
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "All types of songs are now allowed.", Toast.LENGTH_SHORT).show();
-                    PlaybackSnapshot.explictAllowed = true;
-                    MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayerSettings();
-                    Event e = new Event("Set Explicit Enabled", true);
-                    Tapstream.getInstance().fireEvent(e);
-                }
-            }
-        });
+        Button logoutUser = (Button)findViewById(R.id.logout);
+        enableAmoled = (CheckBox)findViewById(R.id.enable_amoled);
+        enableCleanOnly = (CheckBox)findViewById(R.id.enable_clean_only);
 
+
+        if(Mixen.amoledMode)
+        {
+            RelativeLayout baseLayout = (RelativeLayout)findViewById(R.id.settingsBase);
+            baseLayout.setBackgroundColor(Color.BLACK);
+            enableAmoled.setChecked(true);
+        }
+
+        setupClickChangeListeners();
         resetUserBtn.setOnClickListener(this);
         resetAppBtn.setOnClickListener(this);
-        enableAmoled.setClickable(false);
+        logoutUser.setOnClickListener(this);
         enableCleanOnly.setClickable(false);
 
         if(Mixen.network != null && Mixen.network.isRunningAsHost)
@@ -70,6 +65,46 @@ public class SettingsScreen extends ActionBarActivity implements View.OnClickLis
 
         if(!hasShownWarning)
             showWarningDiag();
+    }
+
+    private void setupClickChangeListeners()
+    {
+        enableCleanOnly.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    Toast.makeText(getApplicationContext(), "Only clean songs are now allowed.", Toast.LENGTH_SHORT).show();
+                    PlaybackSnapshot.explictAllowed = false;
+                    MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
+                    Event e = new Event("Set Explicit Disabled", true);
+                    Tapstream.getInstance().fireEvent(e);
+                } else {
+                    Toast.makeText(getApplicationContext(), "All types of songs are now allowed.", Toast.LENGTH_SHORT).show();
+                    PlaybackSnapshot.explictAllowed = true;
+                    MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayerSettings();
+                    Event e = new Event("Set Explicit Enabled", true);
+                    Tapstream.getInstance().fireEvent(e);
+                }
+            }
+        });
+
+        enableAmoled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                {
+                    Mixen.amoledMode = true;
+                    Mixen.sharedPref.edit().putBoolean("amoledMode", Mixen.amoledMode).apply();
+                    showRestartDialog();
+                }
+                else if(Mixen.amoledMode && !isChecked)
+                {
+                    Mixen.amoledMode = false;
+                    Mixen.sharedPref.edit().putBoolean("amoledMode", Mixen.amoledMode).apply();
+                    showRestartDialog();
+                }
+            }
+        });
     }
 
     private void showRestartDialog()
@@ -102,7 +137,6 @@ public class SettingsScreen extends ActionBarActivity implements View.OnClickLis
 
     private void setUsername()
     {
-
         new MaterialDialog.Builder(SettingsScreen.this)
                 .title("Who are you?")
                 .content(R.string.username_overwrite)
@@ -138,7 +172,6 @@ public class SettingsScreen extends ActionBarActivity implements View.OnClickLis
                     }
                 })
                 .show();
-
     }
 
     @Override
@@ -173,6 +206,12 @@ public class SettingsScreen extends ActionBarActivity implements View.OnClickLis
         else if(view.getId() == R.id.reset_app)
         {
             clearAppSettings();
+        }
+        else if(view.getId() == R.id.logout)
+        {
+            Intent logoutUser = new Intent(Intent.ACTION_VIEW, Uri.parse("https://accounts.spotify.com"));
+            startActivity(logoutUser);
+            //TODO On user logout close app.
         }
     }
 }

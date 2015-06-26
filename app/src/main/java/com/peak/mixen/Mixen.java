@@ -64,6 +64,7 @@ public class Mixen {
 
     public static boolean hasSeenTutorial;
 
+    public static boolean amoledMode;
 
     public static String getClientId() {
         return CLIENT_ID;

@@ -40,6 +40,8 @@ import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
 import com.peak.mixen.Activities.SearchSongs;
 import com.peak.mixen.Activities.SettingsScreen;
+import com.peak.mixen.Utils.FABScrollListener;
+import com.peak.mixen.Utils.ShowHideOnScroll;
 import com.peak.mixen.Utils.SongQueueListAdapter;
 import com.peak.mixen.Utils.SongQueueListItem;
 import com.peak.salut.Callbacks.SalutCallback;
@@ -96,6 +98,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         cellList = new ArrayList<>();
 
+        FABScrollListener fabScrollListener = new FABScrollListener(queueLV);
+        fabScrollListener.addFab(addSongBtn);
+        fabScrollListener.addFab(networkBtn);
+        fabScrollListener.addFab(settingsBtn);
+
         if(!Mixen.hasSeenTutorial)
         {
             Intent tutorialIntent = new Intent(this.getActivity(), TutorialScreen.class);
@@ -147,10 +154,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     @Override
                     public void onNegative(MaterialDialog dialog) {
                         super.onNegative(dialog);
-                        if(Mixen.network != null)
-                        {
+                        if (Mixen.network != null) {
                             Mixen.network.cancelConnecting();
-                            SongQueueFrag.this.getActivity().finish();
                         }
                     }
                 })
@@ -321,6 +326,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     .content("Mixen needs to turn on WiFi in order to communicate with other devices. ")
                     .positiveText("Okay")
                     .negativeText("Nevermind")
+                    .cancelable(false)
                     .callback(new MaterialDialog.ButtonCallback() {
                         @Override
                         public void onPositive(MaterialDialog dialog) {
@@ -423,6 +429,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     }
 
 
+
+
     private void assignItemClickListener(boolean forNetwork, final int position)
     {
         if(forNetwork)
@@ -433,6 +441,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 snackBarIsVisible = true;
                 addSongBtn.setVisibility(View.INVISIBLE);
                 networkBtn.setVisibility(View.INVISIBLE);
+                settingsBtn.setVisibility(View.INVISIBLE);
 
                 SnackbarManager.show(
                         Snackbar.with(getActivity().getApplicationContext())
@@ -500,6 +509,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         snackBarIsVisible = false;
                                         addSongBtn.setVisibility(View.VISIBLE);
                                         networkBtn.setVisibility(View.VISIBLE);
+                                        settingsBtn.setVisibility(View.VISIBLE);
                                     }
                                 })
                         , getActivity());
