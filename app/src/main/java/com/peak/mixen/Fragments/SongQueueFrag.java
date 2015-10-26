@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
@@ -23,15 +22,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.Theme;
 import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
 import com.nispok.snackbar.listeners.EventListener;
-import com.peak.mixen.Activities.StartScreen;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.peak.mixen.Activities.TutorialScreen;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
@@ -40,18 +40,17 @@ import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
 import com.peak.mixen.Activities.SearchSongs;
 import com.peak.mixen.Activities.SettingsScreen;
+import com.peak.mixen.Service.PlaybackSnapshot;
+import com.peak.mixen.Utils.ActivityAnimator;
 import com.peak.mixen.Utils.FABScrollListener;
 import com.peak.mixen.Utils.ShowHideOnScroll;
 import com.peak.mixen.Utils.SongQueueListAdapter;
 import com.peak.mixen.Utils.SongQueueListItem;
-import com.peak.salut.Callbacks.SalutCallback;
-import com.peak.salut.Callbacks.SalutDeviceCallback;
-import com.peak.salut.SalutDataReceiver;
-import com.peak.salut.SalutDevice;
-import com.peak.salut.Salut;
-import com.peak.salut.SalutServiceData;
+
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
@@ -59,12 +58,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     public static final int TUTORIAL_REQUEST = 87;
     public ListView queueLV;
     public RelativeLayout baseLayout;
-    public boolean snackBarIsVisible = false;
     public ArrayList<SongQueueListItem> cellList;
+    public boolean snackBarIsVisible = false;
     private FloatingActionButton addSongBtn;
-    private FloatingActionButton networkBtn;
     private FloatingActionButton settingsBtn;
-    private MaterialDialog findingMixensProgress;
+    private MaterialDialog connectingProgress;
     private MaterialDialog cleanUpDialog;
     private MaterialDialog wiFiFailureDiag;
     private MaterialDialog foundMixensDialog;
@@ -82,12 +80,10 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         baseLayout = (RelativeLayout) v.findViewById(R.id.relativeLayout);
         queueLV = (ListView) v.findViewById(R.id.queueLV);
         addSongBtn = (FloatingActionButton) v.findViewById(R.id.add_song_button);
-        networkBtn = (FloatingActionButton) v.findViewById(R.id.go_live_button);
         settingsBtn = (FloatingActionButton) v.findViewById(R.id.settings);
         infoTV = (TextView) v.findViewById(R.id.infoTV);
 
         addSongBtn.setOnClickListener(this);
-        networkBtn.setOnClickListener(this);
         settingsBtn.setOnClickListener(this);
 
         addSong = new Intent(getActivity(), SearchSongs.class);
@@ -100,8 +96,12 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
         FABScrollListener fabScrollListener = new FABScrollListener(queueLV);
         fabScrollListener.addFab(addSongBtn);
-        fabScrollListener.addFab(networkBtn);
         fabScrollListener.addFab(settingsBtn);
+
+        if(Mixen.amoledMode)
+        {
+            //Set FAB background tint colors to black.
+        }
 
         if(!Mixen.hasSeenTutorial)
         {
@@ -113,7 +113,14 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             setupFragment();
         }
 
+        setupNetwork();
+
         return baseLayout;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -125,40 +132,97 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         }
     }
 
+    private void setupNetwork()
+    {
+        if(Mixen.isHost)
+        {
+            Mixen.thisUser = new ParseObject("Hosts");
+            Mixen.thisUser.put("username", Mixen.username);
+            Mixen.thisUser.put("partyCreated", true);
+            Mixen.thisUser.put("partySize", 0);
+            Mixen.thisUser.put("partyID", RandomStringUtils.randomAlphanumeric(6));
+            Mixen.thisUser.saveInBackground();
+
+            new MaterialDialog.Builder(getActivity())
+                    .title("Congrats!")
+                    .content("You're now hosting your very own Mixen!")
+                    .neutralText("Okay")
+                    .build()
+                    .show();
+
+            infoTV.setText("Others can join with this code:" + Mixen.thisUser.get("partyID"));
+        }
+        else
+        {
+            new MaterialDialog.Builder(getActivity())
+                    .title("Find a Mixen")
+                    .cancelable(false)
+                    .autoDismiss(false)
+                    .content(R.string.join_hint)
+                    .inputType(InputType.TYPE_CLASS_TEXT)
+                    .input(R.string.blank_string, R.string.blank_string, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(MaterialDialog materialDialog, CharSequence charSequence) {
+                            if (charSequence.length() != 0 && charSequence.toString().matches("^[a-zA-Z0-9]*$")) {
+
+                                ParseQuery<ParseObject> query = ParseQuery.getQuery("Hosts");
+                                query.whereEqualTo("partyID", charSequence.toString());
+                                query.findInBackground(new FindCallback<ParseObject>() {
+                                    public void done(List<ParseObject> possibleHosts, ParseException e) {
+                                        if (e == null) {
+                                            Log.d(Mixen.TAG, "Congrats! You're connected.");
+                                            connectingProgress.dismiss();
+                                            new MaterialDialog.Builder(getActivity())
+                                                    .title("Congrats!")
+                                                    .content("You're now connected to " + possibleHosts.get(0).get("username") + "'s mixen.")
+                                                    .neutralText("Okay")
+                                                    .build()
+                                                    .show();
+                                        } else {
+                                            connectingProgress.dismiss();
+                                            cleanUpDialog.show();
+                                        }
+                                    }
+                                });
+                                materialDialog.dismiss();
+                                connectingProgress.show();
+
+                            } else {
+                                materialDialog.getContentView().setText("That code doesn't look right, please try again.");
+                                materialDialog.getContentView().setTextColor(getResources().getColor(R.color.Radical_Red));
+                            }
+                        }
+                    })
+                    .show();
+
+        }
+    }
+
+
     private void setupFragment()
     {
         if(Mixen.isHost)
         {
             setupQueueAdapter(false);
             if(Mixen.username == null || Mixen.username.equals("Anonymous")) {
-                setUsername(true);
+                setUsername();
             }
         }
         else
         {
             setupQueueAdapter(true);
             addSongBtn.setVisibility(View.INVISIBLE);
-            setupMixenNetwork();
         }
     }
 
     private void setupDiags() {
 
-        findingMixensProgress = new MaterialDialog.Builder(getActivity())
-                .title("Searching for nearby Mixens...")
+        connectingProgress = new MaterialDialog.Builder(getActivity())
+                .title("Trying to connect...")
                 .content("Please wait...")
                 .negativeText("Stop")
                 .progress(true, 0)
                 .cancelable(false)
-                .callback(new MaterialDialog.ButtonCallback() {
-                    @Override
-                    public void onNegative(MaterialDialog dialog) {
-                        super.onNegative(dialog);
-                        if (Mixen.network != null) {
-                            Mixen.network.cancelConnecting();
-                        }
-                    }
-                })
                 .build();
 
         cleanUpDialog = new MaterialDialog.Builder(getActivity())
@@ -181,88 +245,10 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     }
 
-    private void findMixen()
-    {
-        findingMixensProgress.show();
-
-        Mixen.network.discoverNetworkServicesWithTimeout(new SalutCallback() {
-            @Override
-            public void call() {
-
-                if (Mixen.network.foundDevices.size() == 1) {
-
-                    findingMixensProgress.setTitle("Attempting to connect...");
-                    findingMixensProgress.setContent("Trying to connect to " + Mixen.network.getReadableFoundNames().get(0) + "'s Mixen...");
-
-                    Mixen.network.registerWithHost(Mixen.network.foundDevices.get(0), new SalutCallback() {
-                        @Override
-                        public void call() {
-                            Toast.makeText(Mixen.currentContext, "You're now connected to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
-                            networkBtn.setImageDrawable(liveDrawable);
-                            addSongBtn.setVisibility(View.VISIBLE);
-                            findingMixensProgress.dismiss();
-
-                        }
-                    }, new SalutCallback() {
-                        @Override
-                        public void call() {
-                            findingMixensProgress.dismiss();
-
-                            findingMixensProgress.setTitle("Searching for nearby Mixens...");
-                            findingMixensProgress.setContent("Please wait...");
-                            cleanUpDialog.setContent("We had a problem connection to " + Mixen.network.foundDevices.get(0).readableName + "'s Mixen. Please try again momentarily.");
-                            cleanUpDialog.show();
-                        }
-                    });
-                } else {
-
-                    String[] foundNames = Mixen.network.getReadableFoundNames().toArray(new String[Mixen.network.foundDevices.size()]);
-
-                    foundMixensDialog = new MaterialDialog.Builder(getActivity())
-                            .title("We found a few people nearby.")
-                            .theme(Theme.DARK)
-                            .items(foundNames)
-                            .itemsCallback(new MaterialDialog.ListCallback() {
-                                @Override
-                                public void onSelection(MaterialDialog materialDialog, View view, final int i, CharSequence charSequence) {
-
-                                    Mixen.network.registerWithHost(Mixen.network.foundDevices.get(i), new SalutCallback() {
-                                        @Override
-                                        public void call() {
-                                            Toast.makeText(getActivity(), "You're now connected to " + Mixen.network.foundDevices.get(i).readableName + "'s Mixen.", Toast.LENGTH_LONG).show();
-                                            networkBtn.setImageDrawable(liveDrawable);
-                                            addSongBtn.setVisibility(View.VISIBLE);
-                                            ;
-                                        }
-                                    }, new SalutCallback() {
-                                        @Override
-                                        public void call() {
-                                            cleanUpDialog.setContent("We had a problem connection to " + Mixen.network.foundDevices.get(i).readableName + " 's Mixen. Please try again momentarily.");
-                                            cleanUpDialog.show();
-                                        }
-                                    });
-                                }
-                            })
-                            .build();
-
-                    findingMixensProgress.dismiss();
-                    foundMixensDialog.show();
-                }
-
-            }
-        }, new SalutCallback() {
-            @Override
-            public void call() {
-                findingMixensProgress.dismiss();
-                cleanUpDialog.show();
-            }
-        }, 5000);
-    }
-
     public void updateQueueUI() {
 
-        MixenBase.songQueueFrag.cellList.clear();
-        MixenBase.songQueueFrag.cellList.addAll(SongQueueListAdapter.convertToListItems(MixenPlayerService.instance.metaQueue));
+        this.cellList.clear();
+        this.cellList.addAll(SongQueueListAdapter.convertToListItems(MixenPlayerService.instance.metaQueue));
 
         queueAdapter.notifyDataSetChanged();
         queueLV.invalidate();
@@ -280,7 +266,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     }
 
-    private void setUsername(final boolean fromOnCreate)
+    private void setUsername()
     {
 
         new MaterialDialog.Builder(getActivity())
@@ -300,12 +286,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                             prefs.putString("username", Mixen.username).apply();
                             prefs.commit();
 
-                            if (!fromOnCreate)
-                            {
-                                Log.i(Mixen.TAG, "Creating a Mixen service for: " + charSequence.toString());
-                                setupMixenNetwork();
-                            }
-
                             materialDialog.dismiss();
                         } else {
                             materialDialog.getContentView().setText(getResources().getString(R.string.username_protocol));
@@ -315,107 +295,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 })
                 .show();
 
-    }
-
-    public void setupMixenNetwork()
-    {
-        if(!Salut.isWiFiEnabled(getActivity()))
-        {
-            new MaterialDialog.Builder(getActivity())
-                    .title("Enabling WiFi...")
-                    .content("Mixen needs to turn on WiFi in order to communicate with other devices. ")
-                    .positiveText("Okay")
-                    .negativeText("Nevermind")
-                    .cancelable(false)
-                    .callback(new MaterialDialog.ButtonCallback() {
-                        @Override
-                        public void onPositive(MaterialDialog dialog) {
-                            super.onPositive(dialog);
-                            Salut.enableWiFi(getActivity());
-                            new Handler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    setupMixenNetwork();
-                                }
-                            }, 1500);
-                        }
-
-                        @Override
-                        public void onNegative(MaterialDialog dialog) {
-                            super.onNegative(dialog);
-                            SongQueueFrag.this.getActivity().finish();
-                        }
-                    })
-                    .show();
-            return;
-        }
-
-        if(Mixen.username == null || Mixen.username.equals("Anonymous")) {
-            setUsername(false);
-            return;
-        }
-
-        if(Mixen.network == null)
-        {
-            SalutDataReceiver dataReceiver = new SalutDataReceiver(getActivity(), MixenPlayerService.instance);
-            SalutServiceData serviceData = new SalutServiceData("mixen", Mixen.MIXEN_SERVICE_PORT, Mixen.username);
-
-            Mixen.network = new Salut(dataReceiver, serviceData, new SalutCallback() {
-                @Override
-                public void call() {
-                    wiFiFailureDiag.show();
-                }
-            });
-        }
-
-        if(Mixen.isHost)
-        {
-            if(Mixen.network.isRunningAsHost)
-            {
-                networkBtn.setImageDrawable(notLiveDrawable);
-                Toast.makeText(getActivity(), "We're no longer live.", Toast.LENGTH_SHORT).show();
-                Mixen.network.stopNetworkService(StartScreen.wiFiBeforeLaunch);
-                setupQueueAdapter(false);
-
-            }
-            else
-            {
-                Mixen.network.startNetworkService(new SalutDeviceCallback() {
-                    @Override
-                    public void call(SalutDevice device) {
-                        Toast.makeText(getActivity(), device.readableName + " is now connected.", Toast.LENGTH_SHORT).show();
-                        MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
-                        MixenBase.mixenUsersFrag.updateNetworkUsersQueue();
-                    }
-                }, new SalutCallback() {
-                    @Override
-                    public void call() {
-                        Toast.makeText(getActivity(), "We're now live.", Toast.LENGTH_SHORT).show();
-                        networkBtn.setImageDrawable(liveDrawable);
-                        setupQueueAdapter(true);
-                    }
-                }, new SalutCallback() {
-                    @Override
-                    public void call() {
-                        wiFiFailureDiag.show();
-                    }
-                });
-            }
-        }
-        else
-        {
-            if(Mixen.network.thisDevice.isRegistered)
-            {
-                networkBtn.setImageDrawable(notLiveDrawable);
-                Toast.makeText(getActivity(), "Disconnected from " + Mixen.network.registeredHost.readableName + " 's Mixen.", Toast.LENGTH_SHORT).show();
-                Mixen.network.unregisterClient(StartScreen.wiFiBeforeLaunch);
-                this.getActivity().finish();
-            }
-            else
-            {
-                findMixen();
-            }
-        }
     }
 
     @Override
@@ -428,9 +307,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     }
 
-
-
-
     private void assignItemClickListener(boolean forNetwork, final int position)
     {
         if(forNetwork)
@@ -440,7 +316,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             if (!snackBarIsVisible) {
                 snackBarIsVisible = true;
                 addSongBtn.setVisibility(View.INVISIBLE);
-                networkBtn.setVisibility(View.INVISIBLE);
                 settingsBtn.setVisibility(View.INVISIBLE);
 
                 SnackbarManager.show(
@@ -508,7 +383,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     public void onDismissed(Snackbar snackbar) {
                                         snackBarIsVisible = false;
                                         addSongBtn.setVisibility(View.VISIBLE);
-                                        networkBtn.setVisibility(View.VISIBLE);
                                         settingsBtn.setVisibility(View.VISIBLE);
                                     }
                                 })
@@ -524,9 +398,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
             final MetaTrack selected = (MetaTrack) queueLV.getItemAtPosition(position);
 
             if (!snackBarIsVisible) {
-                snackBarIsVisible = true;
                 addSongBtn.setVisibility(View.INVISIBLE);
-                networkBtn.setVisibility(View.INVISIBLE);
+                settingsBtn.setVisibility(View.INVISIBLE);
 
                 SnackbarManager.show(
                         Snackbar.with(getActivity().getApplicationContext())
@@ -541,12 +414,13 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                         MixenPlayerService.instance.metaQueue.remove(position);
 
                                         updateQueueUI();
-                                        MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
 
                                         if (MixenPlayerService.instance.currentTrack.spotifyID.equals(selected.spotifyID)) {
                                             //If someone wants to delete the currently playing song, stop everything.
                                             MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.reset);
                                             Log.d(Mixen.TAG, "Current song was deleted.");
+
+                                            MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer(PlaybackSnapshot.STOPPED);
 
                                             if (MixenPlayerService.instance.getNextTrack() != null || !MixenPlayerService.instance.queueIsEmpty()) {
                                                 if (MixenPlayerService.instance.queueHasASingleTrack()) {
@@ -558,6 +432,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
                                         } else if (position < MixenPlayerService.instance.queueSongPosition) {
                                             MixenPlayerService.instance.queueSongPosition--;
+                                            MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
                                         }
 
                                         MixenBase.mixenPlayerFrag.updateUpNext();
@@ -567,7 +442,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                 .eventListener(new EventListener() {
                                     @Override
                                     public void onShow(Snackbar snackbar) {
-
+                                        snackBarIsVisible = true;
                                     }
 
                                     @Override
@@ -593,7 +468,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                     public void onDismissed(Snackbar snackbar) {
                                         snackBarIsVisible = false;
                                         addSongBtn.setVisibility(View.VISIBLE);
-                                        networkBtn.setVisibility(View.VISIBLE);
+                                        settingsBtn.setVisibility(View.VISIBLE);
                                     }
                                 })
                         , getActivity());
@@ -649,19 +524,17 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
 
-        if(v.getId() == R.id.add_song_button || v.getId() == R.id.mixenBaseLayout)
+        if(v.getId() == R.id.add_song_button)
         {
-            startActivityForResult(addSong, ADD_SONG_REQUEST);
             addSong.setAction(Intent.ACTION_SEARCH);
+            startActivityForResult(addSong, ADD_SONG_REQUEST);
+            new ActivityAnimator().fadeAnimation(this.getActivity());
             return;
-        }
-        else if(v.getId() == R.id.go_live_button)
-        {
-            setupMixenNetwork();
         }
         else if(v.getId() == R.id.settings)
         {
             startActivity(new Intent(getActivity(), SettingsScreen.class));
+            new ActivityAnimator().fadeAnimation(this.getActivity());
         }
     }
 

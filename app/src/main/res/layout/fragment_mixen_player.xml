@@ -115,7 +115,6 @@
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_alignParentStart="false"
-            android:background="@color/Tundora"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_dislike"
             android:text="Button"
@@ -125,7 +124,8 @@
             android:layout_alignParentRight="true"
             android:layout_centerInParent="true"
             android:focusableInTouchMode="false"
-            android:layout_marginRight="20dp" />
+            android:layout_marginRight="20dp"
+            android:background="@color/Tundora" />
 
 
         <ImageButton
@@ -133,13 +133,13 @@
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_alignParentStart="true"
-            android:background="@color/Tundora"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_like"
             android:text="Button"
             android:visibility="visible"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="20dp" />
+            android:layout_marginLeft="20dp"
+            android:background="@color/Tundora" />
 
 
         <TextView
@@ -152,7 +152,8 @@
             android:layout_centerVertical="true"
             android:layout_alignParentStart="false"
             android:textSize="16dp"
-            android:layout_toRightOf="@+id/upVoteBtn" />
+            android:layout_toRightOf="@+id/upVoteBtn"
+            android:background="@color/Tundora" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -163,7 +164,8 @@
             android:textColor="@color/Snow_White"
             android:textSize="16dp"
             android:layout_toLeftOf="@+id/downVoteBtn"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:background="@color/Tundora" />
 
     </RelativeLayout>
 
@@ -187,7 +189,6 @@
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_alignParentStart="false"
-            android:background="@color/Tundora"
             android:scaleType="fitCenter"
             android:src="@drawable/previous"
             android:text="Button"
@@ -197,42 +198,42 @@
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
             android:layout_marginTop="20dp"
-            android:clickable="true" />
+            android:clickable="true"
+            android:background="@color/Tundora" />
 
         <ImageButton
             android:id="@+id/rewindBtn"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_alignParentStart="false"
-            android:background="@color/Tundora"
             android:scaleType="fitCenter"
             android:src="@drawable/rewind"
             android:text="Button"
             android:visibility="visible"
             android:layout_toRightOf="@+id/previousTrackBtn"
             android:layout_centerVertical="true"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp"
+            android:background="@color/Tundora" />
 
         <ImageButton
             android:id="@+id/fastForwardBtn"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_alignParentStart="false"
-            android:background="@color/Tundora"
             android:scaleType="fitCenter"
             android:src="@drawable/fast_forward"
             android:text="Button"
             android:visibility="visible"
             android:layout_toLeftOf="@+id/skipTrackBtn"
             android:layout_centerVertical="true"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp"
+            android:background="@color/Tundora" />
 
         <ImageButton
             android:id="@+id/skipTrackBtn"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_alignParentEnd="false"
-            android:background="@color/Tundora"
             android:clickable="true"
             android:scaleType="fitCenter"
             android:src="@drawable/next"
@@ -242,20 +243,21 @@
             android:layout_alignParentRight="true"
             android:layout_marginRight="30dp"
             android:layout_marginLeft="30dp"
-            android:layout_marginTop="20dp" />
+            android:layout_marginTop="20dp"
+            android:background="@color/Tundora" />
 
         <TextView
             android:id="@+id/upNextTV"
             android:layout_width="100dp"
             android:layout_height="50dp"
-            android:background="@color/Tundora"
             android:textColor="@color/Snow_White"
             android:visibility="visible"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
             android:alpha="0.8"
             android:gravity="center"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:background="@color/Tundora" />
 
         <ProgressBar
             android:id="@+id/bufferingPB"
@@ -266,10 +268,10 @@
             android:indeterminateOnly="true"
             android:paddingLeft="2dp"
             android:visibility="invisible"
-            android:background="@color/Tundora"
             android:indeterminateTint="@color/Snow_White"
             android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:background="@color/Tundora" />
 
     </RelativeLayout>
 

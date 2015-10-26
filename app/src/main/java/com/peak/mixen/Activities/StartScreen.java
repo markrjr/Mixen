@@ -19,18 +19,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.peak.mixen.BuildConfig;
+import com.parse.Parse;
+import com.parse.ParseObject;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
-import com.peak.salut.Salut;
+import com.peak.mixen.Utils.ActivityAnimator;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.Spotify;
-import com.tapstream.sdk.Tapstream;
 
 
 public class StartScreen extends Activity implements View.OnClickListener{
@@ -41,7 +41,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
     private MaterialDialog explanationDiag;
     public boolean isActuallyFirstRun;
     public static boolean hasSpotifyToken;
-    public static boolean wiFiBeforeLaunch;
 
     private Button findMixen;
     private Button createMixen;
@@ -72,8 +71,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         checkifFirstRun();
 
-        initAnalytics();
-
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
             new MaterialDialog.Builder(getApplicationContext())
@@ -92,26 +89,9 @@ public class StartScreen extends Activity implements View.OnClickListener{
         findMixen.setOnClickListener(this);
         appNameTV.setOnClickListener(this);
 
-        wiFiBeforeLaunch = !Salut.isWiFiEnabled(getApplicationContext());
-        //The !(not) is because if for instance WiFi was disabled beforehand, that method will return false.
-        //But, we use this boolean later in order to set WiFi back to it's original state. So if we want to disable
-        //WiFi we would have to set this to the opposite because that's our intent not it's current state.
+        Parse.initialize(this, Mixen.getParseSecret(), Mixen.getParseKey());
 
         instance = this;
-    }
-
-    private void initAnalytics()
-    {
-        com.tapstream.sdk.Config config = new com.tapstream.sdk.Config();
-        if(BuildConfig.DEBUG)
-        {
-            config.setOpenEventName("Mixen Debug Open");
-        }
-        else
-        {
-            config.setOpenEventName("Mixen Release Open");
-        }
-        Tapstream.create(getApplication(), "mixen", Mixen.getSDKSecret(), config);
     }
 
     private void checkifFirstRun()
@@ -218,7 +198,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
     private void createMixen()
     {
         indeterminateProgressDiag.show();
-        //This needs to be post delayed because the MixenPlayerService hasn't been initialized on the intial called of this function.
+        //This needs to be post delayed because the MixenPlayerService hasn't been initialized on the initial called of this function.
         //TODO Fix.
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -335,15 +315,10 @@ public class StartScreen extends Activity implements View.OnClickListener{
     protected void onDestroy() {
         super.onDestroy();
 
-        if(MixenPlayerService.instance != null)
-        {
-            stopService(new Intent(this, MixenPlayerService.class));
-        }
-
-        if(!wiFiBeforeLaunch)
-        {
-            Salut.disableWiFi(getApplicationContext());
-        }
+//        if(MixenPlayerService.instance != null)
+//        {
+//            stopService(new Intent(this, MixenPlayerService.class));
+//        }
     }
 
     @Override
@@ -386,6 +361,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
         {
             Mixen.isHost = false;
             startActivity(createNewMixen);
+            new ActivityAnimator().fadeAnimation(this);
         }
         else if(v.getId() == R.id.createMixenButton)
         {

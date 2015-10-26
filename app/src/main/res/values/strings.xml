@@ -31,12 +31,13 @@
     <string name="empty_queue">The queue is empty! Add a song to get started.</string>
     <string name="title_activity_tabbed_song_queue">TabbedSongQueue</string>
     <string name="mixen_network_search">Searching for nearby Mixens...</string>
-    <string name="revision_number">Revision 9.5 (Spotify Hotfix)</string>
+    <string name="revision_number">Revision 9.75 (Spotify)</string>
     <string name="build_type">Beta Build</string>
     <string name="title_activity_mixen_base">MixenBase</string>
     <string name="empty_users_queue">There are no users connected yet.</string>
     <string name="title_activity_album_view">AlbumView</string>
     <string name="permission_error">We had a problem streaming from Spotify. Another device may be using this Spotify account. Please logout on the other device and try again.</string>
+    <string name="join_hint">Enter the code for the party you want to join.</string>
     <string name="blank_string"></string>
     <string name="title_activity_settings_screen">SettingsScreen</string>
     <string name="settings">Settings</string>
@@ -67,6 +68,7 @@
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_music_view">MusicView</string>
 
 
 </resources>

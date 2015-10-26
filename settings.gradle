@@ -1,1 +1,1 @@
-include ':app', ':salut'
+include ':app'

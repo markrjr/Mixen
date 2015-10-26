@@ -7,7 +7,7 @@ android {
         applicationId "com.peak.mixen"
         minSdkVersion 16
         targetSdkVersion 21
-        versionCode 21
+        versionCode 22
         versionName '0.3.0'
         renderscriptTargetApi 19
         renderscriptSupportModeEnabled true
@@ -55,7 +55,7 @@ repositories {
 apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     //Spotify SDK
     compile files('libs/spotify-web-api-android-master-0.1.0.jar')
     compile 'com.spotify.sdk:spotify-auth:1.0.0-beta10@aar'
@@ -63,10 +63,7 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.squareup.okhttp:okhttp:2.2.0'
     //Misc
-    compile 'com.arasthel:asyncjob-library:1.0.3'
-    apt 'com.bluelinelabs:logansquare-compiler:1.0.6'
-    compile 'com.bluelinelabs:logansquare:1.0.6'
-    compile project(':salut')
+    compile 'com.parse:parse-android:1.10.1'
     //UI Libraries
     compile 'com.github.paolorotolo:appintro:2.0.0'
     compile 'it.neokree:MaterialTabs:0.11'
@@ -83,5 +80,4 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:22.2.0'
     compile 'com.android.support:support-v4:21.0.0'
     compile 'com.android.support:appcompat-v7:21.0.0'
-    compile files('libs/Tapstream-2.9.0.jar')
 }

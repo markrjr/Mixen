@@ -1,5 +1,7 @@
 package com.peak.mixen.Activities;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
@@ -11,6 +13,7 @@ import android.support.v7.app.ActionBarActivity;
 
 
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,8 +27,6 @@ import com.peak.mixen.Fragments.SongQueueFrag;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
-import com.tapstream.sdk.Config;
-import com.tapstream.sdk.Tapstream;
 
 
 import java.util.ArrayList;
@@ -51,9 +52,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     public static MixenPlayerFrag mixenPlayerFrag;
     public static MixenUsersFrag mixenUsersFrag;
 
-    private float x1,x2;
-    static final int MIN_DISTANCE = 150;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +60,11 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
         mixenTabs = (MaterialTabHost) this.findViewById(R.id.mixenTabs);
         mPager = (ViewPager) this.findViewById(R.id.viewPager);
         baseLayout = (RelativeLayout)this.findViewById(R.id.mixenBaseLayout);
+
+        if(Mixen.amoledMode)
+        {
+            mixenTabs.setPrimaryColor(Color.BLACK);
+        }
 
         TabNames.add("Up Next");
         TabNames.add("Now Playing");
@@ -143,27 +146,6 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_mixen_base, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onTabSelected(MaterialTab materialTab) {
         mPager.setCurrentItem(materialTab.getPosition());
     }
@@ -222,6 +204,12 @@ public class MixenBase extends ActionBarActivity implements MaterialTabListener{
     public void onBackPressed() {
 
         if (songQueueFrag.snackBarIsVisible)
+        {
+            SnackbarManager.dismiss();
+            return;
+        }
+
+        if (mixenUsersFrag != null && mixenUsersFrag.snackBarIsVisible)
         {
             SnackbarManager.dismiss();
             return;
