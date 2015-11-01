@@ -28,14 +28,12 @@ import com.nispok.snackbar.Snackbar;
 import com.nispok.snackbar.SnackbarManager;
 import com.nispok.snackbar.listeners.ActionClickListener;
 import com.nispok.snackbar.listeners.EventListener;
-import com.parse.FindCallback;
-import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.peak.mixen.Activities.TutorialScreen;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.Activities.MixenBase;
+import com.peak.mixen.Service.CloudOps;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
 import com.peak.mixen.Activities.SearchSongs;
@@ -43,14 +41,12 @@ import com.peak.mixen.Activities.SettingsScreen;
 import com.peak.mixen.Service.PlaybackSnapshot;
 import com.peak.mixen.Utils.ActivityAnimator;
 import com.peak.mixen.Utils.FABScrollListener;
-import com.peak.mixen.Utils.ShowHideOnScroll;
 import com.peak.mixen.Utils.SongQueueListAdapter;
 import com.peak.mixen.Utils.SongQueueListItem;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
@@ -134,6 +130,8 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
 
     private void setupNetwork()
     {
+        Mixen.cloudOps = new CloudOps();
+
         if(Mixen.isHost)
         {
             Mixen.thisUser = new ParseObject("Hosts");
@@ -160,32 +158,35 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     .autoDismiss(false)
                     .content(R.string.join_hint)
                     .inputType(InputType.TYPE_CLASS_TEXT)
+                    .negativeText("Cancel")
+                    .callback(new MaterialDialog.ButtonCallback() {
+                        @Override
+                        public void onNegative(MaterialDialog dialog) {
+                            super.onNegative(dialog);
+                            dialog.cancel();
+                            SongQueueFrag.this.getActivity().finish();
+                        }
+                    })
                     .input(R.string.blank_string, R.string.blank_string, new MaterialDialog.InputCallback() {
                         @Override
                         public void onInput(MaterialDialog materialDialog, CharSequence charSequence) {
                             if (charSequence.length() != 0 && charSequence.toString().matches("^[a-zA-Z0-9]*$")) {
 
-                                ParseQuery<ParseObject> query = ParseQuery.getQuery("Hosts");
-                                query.whereEqualTo("partyID", charSequence.toString());
-                                query.findInBackground(new FindCallback<ParseObject>() {
-                                    public void done(List<ParseObject> possibleHosts, ParseException e) {
-                                        if (e == null) {
-                                            Log.d(Mixen.TAG, "Congrats! You're connected.");
-                                            connectingProgress.dismiss();
-                                            new MaterialDialog.Builder(getActivity())
-                                                    .title("Congrats!")
-                                                    .content("You're now connected to " + possibleHosts.get(0).get("username") + "'s mixen.")
-                                                    .neutralText("Okay")
-                                                    .build()
-                                                    .show();
-                                        } else {
-                                            connectingProgress.dismiss();
-                                            cleanUpDialog.show();
-                                        }
-                                    }
-                                });
-                                materialDialog.dismiss();
-                                connectingProgress.show();
+                                if(Mixen.cloudOps.canConnectToParty(charSequence))
+                                {
+                                    connectingProgress.dismiss();
+                                    new MaterialDialog.Builder(getActivity())
+                                            .title("Congrats!")
+                                            .content("You're now connected to " + Mixen.connectedHost.get("username") + "'s mixen.")
+                                            .neutralText("Okay")
+                                            .build()
+                                            .show();
+                                }
+                                else
+                                {
+                                    materialDialog.dismiss();
+                                    connectingProgress.show();
+                                }
 
                             } else {
                                 materialDialog.getContentView().setText("That code doesn't look right, please try again.");

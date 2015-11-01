@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
     defaultConfig {
         applicationId "com.peak.mixen"
         minSdkVersion 16
-        targetSdkVersion 21
+        targetSdkVersion 23
         versionCode 22
         versionName '0.3.0'
         renderscriptTargetApi 19
@@ -52,6 +52,7 @@ repositories {
     }
 }
 
+
 apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
@@ -74,10 +75,10 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.3.2'
     compile 'com.mikepenz.aboutlibraries:library:4.5.9@aar'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.android.support:design:22.2.0'
-    compile 'com.android.support:palette-v7:21.0.+'
-    compile 'com.android.support:cardview-v7:21.0.0'
-    compile 'com.android.support:recyclerview-v7:22.2.0'
-    compile 'com.android.support:support-v4:21.0.0'
-    compile 'com.android.support:appcompat-v7:21.0.0'
+    compile 'com.android.support:design:23.1.0'
+    compile 'com.android.support:palette-v7:23+'
+    compile 'com.android.support:cardview-v7:23+'
+    compile 'com.android.support:recyclerview-v7:23+'
+    compile 'com.android.support:support-v4:23+'
+    compile 'com.android.support:appcompat-v7:23+'
 }

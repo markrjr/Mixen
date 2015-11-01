@@ -11,6 +11,7 @@ import android.util.Log;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.mikepenz.aboutlibraries.Libs;
 import com.parse.ParseObject;
+import com.peak.mixen.Service.CloudOps;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -43,6 +44,10 @@ public class Mixen {
     //Song and current session related data.
 
     public static ParseObject thisUser;
+
+    public static ParseObject connectedHost;
+
+    public static CloudOps cloudOps;
 
     public static SpotifyApi spotifyAPI;
 

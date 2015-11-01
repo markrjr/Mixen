@@ -15,28 +15,28 @@
         android:fontFamily="sans-serif-light" />
 
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:id="@+id/imageView2"
         android:layout_gravity="center"
         android:src="@drawable/more_fab"
-        android:layout_marginBottom="100dp" />
+        android:layout_marginBottom="80dp" />
 
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:id="@+id/imageView3"
         android:layout_gravity="center"
         android:src="@drawable/music_fab"
         android:layout_marginTop="25dp" />
 
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:id="@+id/imageView"
         android:layout_gravity="center"
         android:src="@drawable/go_live_fab"
-        android:layout_marginTop="150dp" />
+        android:layout_marginTop="125dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -44,7 +44,7 @@
         android:text="Settings"
         android:id="@+id/textView2"
         android:layout_gravity="center"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="35dp"
         android:textColor="@color/Snow_White" />
 
     <TextView
@@ -53,7 +53,7 @@
         android:text="Add Music"
         android:id="@+id/textView3"
         android:layout_gravity="center"
-        android:layout_marginTop="75dp"
+        android:layout_marginTop="70dp"
         android:textColor="@color/Snow_White" />
 
     <TextView
@@ -62,7 +62,7 @@
         android:text="Go Live"
         android:id="@+id/textView4"
         android:layout_gravity="center"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="170dp"
         android:textColor="@color/Snow_White" />
 
     <TextView

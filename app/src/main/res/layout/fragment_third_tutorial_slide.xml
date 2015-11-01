@@ -26,11 +26,11 @@
         android:gravity="center" />
 
     <ImageView
-        android:layout_width="330dp"
-        android:layout_height="520dp"
+        android:layout_width="250dp"
+        android:layout_height="396dp"
         android:id="@+id/imageView5"
         android:layout_gravity="center"
         android:src="@drawable/tutorial3"
-        android:layout_marginTop="145dp" />
+        android:layout_marginTop="100dp" />
 
 </FrameLayout>
