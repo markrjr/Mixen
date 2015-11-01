@@ -31,7 +31,6 @@ import com.peak.mixen.Mixen;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
 import com.peak.mixen.Service.PlaybackSnapshot;
-import com.peak.mixen.Utils.ActivityAnimator;
 import com.peak.mixen.Utils.HeaderListAdapter;
 import com.peak.mixen.Utils.HeaderListCell;
 import com.peak.mixen.RecentSearchesProvider;
@@ -80,7 +79,7 @@ public class SearchSongs extends ActionBarActivity {
         }
         else
         {
-//            getSupportActionBar().setTitle(Mixen.network.registeredHost.readableName + "'s Mixen");
+            getSupportActionBar().setTitle(Mixen.network.registeredHost.readableName + "'s Mixen");
         }
 
         // Boilerplate.
@@ -290,7 +289,6 @@ public class SearchSongs extends ActionBarActivity {
                 } else if (selected.hiddenCategory.equals("ALBUM")) {
                     viewAlbumInfo.putExtra("REQUESTED_ALBUM_ID", selected.albumSimple.id);
                     startActivity(viewAlbumInfo);
-                    new ActivityAnimator().fadeAnimation(SearchSongs.this);
                 }
             }
         });
@@ -330,17 +328,17 @@ public class SearchSongs extends ActionBarActivity {
     public static void addTrackToQueue(final Activity activity, final MetaTrack metaTrack, boolean showSnackBar)
     {
 
-//        if(metaTrack.explicit && Mixen.network != null && !PlaybackSnapshot.explictAllowed)
-//        {
-//            if(Mixen.network.isRunningAsHost || Mixen.network.registeredHost != null)
-//            {
-//                SnackbarManager.show(
-//                        Snackbar.with(activity)
-//                                .text("Explicit tracks have been disabled by the host.")
-//                        , activity);
-//                return;
-//            }
-//        }
+        if(metaTrack.explicit && Mixen.network != null && !PlaybackSnapshot.explictAllowed)
+        {
+            if(Mixen.network.isRunningAsHost || Mixen.network.registeredHost != null)
+            {
+                SnackbarManager.show(
+                        Snackbar.with(activity)
+                                .text("Explicit tracks have been disabled by the host.")
+                        , activity);
+                return;
+            }
+        }
 
         for(MetaTrack queuedTrack : MixenPlayerService.instance.metaQueue)
         {

@@ -10,8 +10,7 @@ import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.mikepenz.aboutlibraries.Libs;
-import com.parse.ParseObject;
-import com.peak.mixen.Service.CloudOps;
+import com.peak.salut.Salut;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -35,6 +34,8 @@ public class Mixen {
 
     public static int[] appColors;
 
+    public static Salut network;
+
     public static final String COVER_ART_URL = "http://images.gs-cdn.net/static/albums/";
 
     public static final String MIXEN_PREF_FILE = "com.peak.mixen.preferences";
@@ -42,12 +43,6 @@ public class Mixen {
     public static SharedPreferences sharedPref;
 
     //Song and current session related data.
-
-    public static ParseObject thisUser;
-
-    public static ParseObject connectedHost;
-
-    public static CloudOps cloudOps;
 
     public static SpotifyApi spotifyAPI;
 
@@ -62,10 +57,6 @@ public class Mixen {
     private static final String REDIRECT_URI = "mixen://spotify-auth-callback";
 
     private static final String SDK_SECRET = "tzQx7qKVRn-vUjQyesGeRA";
-
-    private static final String PARSE_SECRET = "IBGVNAmzJWvgXxvmSe2Uv6OT2ScabU3a4XudCiOC";
-
-    private static final String PARSE_KEY = "q3tVE8UUfuIJuc0b4XDRDv0ebevcMGWbvkF6gF2J";
 
     public static Context currentContext;
 
@@ -83,12 +74,8 @@ public class Mixen {
         return REDIRECT_URI;
     }
 
-    public static String getParseSecret() {
-        return PARSE_SECRET;
-    }
-
-    public static String getParseKey() {
-        return PARSE_KEY;
+    public static String getSDKSecret() {
+        return SDK_SECRET;
     }
 
     public static boolean isConnected(Context context, int timeout) {
@@ -112,11 +99,7 @@ public class Mixen {
         }
 
         return false;
-    }
 
-    public static boolean partyCreated()
-    {
-        return(thisUser != null && thisUser.getBoolean("partyCreated"));
     }
 
     public static void showAbout(Activity activity)

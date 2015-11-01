@@ -28,12 +28,14 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.bluelinelabs.logansquare.LoganSquare;
 import com.peak.mixen.Activities.MixenBase;
+import com.peak.mixen.Activities.SearchSongs;
 import com.peak.mixen.Activities.StartScreen;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.R;
-import com.peak.mixen.Utils.ActivityAnimator;
+import com.peak.salut.Callbacks.SalutDataCallback;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
@@ -42,7 +44,7 @@ import com.spotify.sdk.android.player.PlayerStateCallback;
 import com.spotify.sdk.android.player.Spotify;
 import com.squareup.picasso.Picasso;
 
-public class MixenPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener,
+public class MixenPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SalutDataCallback,
                                                             ConnectionStateCallback, PlayerNotificationCallback{
 
     public static final String play = "ACTION_PLAY";
@@ -138,7 +140,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         instance = this;
 
         Log.d(Mixen.TAG, "Mixen Player Service successfully initialized.");
-        playerServiceSnapshot.playServiceState = PlaybackSnapshot.READY;
+        playerServiceSnapshot = new PlaybackSnapshot(PlaybackSnapshot.READY);
     }
 
     public void setMetaDataAndState(int playbackState)
@@ -354,6 +356,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             }
         } else
         {
+            MixenBase.songQueueFrag.updateQueueUI();
             MixenBase.mixenPlayerFrag.prepareUI();
             MixenBase.mixenPlayerFrag.showOrHidePlayBtn(playerServiceSnapshot);
             MixenBase.mixenPlayerFrag.showSongProgressViews();
@@ -429,7 +432,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
         Log.d(Mixen.TAG, "Successfully logged in user.");
         StartScreen.instance.restoreControls();
         StartScreen.instance.startActivity(StartScreen.createNewMixen);
-        new ActivityAnimator().fadeAnimation(StartScreen.instance);
     }
 
     @Override
@@ -516,7 +518,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     public void onTrackCompletion()
     {
         Log.d(Mixen.TAG, "Playback has completed.");
-        playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.STOPPED);
+        playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.COMPLETED);
 
         removePlayedTracks();
 
@@ -543,7 +545,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     {
         serviceIsBusy = false;
         playerHasTrack = true;
-        playerServiceSnapshot.updateNetworkPlayer(PlaybackSnapshot.PLAYING);
+        playerServiceSnapshot.updateNetworkPlayer(PlaybackSnapshot.PLAYING, queueSongPosition, currentTrack);
         MixenBase.mixenPlayerFrag.restoreUIControls();
         setMetaDataAndState(PlaybackStateCompat.STATE_PLAYING);
         mediaSession.setActive(true);
@@ -562,31 +564,18 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     public void showLostPermissionError() {
 
-        //TODO Make pause instead of full reset.
-        playerServiceSnapshot.updateNetworkPlayerState(PlaybackSnapshot.STOPPED);
         resetAndStopPlayer();
         serviceIsBusy = false;
         MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
 
         Log.e(Mixen.TAG, "Lost permission to stream music from Spotify.");
 
-        if(MixenBase.userHasLeftApp)
-        {
-            Notification lostPermission = new Notification.Builder(getApplicationContext())
-                    .setContentTitle("Bummer :(")
-                    .setContentText(getResources().getString(R.string.permission_error))
-                    .build();
+        new MaterialDialog.Builder(MixenBase.mixenPlayerFrag.getActivity())
+                .title("Bummer :(")
+                .content(R.string.permission_error)
+                .neutralText("Okay")
+                .show();
 
-            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            mNotificationManager.notify(Mixen.MIXEN_NOTIFY_CODE, lostPermission);
-        }
-        else {
-            new MaterialDialog.Builder(MixenBase.mixenPlayerFrag.getActivity())
-                    .title("Bummer :(")
-                    .content(R.string.permission_error)
-                    .neutralText("Okay")
-                    .show();
-        }
     }
 
     public Notification updateNotification(boolean isPlaying){
@@ -708,6 +697,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             try
             {
                 Spotify.awaitDestroyPlayer(spotifyPlayer, 5, TimeUnit.SECONDS);
+                //spotifyPlayer = null;
                 Log.d(Mixen.TAG, "Killed Spotify instance.");
             }
             catch(Exception ex)
@@ -715,15 +705,46 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 Log.d(Mixen.TAG, "Failed to shut down player correctly.");
             }
         }
-        if(Mixen.partyCreated())
+        if(Mixen.network != null)
         {
-            Mixen.thisUser.deleteEventually();
+            if(Mixen.isHost)
+            {
+                Mixen.network.stopNetworkService(StartScreen.wiFiBeforeLaunch);
+            }
+            else if(Mixen.network.thisDevice.isRegistered)
+            {
+                Mixen.network.unregisterClient(StartScreen.wiFiBeforeLaunch);
+            }
         }
+
         Log.d(Mixen.TAG, "Stopped Mixen Service.");
     }
 
-    private void handleNetworkPlaybackState(PlaybackSnapshot hostPlaybackSnapshot)
+    public void handleNetworkData(PlaybackSnapshot hostPlaybackSnapshot)
     {
+        boolean explictAllowed = PlaybackSnapshot.explictAllowed;
+
+        playerServiceSnapshot = hostPlaybackSnapshot;
+
+        if(playerServiceSnapshot.snapshotType == PlaybackSnapshot.QUEUE_UPDATE)
+        {
+            currentTrack = hostPlaybackSnapshot.currentMetaTrack;
+            queueSongPosition = hostPlaybackSnapshot.queueSongPosition;
+            metaQueue = hostPlaybackSnapshot.remoteQueue;
+            MixenBase.mixenPlayerFrag.updateUpNext();
+            MixenBase.songQueueFrag.updateQueueUI();
+            //TODO Check to see if synced to prevent going to the switch statement below.
+        }
+        else if (playerServiceSnapshot.snapshotType == PlaybackSnapshot.OTHER_DATA)
+        {
+            if(playerServiceSnapshot.explictAllowed != explictAllowed)
+            {
+                Toast.makeText(getApplicationContext(), "The host has restricted the party to clean songs only.", Toast.LENGTH_SHORT).show();
+                playerServiceSnapshot.explictAllowed = explictAllowed;
+            }
+            return;
+        }
+
         switch(hostPlaybackSnapshot.playServiceState)
         {
             case PlaybackSnapshot.PLAYING:
@@ -735,42 +756,10 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             case PlaybackSnapshot.RESUME:
                 MixenBase.mixenPlayerFrag.showOrHidePlayBtn(hostPlaybackSnapshot);
                 return;
-            case PlaybackSnapshot.STOPPED:
+            case PlaybackSnapshot.COMPLETED:
                 MixenBase.mixenPlayerFrag.cleanUpUI();
                 return;
-        }
-    }
 
-    public void handleNetworkData(PlaybackSnapshot hostPlaybackSnapshot)
-    {
-        boolean explictAllowed = PlaybackSnapshot.explictAllowed;
-
-        playerServiceSnapshot = hostPlaybackSnapshot;
-
-        if(playerServiceSnapshot.snapshotType == PlaybackSnapshot.QUEUE_UPDATE || playerServiceSnapshot.snapshotType == PlaybackSnapshot.GENERAL_UPDATE)
-        {
-            currentTrack = hostPlaybackSnapshot.currentMetaTrack;
-            queueSongPosition = hostPlaybackSnapshot.queueSongPosition;
-            metaQueue = hostPlaybackSnapshot.remoteQueue;
-            MixenBase.mixenPlayerFrag.updateUpNext();
-            MixenBase.songQueueFrag.updateQueueUI();
-
-            if(playerServiceSnapshot.snapshotType == PlaybackSnapshot.GENERAL_UPDATE)
-            {
-                handleNetworkPlaybackState(hostPlaybackSnapshot);
-            }
-        }
-        else if (playerServiceSnapshot.snapshotType == PlaybackSnapshot.OTHER_DATA)
-        {
-            if(playerServiceSnapshot.explictAllowed != explictAllowed)
-            {
-                Toast.makeText(getApplicationContext(), "The host has restricted the party to clean songs only.", Toast.LENGTH_SHORT).show();
-                playerServiceSnapshot.explictAllowed = explictAllowed;
-            }
-        }
-        else if(playerServiceSnapshot.snapshotType == PlaybackSnapshot.PLAYBACK_UPDATE)
-        {
-            handleNetworkPlaybackState(hostPlaybackSnapshot);
         }
     }
 
@@ -815,6 +804,34 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     @Override
     public void onPlaybackError(ErrorType errorType, String s) {
 
+    }
+
+    @Override
+    public void onDataReceived(Object data) {
+        try
+        {
+            if(Mixen.isHost)
+            {
+                Log.d(Mixen.TAG, "Received song request data, updating...");
+                final PlaybackSnapshot clientPlaybackState = LoganSquare.parse((String) data, PlaybackSnapshot.class);
+                SearchSongs.addTrackToQueue(MixenBase.songQueueFrag.getActivity(), clientPlaybackState.trackToAdd, false);
+            }
+            else {
+                Log.d(Mixen.TAG, "Received network playback snapshot, now updating UI.");
+                final PlaybackSnapshot hostPlaybackState = LoganSquare.parse((String) data, PlaybackSnapshot.class);
+                MixenBase.mixenPlayerFrag.getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        handleNetworkData(hostPlaybackState);
+                    }
+                });
+            }
+        }
+        catch (IOException ex)
+        {
+            Log.e(Mixen.TAG, "Failed to parse network data.");
+            ex.printStackTrace();
+        }
     }
 
     private class NoisyAudioReciever extends BroadcastReceiver {

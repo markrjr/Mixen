@@ -2,7 +2,6 @@ package com.peak.mixen.Fragments;
 
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -123,34 +122,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         skipTrackBtn.setClickable(false);
         previousTrackBtn.setClickable(false);
 
-        if(Mixen.amoledMode)
-        {
-            voteControls.setBackgroundColor(Color.BLACK);
-            playerControls.setBackgroundColor(Color.BLACK);
-            voteControls.setAlpha(255);
-            playerControls.setAlpha(255);
-
-            fastForwardIB.setBackgroundColor(Color.BLACK);
-            rewindIB.setBackgroundColor(Color.BLACK);
-            skipTrackBtn.setBackgroundColor(Color.BLACK);
-            previousTrackBtn.setBackgroundColor(Color.BLACK);
-            upNextTV.setBackgroundColor(Color.BLACK);
-            bufferPB.setBackgroundColor(Color.BLACK);
-
-            ImageButton upVoteBtn = (ImageButton) currentView.findViewById(R.id.upVoteBtn);
-            ImageButton downVoteBtn = (ImageButton) currentView.findViewById(R.id.downVoteBtn);
-            TextView upHint = (TextView) currentView.findViewById(R.id.upVoteHint);
-            TextView downHint = (TextView) currentView.findViewById(R.id.downVoteHint);
-
-            upVoteBtn.setBackgroundColor(Color.BLACK);
-            downVoteBtn.setBackgroundColor(Color.BLACK);
-            upHint.setBackgroundColor(Color.BLACK);
-            downHint.setBackgroundColor(Color.BLACK);
-
-            arcProgressBar.setUnfinishedStrokeColor(Color.BLACK);
-
-        }
-
         if(!Mixen.isHost)
         {
             voteControls.setVisibility(View.VISIBLE);
@@ -222,6 +193,12 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
 
     public void prepareUI()
     {
+        if(MixenPlayerService.instance.currentTrack == null)
+        {
+            //TODO Investigate. See if PlaybackSnapShot is getting past when should be flagged as an init or ready call.
+            return;
+        }
+
         Picasso.with(getActivity())
                 .load(MixenPlayerService.instance.currentTrack.albumArtURL)
                 .into(new Target() {
@@ -428,8 +405,7 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
             }
             else
             {
-                albumArtIV.getAnimation().cancel(); //For 4.4.4 and lower.
-                albumArtIV.clearAnimation();
+                albumArtIV.setAnimation(null);
             }
         }
     }

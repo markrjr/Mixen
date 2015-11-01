@@ -15,36 +15,34 @@
         android:allowBackup="true"
         android:icon="@drawable/mixen_icon"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <provider
             android:name=".RecentSearchesProvider"
             android:authorities="com.peak.mixen.RecentSearchesProvider" />
 
         <service android:name=".Service.MixenPlayerService" />
 
-        <receiver
-            android:name="com.tapstream.sdk.ReferrerReceiver"
-            android:exported="true" >
+        <receiver android:name="com.tapstream.sdk.ReferrerReceiver" android:exported="true" >
             <intent-filter>
                 <action android:name="com.android.vending.INSTALL_REFERRER" />
             </intent-filter>
         </receiver>
 
         <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
+            <action android:name="android.intent.action.VIEW"/>
+            <category android:name="android.intent.category.DEFAULT"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
 
             <data
                 android:host="spotify-auth-callback"
-                android:scheme="mixen" />
+                android:scheme="mixen"/>
         </intent-filter>
+
 
         <activity
             android:name=".Activities.StartScreen"
-            android:launchMode="singleInstance"
-            android:screenOrientation="nosensor" >
+            android:screenOrientation="nosensor"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -93,10 +91,6 @@
         <activity
             android:name=".Activities.TutorialScreen"
             android:screenOrientation="nosensor" >
-        </activity>
-        <activity
-            android:name=".Activities.MusicView"
-            android:label="@string/title_activity_music_view" >
         </activity>
     </application>
 
