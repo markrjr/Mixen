@@ -814,7 +814,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             {
                 Log.d(Mixen.TAG, "Received song request data, updating...");
                 final PlaybackSnapshot clientPlaybackState = LoganSquare.parse((String) data, PlaybackSnapshot.class);
-                SearchSongs.addTrackToQueue(MixenBase.songQueueFrag.getActivity(), clientPlaybackState.trackToAdd, false);
+                SearchSongs.prepareToAddSong(MixenBase.songQueueFrag.getActivity(), clientPlaybackState.trackToAdd, false);
             }
             else {
                 Log.d(Mixen.TAG, "Received network playback snapshot, now updating UI.");

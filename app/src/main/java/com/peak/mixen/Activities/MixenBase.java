@@ -24,8 +24,6 @@ import com.peak.mixen.Fragments.SongQueueFrag;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.Service.MixenPlayerService;
 import com.peak.mixen.R;
-import com.tapstream.sdk.Config;
-import com.tapstream.sdk.Tapstream;
 
 
 import java.util.ArrayList;

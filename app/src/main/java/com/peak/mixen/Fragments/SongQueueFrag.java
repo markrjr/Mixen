@@ -156,6 +156,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         super.onNegative(dialog);
                         if (Mixen.network != null) {
                             Mixen.network.cancelConnecting();
+                            SongQueueFrag.this.getActivity().finish();
                         }
                     }
                 })
@@ -185,7 +186,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     {
         findingMixensProgress.show();
 
-        Mixen.network.discoverNetworkServicesWithTimeout(new SalutCallback() {
+        Mixen.network.discoverWithTimeout(new SalutCallback() {
             @Override
             public void call() {
 
@@ -376,7 +377,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                 Toast.makeText(getActivity(), "We're no longer live.", Toast.LENGTH_SHORT).show();
                 Mixen.network.stopNetworkService(StartScreen.wiFiBeforeLaunch);
                 setupQueueAdapter(false);
-
             }
             else
             {
@@ -427,8 +427,6 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         }
 
     }
-
-
 
 
     private void assignItemClickListener(boolean forNetwork, final int position)

@@ -30,7 +30,6 @@ import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.Spotify;
-import com.tapstream.sdk.Tapstream;
 
 
 public class StartScreen extends Activity implements View.OnClickListener{
@@ -72,7 +71,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
 
         checkifFirstRun();
 
-        initAnalytics();
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
@@ -98,20 +96,6 @@ public class StartScreen extends Activity implements View.OnClickListener{
         //WiFi we would have to set this to the opposite because that's our intent not it's current state.
 
         instance = this;
-    }
-
-    private void initAnalytics()
-    {
-        com.tapstream.sdk.Config config = new com.tapstream.sdk.Config();
-        if(BuildConfig.DEBUG)
-        {
-            config.setOpenEventName("Mixen Debug Open");
-        }
-        else
-        {
-            config.setOpenEventName("Mixen Release Open");
-        }
-        Tapstream.create(getApplication(), "mixen", Mixen.getSDKSecret(), config);
     }
 
     private void checkifFirstRun()

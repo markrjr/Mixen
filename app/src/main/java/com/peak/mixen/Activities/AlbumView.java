@@ -200,7 +200,7 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
 
 
                 if (selected.hiddenCategory.equals("SONG")) {
-                    SearchSongs.addTrackToQueue(AlbumView.this, new MetaTrack(selected.trackSimple), true);
+                    SearchSongs.prepareToAddSong(AlbumView.this, new MetaTrack(selected.trackSimple), true);
                 }
 
             }
@@ -231,7 +231,7 @@ public class AlbumView extends ActionBarActivity implements View.OnClickListener
             {
                 for(TrackSimple track : foundAlbum.tracks.items)
                 {
-                    SearchSongs.addTrackToQueue(AlbumView.this, new MetaTrack(track), false);
+                    SearchSongs.prepareToAddSong(AlbumView.this, new MetaTrack(track), false);
                 }
 
                 SnackbarManager.show(

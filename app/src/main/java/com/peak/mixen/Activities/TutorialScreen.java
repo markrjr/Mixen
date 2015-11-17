@@ -12,8 +12,6 @@ import com.peak.mixen.Fragments.SecondTutorialSlide;
 import com.peak.mixen.Fragments.SongQueueFrag;
 import com.peak.mixen.Fragments.ThirdTutorialSlide;
 import com.peak.mixen.R;
-import com.tapstream.sdk.Event;
-import com.tapstream.sdk.Tapstream;
 
 public class TutorialScreen extends AppIntro {
 
@@ -47,8 +45,6 @@ public class TutorialScreen extends AppIntro {
 
     @Override
     public void onDonePressed() {
-        Event e = new Event("Viewed Tutorial", true);
-        Tapstream.getInstance().fireEvent(e);
         setResult(RESULT_OK);
         this.finish();
     }

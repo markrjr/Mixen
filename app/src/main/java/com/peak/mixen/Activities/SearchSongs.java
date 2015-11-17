@@ -284,7 +284,7 @@ public class SearchSongs extends ActionBarActivity {
                 } else if (selected.hiddenCategory.equals("EXTRA_ALBUMS")) {
                     populateSpecificListView("ALBUMS");
                 } else if (selected.hiddenCategory.equals("SONG")) {
-                    addTrackToQueue(SearchSongs.this, new MetaTrack(selected.trackSimple), true);
+                    prepareToAddSong(SearchSongs.this, new MetaTrack(selected.trackSimple), true);
 
                 } else if (selected.hiddenCategory.equals("ALBUM")) {
                     viewAlbumInfo.putExtra("REQUESTED_ALBUM_ID", selected.albumSimple.id);
@@ -295,7 +295,7 @@ public class SearchSongs extends ActionBarActivity {
 
     }
 
-    private static void actuallyAddToQueue(Activity activity, MetaTrack track)
+    private static void addSongToQueue(Activity activity, MetaTrack track)
     {
         if (MixenPlayerService.instance.metaQueue.isEmpty()) {
             Log.i(Mixen.TAG, "First song added to queue.");
@@ -312,20 +312,20 @@ public class SearchSongs extends ActionBarActivity {
                 MixenPlayerService.instance.queueSongPosition++;
                 MixenPlayerService.doAction(activity.getApplicationContext(), MixenPlayerService.preparePlayback);
             }
-
-        }
-
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
-                MixenBase.mixenPlayerFrag.updateUpNext();
-                MixenBase.songQueueFrag.updateQueueUI();
+            else {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
+                        MixenBase.mixenPlayerFrag.updateUpNext();
+                        MixenBase.songQueueFrag.updateQueueUI();
+                    }
+                });
             }
-        });
+        }
     }
 
-    public static void addTrackToQueue(final Activity activity, final MetaTrack metaTrack, boolean showSnackBar)
+    public static void prepareToAddSong(final Activity activity, final MetaTrack metaTrack, boolean showSnackBar)
     {
 
         if(metaTrack.explicit && Mixen.network != null && !PlaybackSnapshot.explictAllowed)
@@ -374,13 +374,17 @@ public class SearchSongs extends ActionBarActivity {
             public void success(Track track, Response response) {
                 MetaTrack trackToAdd = new MetaTrack(track);
                 trackToAdd.addedBy = metaTrack.addedBy;
-                actuallyAddToQueue(activity, trackToAdd);
+                addSongToQueue(activity, trackToAdd);
                 MixenPlayerService.instance.playerServiceSnapshot.updateNetworkQueue();
             }
 
             @Override
             public void failure(RetrofitError error) {
                 MixenBase.mixenPlayerFrag.bufferPB.setVisibility(View.INVISIBLE);
+
+                SnackbarManager.show(
+                        Snackbar.with(activity)
+                                .text("We had a problem getting that track."));
             }
         });
     }
