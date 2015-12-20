@@ -57,9 +57,9 @@ apply plugin: 'com.neenbedankt.android-apt'
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     //Spotify SDK
-    compile files('libs/spotify-web-api-android-master-0.1.0.jar')
-    compile 'com.spotify.sdk:spotify-auth:1.0.0-beta10@aar'
-    compile 'com.spotify.sdk:spotify-player:1.0.0-beta10@aar'
+    compile 'com.github.kaaes:spotify-web-api-android:0.2.0'
+    compile 'com.spotify.sdk:spotify-auth:1.0.0-beta12@aar'
+    compile 'com.spotify.sdk:spotify-player:1.0.0-beta12@aar'
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.squareup.okhttp:okhttp:2.2.0'
     //Misc

@@ -46,6 +46,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
     private ImageButton rewindIB;
     private ImageButton skipTrackBtn;
     private ImageButton previousTrackBtn;
+    private ImageButton upVoteBtn;
+    private ImageButton downVoteBtn;
 
     private RelativeLayout baseLayout;
     public ProgressBar bufferPB;
@@ -80,6 +82,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         rewindIB = (ImageButton) currentView.findViewById(R.id.rewindBtn);
         skipTrackBtn = (ImageButton) currentView.findViewById(R.id.skipTrackBtn);
         previousTrackBtn = (ImageButton) currentView.findViewById(R.id.previousTrackBtn);
+        upVoteBtn = (ImageButton) currentView.findViewById(R.id.upVoteBtn);
+        downVoteBtn = (ImageButton) currentView.findViewById(R.id.downVoteBtn);
 
         bufferPB = (ProgressBar) currentView.findViewById(R.id.bufferingPB);
         artistTV = (TextView) currentView.findViewById(R.id.artistTV);
@@ -100,6 +104,8 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
         rewindIB.setOnClickListener(this);
         skipTrackBtn.setOnClickListener(this);
         previousTrackBtn.setOnClickListener(this);
+        upVoteBtn.setOnClickListener(this);
+        downVoteBtn.setOnClickListener(this);
 
 
         bufferPB.getIndeterminateDrawable().setColorFilter(
@@ -446,6 +452,18 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
     {
         switch(v.getId())
         {
+            case R.id.upVoteBtn:
+            {
+                MixenPlayerService.instance.playerServiceSnapshot.sendNetworkVote(true);
+                return;
+            }
+
+            case R.id.downVoteBtn:
+            {
+                MixenPlayerService.instance.playerServiceSnapshot.sendNetworkVote(false);
+                return;
+            }
+
             case R.id.playPauseButton:
             {
                 MixenPlayerService.doAction(getActivity().getApplicationContext(), MixenPlayerService.changePlayBackState);

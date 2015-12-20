@@ -32,6 +32,7 @@ import com.bluelinelabs.logansquare.LoganSquare;
 import com.peak.mixen.Activities.MixenBase;
 import com.peak.mixen.Activities.SearchSongs;
 import com.peak.mixen.Activities.StartScreen;
+import com.peak.mixen.Fragments.MixenPlayerFrag;
 import com.peak.mixen.MetaTrack;
 import com.peak.mixen.Mixen;
 import com.peak.mixen.R;
@@ -69,7 +70,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
     private IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     protected AudioManager audioManager;
     private TelephonyManager telephonyManager;
-    private PhoneListener checkForIncomingCalls;
     private int originalMusicVolume;
     private boolean pausedUnexpectedly = false;
 
@@ -125,8 +125,6 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
             audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
             noisyAudioReciever = new NoisyAudioReciever();
-            checkForIncomingCalls = new PhoneListener(this);
-            telephonyManager.listen(checkForIncomingCalls, PhoneStateListener.LISTEN_CALL_STATE);
         }
 
         ComponentName notificationsHandler = new ComponentName(getApplicationContext(), MediaNotificationsHandler.class);
@@ -814,7 +812,18 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             {
                 Log.d(Mixen.TAG, "Received song request data, updating...");
                 final PlaybackSnapshot clientPlaybackState = LoganSquare.parse((String) data, PlaybackSnapshot.class);
-                SearchSongs.prepareToAddSong(MixenBase.songQueueFrag.getActivity(), clientPlaybackState.trackToAdd, false);
+
+                if(clientPlaybackState.snapshotType == PlaybackSnapshot.OTHER_DATA && clientPlaybackState.voteChange)
+                {
+                    currentTrack.upVotes = clientPlaybackState.currentMetaTrack.upVotes;
+                    currentTrack.downVotes = clientPlaybackState.currentMetaTrack.downVotes;
+                    MixenBase.songQueueFrag.updateQueueUI();
+                    //playerServiceSnapshot.updateNetworkQueue();
+                }
+                else
+                {
+                    SearchSongs.prepareToAddSong(MixenBase.songQueueFrag.getActivity(), clientPlaybackState.trackToAdd, false);
+                }
             }
             else {
                 Log.d(Mixen.TAG, "Received network playback snapshot, now updating UI.");

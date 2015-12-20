@@ -61,6 +61,7 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
     public RelativeLayout baseLayout;
     public boolean snackBarIsVisible = false;
     public ArrayList<SongQueueListItem> cellList;
+    private boolean canceledFinding = false;
     private FloatingActionButton addSongBtn;
     private FloatingActionButton networkBtn;
     private FloatingActionButton settingsBtn;
@@ -156,7 +157,9 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                         super.onNegative(dialog);
                         if (Mixen.network != null) {
                             Mixen.network.cancelConnecting();
-                            SongQueueFrag.this.getActivity().finish();
+                            findingMixensProgress.dismiss();
+                            cleanUpDialog.show();
+                            canceledFinding = true;
                         }
                     }
                 })
@@ -254,8 +257,11 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
         }, new SalutCallback() {
             @Override
             public void call() {
-                findingMixensProgress.dismiss();
-                cleanUpDialog.show();
+                if(!canceledFinding) {
+
+                    findingMixensProgress.dismiss();
+                    cleanUpDialog.show();
+                }
             }
         }, 5000);
     }

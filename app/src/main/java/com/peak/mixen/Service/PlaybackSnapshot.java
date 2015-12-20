@@ -42,6 +42,8 @@ public class PlaybackSnapshot {
     @JsonField
     public MetaTrack trackToAdd;
     @JsonField
+    public boolean voteChange = false;
+    @JsonField
     public static boolean explictAllowed = true;
 
     public PlaybackSnapshot(){}
@@ -92,6 +94,7 @@ public class PlaybackSnapshot {
     {
         this.snapshotType = OTHER_DATA;
         this.playServiceState = NONE;
+        this.voteChange = false;
         updateNetworkPlaybackData();
     }
 
@@ -110,5 +113,24 @@ public class PlaybackSnapshot {
         this.queueSongPosition = queueSongPosition;
         updateNetworkQueue();
     }
+
+    public void sendNetworkVote(boolean vote)
+    {
+        this.snapshotType = OTHER_DATA;
+        this.playServiceState = NONE;
+        this.voteChange = true;
+
+        if(vote)
+        {
+            MixenPlayerService.instance.currentTrack.upVotes++;
+        }
+        else
+        {
+            MixenPlayerService.instance.currentTrack.downVotes--;
+        }
+
+        updateNetworkPlaybackData();
+    }
+
 
 }

@@ -42,6 +42,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
     public static boolean hasSpotifyToken;
     public static boolean wiFiBeforeLaunch;
 
+    private final int REQUEST_CODE = 57080;
     private Button findMixen;
     private Button createMixen;
     private TextView appNameTV;
@@ -159,7 +160,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
         builder.setScopes(new String[]{"user-read-private", "streaming"});
         builder.setShowDialog(true);
         AuthenticationRequest request = builder.build();
-        AuthenticationClient.openLoginInBrowser(this, request);
+        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
     }
 
     private void createDialogs()
@@ -254,32 +255,31 @@ public class StartScreen extends Activity implements View.OnClickListener{
         indeterminateProgressDiag.show();
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
 
-        Uri uri = intent.getData();
-        if (uri != null)
-        {
-            AuthenticationResponse response = AuthenticationResponse.fromUri(uri);
+        // Check if result comes from the correct activity
+        if (requestCode == REQUEST_CODE) {
+            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
 
             switch (response.getType()) {
-                // Response was successful and contains auth token.
+                // Response was successful and contains auth token
                 case TOKEN:
                     Mixen.spotifyToken = response.getAccessToken();
                     Mixen.spotifyTokenExpiry = System.currentTimeMillis();
                     Mixen.sharedPref.edit().putString("SESSION_TOKEN", Mixen.spotifyToken).apply();
                     Mixen.sharedPref.edit().putLong("SESSION_TOKEN_EXPIRE", Mixen.spotifyTokenExpiry).apply();
                     startMixen();
-                    return;
+                    break;
 
+                // Auth flow returned an error
                 case ERROR:
                     showSpotifyErrorDiag();
-                    return;
+                    break;
 
+                // Most likely auth flow was cancelled
                 default:
                     restoreControls();
-                    return;
             }
         }
     }
