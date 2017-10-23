@@ -344,13 +344,16 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                                 public void run() {
                                     setupMixenNetwork();
                                 }
-                            }, 1500);
+                            }, 2000);
                         }
 
                         @Override
                         public void onNegative(MaterialDialog dialog) {
                             super.onNegative(dialog);
-                            SongQueueFrag.this.getActivity().finish();
+                            if(MixenPlayerService.instance == null || MixenPlayerService.instance.queueIsEmpty())
+                            {
+                                SongQueueFrag.this.getActivity().finish();
+                            }
                         }
                     })
                     .show();
@@ -390,8 +393,18 @@ public class SongQueueFrag extends Fragment implements View.OnClickListener {
                     @Override
                     public void call(SalutDevice device) {
                         Toast.makeText(getActivity(), device.readableName + " is now connected.", Toast.LENGTH_SHORT).show();
-                        MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
-                        MixenBase.mixenUsersFrag.updateNetworkUsersQueue();
+
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                MixenPlayerService.instance.playerServiceSnapshot.updateNetworkPlayer();
+                                MixenBase.mixenUsersFrag.updateNetworkUsersQueue();
+
+                            }
+                        }, 5000);
+
+
                     }
                 }, new SalutCallback() {
                     @Override

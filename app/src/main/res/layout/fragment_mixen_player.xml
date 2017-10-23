@@ -7,7 +7,7 @@
     android:layout_height="fill_parent"
     android:visibility="visible"
     tools:context="com.peak.mixen.Fragments.MixenPlayerFrag"
-    android:background="@color/Dodger_Blue">
+    android:background="@color/Tundora">
 
 
     <TextView

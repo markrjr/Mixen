@@ -44,6 +44,8 @@ public class PlaybackSnapshot {
     @JsonField
     public boolean voteChange = false;
     @JsonField
+    public String spotifyToken = "";
+    @JsonField
     public static boolean explictAllowed = true;
 
     public PlaybackSnapshot(){}
@@ -103,6 +105,7 @@ public class PlaybackSnapshot {
         this.currentMetaTrack = MixenPlayerService.instance.currentTrack;
         this.playServiceState = MixenPlayerService.instance.playerServiceSnapshot.playServiceState;
         this.queueSongPosition = MixenPlayerService.instance.queueSongPosition;
+        this.spotifyToken = Mixen.spotifyToken;
         updateNetworkQueue();
     }
 

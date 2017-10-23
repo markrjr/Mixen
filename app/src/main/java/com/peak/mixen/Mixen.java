@@ -48,15 +48,13 @@ public class Mixen {
 
     public static SpotifyService spotify;
 
-    public static String spotifyToken;
+    public static String spotifyToken = "";
 
     public static long spotifyTokenExpiry;
 
     private static final String CLIENT_ID = "fb5c429de70a4aa184ea97dbaa5e8b98";
 
     private static final String REDIRECT_URI = "mixen://spotify-auth-callback";
-
-    private static final String SDK_SECRET = "tzQx7qKVRn-vUjQyesGeRA";
 
     public static Context currentContext;
 
@@ -72,10 +70,6 @@ public class Mixen {
 
     public static String getRedirectUri() {
         return REDIRECT_URI;
-    }
-
-    public static String getSDKSecret() {
-        return SDK_SECRET;
     }
 
     public static boolean isConnected(Context context, int timeout) {

@@ -5,7 +5,7 @@
     android:layout_height="fill_parent"
     tools:context="com.peak.mixen.Fragments.SongQueueFrag"
     android:id="@+id/relativeLayout"
-    android:background="@color/Dodger_Blue">
+    android:background="@color/Tundora">
 
     <ListView
         android:layout_width="fill_parent"
@@ -43,9 +43,8 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:src="@drawable/ic_not_live"
-        app:layout_anchor="@+id/appbar"
         app:layout_anchorGravity="bottom|right|end"
-        app:backgroundTint="@color/Tundora"
+        app:backgroundTint="@color/EXP_4"
         app:borderWidth="0dp"
         android:visibility="visible"
         android:layout_alignParentBottom="true"
@@ -63,9 +62,8 @@
         android:clickable="true"
         android:src="@drawable/ic_more"
         android:visibility="visible"
-        app:layout_anchor="@+id/appbar"
         app:layout_anchorGravity="bottom|right|end"
-        app:backgroundTint="@color/Tundora"
+        app:backgroundTint="@color/EXP_4"
         app:borderWidth="0dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="false"
@@ -80,10 +78,9 @@
         android:clickable="true"
         android:src="@drawable/ic_add_music"
         android:visibility="visible"
-        app:layout_anchor="@+id/appbar"
         app:layout_anchorGravity="bottom|right|end"
         app:borderWidth="0dp"
-        app:backgroundTint="@color/Tundora"
+        app:backgroundTint="@color/EXP_4"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"

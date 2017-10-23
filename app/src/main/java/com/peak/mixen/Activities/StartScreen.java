@@ -92,9 +92,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
         appNameTV.setOnClickListener(this);
 
         wiFiBeforeLaunch = !Salut.isWiFiEnabled(getApplicationContext());
-        //The !(not) is because if for instance WiFi was disabled beforehand, that method will return false.
-        //But, we use this boolean later in order to set WiFi back to it's original state. So if we want to disable
-        //WiFi we would have to set this to the opposite because that's our intent not it's current state.
+
 
         instance = this;
     }
@@ -275,6 +273,7 @@ public class StartScreen extends Activity implements View.OnClickListener{
                 // Auth flow returned an error
                 case ERROR:
                     showSpotifyErrorDiag();
+                    Log.d(Mixen.TAG, response.getError());
                     break;
 
                 // Most likely auth flow was cancelled

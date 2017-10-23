@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="com_spotify_sdk_redirect_scheme">mixen</string>
+    <string name="com_spotify_sdk_redirect_host">spotify-auth-callback</string>
+
     <string name="app_name">Mixen</string>
     <string name="hello_world">Hello world!</string>
     <string name="exit_app_string">Quit</string>
     <string name="app_description">Mixen lets you create a playlist and share it with friends nearby.</string>
-    <string name="app_description_long">Mixen lets you create a playlist and share it with friends nearby. \n Peak Digital. 2015. All Rights Reserved.</string>
+    <string name="app_description_long">Mixen lets you create a playlist and share it with friends nearby. \n Peak 2017. All Rights Reserved.</string>
     <string name="title_activity_mixen_stage">MixenStage</string>
     <string name="title_activity_more_info">MoreInfo</string>
     <string name="createDescript">First, enter a name to tell others who you are.</string>

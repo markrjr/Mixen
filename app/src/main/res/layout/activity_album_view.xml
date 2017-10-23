@@ -45,14 +45,13 @@
         android:id="@+id/playAlbumBtn"
         android:src="@drawable/ic_action_add"
         android:visibility="invisible"
-        app:layout_anchor="@+id/appbar"
         app:backgroundTint="@color/EXP_4"
         app:borderWidth="0dp"
-        android:layout_alignParentTop="true"
+        android:layout_marginRight="11dp"
+        android:layout_alignBottom="@+id/albumArtHeader"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="265dp"
-        android:layout_marginRight="10dp" />
+        android:layout_marginBottom="45dp"/>
 
 
 </RelativeLayout>

@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -211,7 +210,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
                     @Override
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                         MixenPlayerService.instance.currentTrack.albumArt = bitmap;
-                        generateAlbumArtPalette(bitmap);
                         if(Mixen.isHost)
                         {
                             MixenPlayerService.instance.setMetaData();
@@ -305,31 +303,6 @@ public class MixenPlayerFrag extends Fragment implements View.OnClickListener{
             }
         });
 
-    }
-
-    public void generateAlbumArtPalette(Bitmap albumArt)
-    {
-
-        Palette.generateAsync(albumArt, new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-
-                Log.v(Mixen.TAG, "Generated colors.");
-
-                final int artColor = palette.getMutedColor(Mixen.appColors[new Random().nextInt(Mixen.appColors.length)]);
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        baseLayout.setBackgroundColor(artColor);
-                        MixenBase.songQueueFrag.baseLayout.setBackgroundColor(artColor);
-                        if (Mixen.isHost) {
-                            MixenBase.mixenUsersFrag.baseLayout.setBackgroundColor(artColor);
-                        }
-                    }
-                });
-            }
-        });
     }
 
     public void cleanUpUI()

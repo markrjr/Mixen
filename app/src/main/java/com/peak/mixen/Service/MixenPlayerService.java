@@ -217,7 +217,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 initService();
                 return;
             case replayTrack:
-                //restartTrackFromBeginning();
+//                preparePlayback();
                 return;
         }
     }
@@ -720,7 +720,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
 
     public void handleNetworkData(PlaybackSnapshot hostPlaybackSnapshot)
     {
-        boolean explictAllowed = PlaybackSnapshot.explictAllowed;
+        boolean explicitAllowed = PlaybackSnapshot.explictAllowed;
 
         playerServiceSnapshot = hostPlaybackSnapshot;
 
@@ -731,16 +731,26 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
             metaQueue = hostPlaybackSnapshot.remoteQueue;
             MixenBase.mixenPlayerFrag.updateUpNext();
             MixenBase.songQueueFrag.updateQueueUI();
+            preparePlayback();
+
+            if(playerServiceSnapshot.spotifyToken != "" && Mixen.spotifyToken == "")
+            {
+                Mixen.spotifyToken = playerServiceSnapshot.spotifyToken;
+                Mixen.spotifyAPI.setAccessToken(Mixen.spotifyToken);
+                Log.d(Mixen.TAG, "Token? " + playerServiceSnapshot.spotifyToken);
+            }
+
             //TODO Check to see if synced to prevent going to the switch statement below.
         }
         else if (playerServiceSnapshot.snapshotType == PlaybackSnapshot.OTHER_DATA)
         {
-            if(playerServiceSnapshot.explictAllowed != explictAllowed)
+
+            if(playerServiceSnapshot.explictAllowed != explicitAllowed)
             {
                 Toast.makeText(getApplicationContext(), "The host has restricted the party to clean songs only.", Toast.LENGTH_SHORT).show();
-                playerServiceSnapshot.explictAllowed = explictAllowed;
+                playerServiceSnapshot.explictAllowed = explicitAllowed;
             }
-            return;
+
         }
 
         switch(hostPlaybackSnapshot.playServiceState)
@@ -826,7 +836,7 @@ public class MixenPlayerService extends Service implements AudioManager.OnAudioF
                 }
             }
             else {
-                Log.d(Mixen.TAG, "Received network playback snapshot, now updating UI.");
+                Log.d(Mixen.TAG, "Received network playback snapshot, updating...");
                 final PlaybackSnapshot hostPlaybackState = LoganSquare.parse((String) data, PlaybackSnapshot.class);
                 MixenBase.mixenPlayerFrag.getActivity().runOnUiThread(new Runnable() {
                     @Override
